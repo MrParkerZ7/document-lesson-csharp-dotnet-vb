@@ -1,0 +1,22 @@
+# build scratch (render HTML, mermaid temp, Edge profile, QA rasters, MSBuild artifacts)
+.build/
+bin/
+obj/
+TestResults/
+*.user
+.vs/
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+
+# Claude Code session state
+.claude/
+
+# disposable files
+🚫*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "stage": "lesson-NN-<slug>",
+  "revision": 1,
+  "built_from": {
+    "commit": null,
+    "generated": "2026-09-14"
+  },
+  "spec": "1-analysis/spec_lesson-pdfs/",
+  "files": {
+    "lesson-01-dotnet-platform-map/lesson-01-dotnet-platform-map.pdf": {
+      "kind": "generated",
+      "spec": "1-analysis/spec_lesson-pdfs/lesson-01-dotnet-platform-map.md",
+      "builder": "0-script/build_lessons.py",
+      "data": [
+        "0-script/lessons/lesson_01.py",
+        "0-script/lessons/roster.py",
+        "0-script/_lib/lesson_kit.py"
+      ],
+      "sources": [
+        "lesson-01-dotnet-platform-map/samples/"
+      ],
+      "gate": "0-script/verify_samples.py",
+      "pdf_style": "full-spectrum",
+      "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
+      "pages": 13,
+      "readme": "lesson-01-dotnet-platform-map/README.md"
+    }
+  }
+}

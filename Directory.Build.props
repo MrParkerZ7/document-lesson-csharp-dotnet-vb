@@ -1,0 +1,28 @@
+<Project>
+  <!--
+    Applies to EVERY sample project in this repository: MSBuild walks up from each project folder
+    and imports the first Directory.Build.props it finds. Lesson 07 explains this file line by line.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Deterministic>true</Deterministic>
+    <!-- bin/ and obj/ go to one place instead of beside every project -->
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <ArtifactsPath>$(MSBuildThisFileDirectory).build\artifacts</ArtifactsPath>
+    <!-- a sample that warns is a sample that teaches the wrong habit -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- ...but a newly published package advisory must not break an old lesson overnight -->
+    <WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.vbproj'">
+    <OptionStrict>On</OptionStrict>
+    <OptionExplicit>On</OptionExplicit>
+    <OptionInfer>On</OptionInfer>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,7 @@
+# Python deps for 0-script/build_lessons.py (PDF render) — Edge (Windows) prints the PDF,
+# mermaid diagrams need Node + @mermaid-js/mermaid-cli in the npx cache:
+#   npx -y @mermaid-js/mermaid-cli --version
+pypdf>=5
+reportlab>=4
+pygments>=2.18
+pymupdf>=1.24   # only for --qa (page rasterization)
