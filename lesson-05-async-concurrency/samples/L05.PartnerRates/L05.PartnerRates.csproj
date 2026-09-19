@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Partner fan-out for the MotorQuote example: 30 simulated rating partners, per-partner
+    timeouts, streaming results, thread-safe statistics. Every timer goes through TimeProvider,
+    so the tests run on virtual time.
+  -->
+</Project>

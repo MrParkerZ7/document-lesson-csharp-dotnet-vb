@@ -4,21 +4,23 @@ Imports L01.PlatformKit
 Module Program
     Sub Main()
 #Region "program"
-        Dim r = PlatformReport.Capture(
+        Dim r = PlatformProbe.Capture(
             Assembly.GetExecutingAssembly())
 
         Console.WriteLine($"Hello from VB on {r.Framework}")
+        Console.WriteLine($"  target    {r.TargetFramework}")
         Console.WriteLine($"  os        {r.OperatingSystem}")
-        Console.WriteLine($"  arch      {r.ProcessArchitecture}")
-        Console.WriteLine($"  JIT on    {r.DynamicCodeCompiled}")
-        Console.WriteLine($"  metadata  {r.MetadataVersion}")
+        Console.WriteLine($"  arch      {r.Arch}")
+        Console.WriteLine($"  server GC {r.ServerGc}")
+        Console.WriteLine($"  JIT on    {r.JitOn}")
+        Console.WriteLine($"  image     {r.ImageRuntimeVersion}")
         Console.WriteLine($"  assembly  {r.CallerAssembly}")
 #End Region
 
-#Region "record-equality"
+#Region "equality"
         ' VB can USE the C# record (read it, compare it) but has
-        ' no `With` syntax to make a modified copy of it.
-        Dim same = r.Equals(PlatformReport.Capture(
+        ' no expression that makes a modified copy of it.
+        Dim same = r.Equals(PlatformProbe.Capture(
             Assembly.GetExecutingAssembly()))
         Console.WriteLine($"  equal?    {same}")    ' True
 #End Region

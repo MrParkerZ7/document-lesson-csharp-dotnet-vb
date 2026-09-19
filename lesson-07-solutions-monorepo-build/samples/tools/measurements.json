@@ -1,0 +1,256 @@
+{
+  "measured_on": "2026-09-19",
+  "sdk": "10.0.401",
+  "msbuild": "18.9.11.42413",
+  "os": "Windows",
+  "projects": [
+    "L07.Core",
+    "L07.Pricing",
+    "L07.Pricing.Tests",
+    "L07.Pricing.Vb",
+    "L07.QuoteCli"
+  ],
+  "incremental": [
+    {
+      "scenario": "clean build",
+      "compiled": [
+        "L07.Core",
+        "L07.Pricing",
+        "L07.Pricing.Tests",
+        "L07.Pricing.Vb",
+        "L07.QuoteCli"
+      ]
+    },
+    {
+      "scenario": "no change",
+      "compiled": []
+    },
+    {
+      "scenario": "method body in L07.Core",
+      "compiled": [
+        "L07.Core"
+      ]
+    },
+    {
+      "scenario": "internal member in L07.Core",
+      "compiled": [
+        "L07.Core"
+      ]
+    },
+    {
+      "scenario": "internal member in L07.Pricing",
+      "compiled": [
+        "L07.Pricing",
+        "L07.Pricing.Tests",
+        "L07.QuoteCli"
+      ]
+    },
+    {
+      "scenario": "public member in L07.Core",
+      "compiled": [
+        "L07.Core",
+        "L07.Pricing",
+        "L07.Pricing.Tests",
+        "L07.Pricing.Vb",
+        "L07.QuoteCli"
+      ]
+    }
+  ],
+  "preprocess": {
+    "project": "src/L07.Pricing/L07.Pricing.csproj",
+    "project_file_lines": 5,
+    "preprocessed_lines": 17412,
+    "files": 117,
+    "lines_by_origin": {
+      "your project file": 5,
+      ".NET SDK and MSBuild": 15696,
+      "Directory.* files": 74,
+      "restore output (nuget.g)": 12
+    },
+    "banner_lines": 1625,
+    "directory_chain": [
+      {
+        "file": "MotorMono/Directory.Build.props",
+        "imported_by": "Microsoft.Common.props"
+      },
+      {
+        "file": "repo root/Directory.Build.props",
+        "imported_by": "MotorMono/Directory.Build.props"
+      },
+      {
+        "file": "MotorMono/Directory.Packages.props",
+        "imported_by": "NuGet.props"
+      },
+      {
+        "file": "MotorMono/Directory.Build.targets",
+        "imported_by": "Microsoft.Common.targets"
+      }
+    ]
+  },
+  "properties": {
+    "TargetFramework": "net10.0",
+    "Nullable": "enable",
+    "UseArtifactsOutput": "true",
+    "AnalysisLevel": "latest-recommended",
+    "MotorMonoBuiltFrom": "command-line",
+    "NuGetAuditMode": "all",
+    "RestoreEnablePackagePruning": "true",
+    "ProduceReferenceAssembly": "true"
+  },
+  "list_projects": [
+    "  MotorMono: 5 projects",
+    "    L07.Core.csproj",
+    "    L07.Pricing.Vb.vbproj",
+    "    L07.Pricing.csproj",
+    "    L07.QuoteCli.csproj",
+    "    L07.Pricing.Tests.csproj"
+  ],
+  "solution_filter": {
+    "filter": "MotorMono.Pricing.slnf",
+    "listed": [
+      "L07.Core",
+      "L07.Pricing",
+      "L07.Pricing.Tests"
+    ],
+    "built": [
+      "L07.Core",
+      "L07.Pricing",
+      "L07.Pricing.Tests",
+      "L07.Pricing.Vb"
+    ],
+    "exit": 0
+  },
+  "solution_formats": {
+    "files": [
+      {
+        "file": "Legacy.sln",
+        "lines": 101,
+        "chars": 6888,
+        "guids": 10
+      },
+      {
+        "file": "Legacy.slnx",
+        "lines": 16,
+        "chars": 530,
+        "guids": 0
+      },
+      {
+        "file": "MotorMono.slnx",
+        "lines": 19,
+        "chars": 679,
+        "guids": 0
+      }
+    ],
+    "new_sln_creates": [
+      "Probe.slnx"
+    ]
+  },
+  "ci": {
+    "steps": [
+      {
+        "step": "restore",
+        "command": "dotnet restore MotorMono.slnx",
+        "exit": 0
+      },
+      {
+        "step": "format",
+        "command": "dotnet format MotorMono.slnx --verify-no-changes --no-restore",
+        "exit": 0
+      },
+      {
+        "step": "build",
+        "command": "dotnet build MotorMono.slnx -c Release --no-restore -p:VersionSuffix=ci.42 -bl:build.binlog",
+        "exit": 0
+      },
+      {
+        "step": "test",
+        "command": "dotnet test MotorMono.slnx -c Release --no-build",
+        "exit": 0
+      },
+      {
+        "step": "pack",
+        "command": "dotnet pack MotorMono.slnx -c Release --no-build -p:VersionSuffix=ci.42 -o packages",
+        "exit": 0
+      }
+    ],
+    "tests_total": 12,
+    "packages": [
+      {
+        "id": "L07.Core",
+        "version": "1.4.0-ci.42",
+        "dependencies": [],
+        "lib": [
+          "lib/net10.0/L07.Core.dll"
+        ]
+      },
+      {
+        "id": "L07.Pricing",
+        "version": "1.4.0-ci.42",
+        "dependencies": [
+          "L07.Core 1.4.0-ci.42"
+        ],
+        "lib": [
+          "lib/net10.0/L07.Pricing.dll"
+        ]
+      },
+      {
+        "id": "L07.Pricing.Vb",
+        "version": "1.4.0-ci.42",
+        "dependencies": [
+          "L07.Core 1.4.0-ci.42"
+        ],
+        "lib": [
+          "lib/net10.0/L07.Pricing.Vb.dll"
+        ]
+      }
+    ],
+    "binlog_kb": 563
+  },
+  "breaks": [
+    {
+      "break": "nested Directory.Build.props without the parent Import",
+      "exit": 1,
+      "code": "NETSDK1013",
+      "message": "The TargetFramework value '' was not recognized. It may be misspelled. If not, then the TargetFrameworkIdentifier and/or TargetFrameworkVersion properties must be specified explicitly."
+    },
+    {
+      "break": "CI=true and a version changed without updating the lock file",
+      "exit": 1,
+      "code": "NU1004",
+      "message": "The package reference xunit version has changed from [2.9.3, ) to [2.9.2, ).The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."
+    },
+    {
+      "break": "a Version attribute left on a PackageReference under CPM",
+      "exit": 1,
+      "code": "NU1008",
+      "message": "The following PackageReference items cannot define a value for Version: xunit. Projects using Central Package Management must define a Version value on a PackageVersion item. For more information, visit https://aka.ms/nuget/cpm/gettingstarted"
+    },
+    {
+      "break": "a second package source and no packageSourceMapping",
+      "exit": 1,
+      "code": "NU1507",
+      "message": "Warning As Error: There are 2 package sources defined in your configuration. When using central package management, map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: nuget.org, second"
+    },
+    {
+      "break": "end_of_line not pinned in .editorconfig (LF files)",
+      "exit": 2,
+      "platform": "Windows",
+      "code": "WHITESPACE",
+      "message": "Fix whitespace formatting. Replace 2 characters with '\\r\\n\\r\\n'."
+    },
+    {
+      "break": "a block-scoped namespace under the .editorconfig rule",
+      "exit": 1,
+      "code": "IDE0161",
+      "message": "Convert to file-scoped namespace (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0161)"
+    }
+  ],
+  "analyzers": {
+    "sdk": "10.0.401",
+    "counts": {
+      "minimum": 92,
+      "recommended": 145,
+      "all": 280
+    }
+  }
+}

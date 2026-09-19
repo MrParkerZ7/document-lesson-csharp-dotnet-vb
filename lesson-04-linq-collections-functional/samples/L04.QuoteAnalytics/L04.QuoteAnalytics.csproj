@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\L04.QuoteData\L04.QuoteData.csproj" />
+    <ProjectReference Include="..\L04.QueryGen\L04.QueryGen.csproj" />
+  </ItemGroup>
+</Project>

@@ -126,7 +126,7 @@ def _highlight(src, lang):
 def _panel(s, keep):
     _lex, default_label, accent = LANG[s["lang"]]
     n = s["src"].count("\n") + 1
-    keep = (n <= 32) if keep is None else keep
+    keep = (n <= 18) if keep is None else keep  # longer panels may split: a whole one jumps pages and leaves a gap
     cf = f'<span class="cf">{esc(s["file"])}</span>' if s.get("file") else ""
     return (f'<div class="code{" keep" if keep else ""}"><div class="ch" style="background:{accent}">'
             f'<span class="cl">{esc(s.get("label") or default_label)}</span>{cf}</div>'
@@ -196,7 +196,7 @@ def compare(left, right, *, heading=None, note=None, keep=None):
     _width_warn(left, 62)
     _width_warn(right, 62)
     n = max(left["src"].count("\n"), right["src"].count("\n")) + 1
-    keep = (n <= 40) if keep is None else keep
+    keep = (n <= 24) if keep is None else keep
     h = f'<div class="codeh">{esc(heading)}</div>' if heading else ""
     nt = f'<div class="lnote">{note}</div>' if note else ""
     return {"type": "html", "_kind": "compare", "_langs": [left["lang"], right["lang"]],
@@ -280,6 +280,9 @@ def lint_blocks(blocks):
 
     for b in blocks:
         if b.get("type") == "cards":
+            if len(b.get("cards", [])) > 3:
+                errs.append(f"cards band {(b.get('band') or {}).get('title')!r} has {len(b['cards'])} cards "
+                            "(max 3 — a band cannot split across pages; continue in a second band with toc False)")
             for c in b.get("cards", []):
                 for label, _v in c.get("lines", []):
                     if len(label) > 9:

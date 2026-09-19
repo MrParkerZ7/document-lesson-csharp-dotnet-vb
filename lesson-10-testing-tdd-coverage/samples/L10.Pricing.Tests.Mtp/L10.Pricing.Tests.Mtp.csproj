@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The SAME test files as L10.Pricing.Tests, built as a Microsoft.Testing.Platform app.
+       `dotnet run` runs the tests. Stryker.NET mutates L10.Pricing through this project,
+       because its VSTest runner cannot see xUnit v3 tests and its MTP runner can. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" Version="4.0.1" />
+    <PackageReference Include="coverlet.MTP" Version="10.0.1" />
+    <PackageReference Include="NSubstitute" Version="6.2.0" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.10.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\L10.Pricing\L10.Pricing.csproj" />
+    <Compile Include="..\L10.Pricing.Tests\*.cs" LinkBase="Linked" />
+    <Compile Include="..\Shared\Requests.cs" Link="Shared\Requests.cs" />
+    <Using Include="Xunit" />
+    <Using Include="L10.Pricing.TestData" />
+  </ItemGroup>
+
+</Project>

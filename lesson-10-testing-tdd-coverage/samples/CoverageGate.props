@@ -1,0 +1,18 @@
+<Project>
+  <!-- The 100% gate. Imported by every test project that must hold L10.Pricing at
+       100% line AND branch coverage. coverlet.msbuild instruments the assembly when
+       `dotnet test` runs (VSTest mode) and fails the command below the threshold. -->
+  <PropertyGroup>
+    <CollectCoverage>true</CollectCoverage>
+    <Include>[L10.Pricing]*</Include>
+    <Threshold>100</Threshold>
+    <ThresholdType>line,branch</ThresholdType>
+    <ThresholdStat>total</ThresholdStat>
+    <CoverletOutputFormat>cobertura</CoverletOutputFormat>
+    <CoverletOutput>$(ArtifactsPath)/coverage/$(MSBuildProjectName)/</CoverletOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.msbuild" Version="10.0.1" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

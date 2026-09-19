@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\L06.LegacyRating\L06.LegacyRating.vbproj" />
+    <ProjectReference Include="..\L06.ModernRating\L06.ModernRating.csproj" />
+  </ItemGroup>
+</Project>

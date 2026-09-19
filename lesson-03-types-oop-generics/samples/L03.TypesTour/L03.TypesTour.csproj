@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\L03.Domain\L03.Domain.csproj" />
+    <ProjectReference Include="..\L03.Reports\L03.Reports.csproj" />
+  </ItemGroup>
+</Project>

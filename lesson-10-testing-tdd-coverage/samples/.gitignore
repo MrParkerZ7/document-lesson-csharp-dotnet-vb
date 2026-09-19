@@ -1,0 +1,4 @@
+# Reqnroll regenerates the code-behind of every .feature file on build
+*.feature.cs
+# Stryker.NET reports (dotnet stryker writes them beside the project it runs in)
+StrykerOutput/

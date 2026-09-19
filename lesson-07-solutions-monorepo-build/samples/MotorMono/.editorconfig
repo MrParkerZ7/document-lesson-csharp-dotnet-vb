@@ -1,0 +1,19 @@
+# Style and analyzer rules for every module. The build enforces them: Directory.Build.props sets
+# EnforceCodeStyleInBuild, and the repository root sets TreatWarningsAsErrors.
+root = true
+
+[*]
+# pin line endings, or dotnet format --verify-no-changes can disagree between Linux CI and Windows
+end_of_line = lf
+
+[*.{cs,vb}]
+indent_style = space
+indent_size = 4
+
+[*.cs]
+# a block-scoped namespace is a build error, not an IDE hint (.NET 9+ honours ":warning" on build)
+csharp_style_namespace_declarations = file_scoped:warning
+
+# tests read as sentences: allow underscores in test method names
+[tests/**/*.cs]
+dotnet_diagnostic.CA1707.severity = none

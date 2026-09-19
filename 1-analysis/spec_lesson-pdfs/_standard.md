@@ -46,7 +46,7 @@ and `blocks()`. The block list follows this order:
 |---|---|---|
 | numbered `story` sections | 6 | `N · Title`; sub-blocks `N.M · Title` so the TOC nests |
 | `mapping(...)` concept tables | 1 | "You already know → In .NET → Kind → Watch for" |
-| `cards` sections | 1 | ≤ 6 cards per band; each card line label ≤ 9 characters |
+| `cards` sections | 1 | ≤ 3 cards per band — a band never splits across pages, so a big deck jumps whole and leaves a gap; continue a longer deck in a second band titled "… (continued)" with `"toc": False`. Each card line label ≤ 9 characters |
 | `mermaid` diagrams | 3 | at least two different diagram families (flowchart · sequence · state · class · ER · gantt · timeline) |
 | charts (`chart` / each chart in a `chartrow`) | 3 | every chart has a `note` that says what the data **means** |
 | code panels | 6 | from `code(...)` / `compare(...)` |
@@ -91,6 +91,11 @@ Typical length: **12–20 A4 pages**. Past 22 pages, split content into cards/ta
 - **Code panels.** Keep regions short and focused: a `code()` panel ≤ 35 lines and ≤ 100 characters per line;
   each side of a `compare()` ≤ 30 lines and ≤ 62 characters per line (wider lines wrap and look broken).
   Every panel is followed by a `note` saying what to notice. Use sample comments to annotate, sparingly.
+  A panel of ≤ 18 lines (a `compare` of ≤ 24) is kept whole on one page; a longer one may split across pages.
+  Pass `keep=False` when a kept panel would jump to the next page and strand a large gap.
+- **Pagination.** No page may be left more than about a third empty except the last. When an unbreakable
+  block (card band, figure, kept panel, diagram) jumps and leaves a gap, reorder the blocks, split the band,
+  or shrink the figure — visual QA is where this is caught.
 - **Mermaid** (constraints in the comment block above `render_mermaid_svg` in `brief_pdf.py`):
   quote every label; `<br/>` for line breaks; no node id `end`; `classDef` only in flowchart / state / class
   diagrams, every `classDef` carries `color:#1f2937`; other families take colour from an `%%{init:…}%%`

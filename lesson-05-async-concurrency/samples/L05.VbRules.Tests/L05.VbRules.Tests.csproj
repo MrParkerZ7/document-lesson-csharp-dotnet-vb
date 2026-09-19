@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Proves what Visual Basic async code can and cannot do by compiling VB snippets with the VB
+    compiler (Roslyn) at test time. The snippets are data files, never part of an MSBuild compile.
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <!-- the VB compiler version the .NET 10.0.401 SDK ships (5.9.0) -->
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="5.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Snippets\**\*.vb" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

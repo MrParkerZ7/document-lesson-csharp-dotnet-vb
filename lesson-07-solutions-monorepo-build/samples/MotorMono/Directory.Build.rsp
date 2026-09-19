@@ -1,0 +1,4 @@
+# Default switches for every command-line build below this folder.
+# dotnet build and msbuild.exe read this file; Visual Studio ignores it.
+-nodeReuse:false
+-property:MotorMonoBuiltFrom=command-line

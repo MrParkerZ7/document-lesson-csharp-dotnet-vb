@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- A minimal quote API over L10.Pricing — just enough surface to test in-process.
+       Lesson 08 owns ASP.NET Core; this lesson owns how to test it. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\L10.Pricing\L10.Pricing.csproj" />
+  </ItemGroup>
+
+</Project>

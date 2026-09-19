@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "path": "MotorMono.slnx",
+    "projects": [
+      "src\\L07.Core\\L07.Core.csproj",
+      "src\\L07.Pricing\\L07.Pricing.csproj",
+      "tests\\L07.Pricing.Tests\\L07.Pricing.Tests.csproj"
+    ]
+  }
+}

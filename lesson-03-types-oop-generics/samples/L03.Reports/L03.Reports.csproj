@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The generic report framework. TargetFramework, Nullable and ImplicitUsings come from Directory.Build.props. -->
+  <ItemGroup>
+    <ProjectReference Include="..\L03.Domain\L03.Domain.csproj" />
+  </ItemGroup>
+</Project>

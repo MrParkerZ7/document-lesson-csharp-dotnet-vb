@@ -3,8 +3,8 @@
   "stage": "lesson-NN-<slug>",
   "revision": 1,
   "built_from": {
-    "commit": null,
-    "generated": "2026-09-14"
+    "commit": "4f35a48",
+    "generated": "2026-09-20"
   },
   "spec": "1-analysis/spec_lesson-pdfs/",
   "files": {
@@ -23,8 +23,206 @@
       "gate": "0-script/verify_samples.py",
       "pdf_style": "full-spectrum",
       "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
-      "pages": 13,
+      "pages": 16,
       "readme": "lesson-01-dotnet-platform-map/README.md"
+    },
+    "lesson-02-csharp-language-essentials/lesson-02-csharp-language-essentials.pdf": {
+      "kind": "generated",
+      "spec": "1-analysis/spec_lesson-pdfs/lesson-02-csharp-language-essentials.md",
+      "builder": "0-script/build_lessons.py",
+      "data": [
+        "0-script/lessons/lesson_02.py",
+        "0-script/lessons/roster.py",
+        "0-script/_lib/lesson_kit.py"
+      ],
+      "sources": [
+        "lesson-02-csharp-language-essentials/samples/"
+      ],
+      "gate": "0-script/verify_samples.py",
+      "pdf_style": "full-spectrum",
+      "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
+      "pages": 20,
+      "readme": "lesson-02-csharp-language-essentials/README.md"
+    },
+    "lesson-03-types-oop-generics/lesson-03-types-oop-generics.pdf": {
+      "kind": "generated",
+      "spec": "1-analysis/spec_lesson-pdfs/lesson-03-types-oop-generics.md",
+      "builder": "0-script/build_lessons.py",
+      "data": [
+        "0-script/lessons/lesson_03.py",
+        "0-script/lessons/roster.py",
+        "0-script/_lib/lesson_kit.py"
+      ],
+      "sources": [
+        "lesson-03-types-oop-generics/samples/"
+      ],
+      "gate": "0-script/verify_samples.py",
+      "pdf_style": "full-spectrum",
+      "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
+      "pages": 22,
+      "readme": "lesson-03-types-oop-generics/README.md"
+    },
+    "lesson-04-linq-collections-functional/lesson-04-linq-collections-functional.pdf": {
+      "kind": "generated",
+      "spec": "1-analysis/spec_lesson-pdfs/lesson-04-linq-collections-functional.md",
+      "builder": "0-script/build_lessons.py",
+      "data": [
+        "0-script/lessons/lesson_04.py",
+        "0-script/lessons/roster.py",
+        "0-script/_lib/lesson_kit.py"
+      ],
+      "sources": [
+        "lesson-04-linq-collections-functional/samples/"
+      ],
+      "gate": "0-script/verify_samples.py",
+      "pdf_style": "full-spectrum",
+      "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
+      "pages": 19,
+      "readme": "lesson-04-linq-collections-functional/README.md"
+    },
+    "lesson-05-async-concurrency/lesson-05-async-concurrency.pdf": {
+      "kind": "generated",
+      "spec": "1-analysis/spec_lesson-pdfs/lesson-05-async-concurrency.md",
+      "builder": "0-script/build_lessons.py",
+      "data": [
+        "0-script/lessons/lesson_05.py",
+        "0-script/lessons/roster.py",
+        "0-script/_lib/lesson_kit.py"
+      ],
+      "sources": [
+        "lesson-05-async-concurrency/samples/"
+      ],
+      "gate": "0-script/verify_samples.py",
+      "pdf_style": "full-spectrum",
+      "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
+      "pages": 20,
+      "readme": "lesson-05-async-concurrency/README.md"
+    },
+    "lesson-06-vbnet-legacy-estates/lesson-06-vbnet-legacy-estates.pdf": {
+      "kind": "generated",
+      "spec": "1-analysis/spec_lesson-pdfs/lesson-06-vbnet-legacy-estates.md",
+      "builder": "0-script/build_lessons.py",
+      "data": [
+        "0-script/lessons/lesson_06.py",
+        "0-script/lessons/roster.py",
+        "0-script/_lib/lesson_kit.py"
+      ],
+      "sources": [
+        "lesson-06-vbnet-legacy-estates/samples/"
+      ],
+      "gate": "0-script/verify_samples.py",
+      "pdf_style": "full-spectrum",
+      "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
+      "pages": 16,
+      "readme": "lesson-06-vbnet-legacy-estates/README.md"
+    },
+    "lesson-07-solutions-monorepo-build/lesson-07-solutions-monorepo-build.pdf": {
+      "kind": "generated",
+      "spec": "1-analysis/spec_lesson-pdfs/lesson-07-solutions-monorepo-build.md",
+      "builder": "0-script/build_lessons.py",
+      "data": [
+        "0-script/lessons/lesson_07.py",
+        "0-script/lessons/roster.py",
+        "0-script/_lib/lesson_kit.py"
+      ],
+      "sources": [
+        "lesson-07-solutions-monorepo-build/samples/"
+      ],
+      "gate": "0-script/verify_samples.py",
+      "pdf_style": "full-spectrum",
+      "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
+      "pages": 19,
+      "readme": "lesson-07-solutions-monorepo-build/README.md"
+    },
+    "lesson-08-aspnet-core-web-apis/lesson-08-aspnet-core-web-apis.pdf": {
+      "kind": "generated",
+      "spec": "1-analysis/spec_lesson-pdfs/lesson-08-aspnet-core-web-apis.md",
+      "builder": "0-script/build_lessons.py",
+      "data": [
+        "0-script/lessons/lesson_08.py",
+        "0-script/lessons/roster.py",
+        "0-script/_lib/lesson_kit.py"
+      ],
+      "sources": [
+        "lesson-08-aspnet-core-web-apis/samples/"
+      ],
+      "gate": "0-script/verify_samples.py",
+      "pdf_style": "full-spectrum",
+      "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
+      "pages": 20,
+      "readme": "lesson-08-aspnet-core-web-apis/README.md"
+    },
+    "lesson-09-data-access-efcore/lesson-09-data-access-efcore.pdf": {
+      "kind": "generated",
+      "spec": "1-analysis/spec_lesson-pdfs/lesson-09-data-access-efcore.md",
+      "builder": "0-script/build_lessons.py",
+      "data": [
+        "0-script/lessons/lesson_09.py",
+        "0-script/lessons/roster.py",
+        "0-script/_lib/lesson_kit.py"
+      ],
+      "sources": [
+        "lesson-09-data-access-efcore/samples/"
+      ],
+      "gate": "0-script/verify_samples.py",
+      "pdf_style": "full-spectrum",
+      "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
+      "pages": 22,
+      "readme": "lesson-09-data-access-efcore/README.md"
+    },
+    "lesson-10-testing-tdd-coverage/lesson-10-testing-tdd-coverage.pdf": {
+      "kind": "generated",
+      "spec": "1-analysis/spec_lesson-pdfs/lesson-10-testing-tdd-coverage.md",
+      "builder": "0-script/build_lessons.py",
+      "data": [
+        "0-script/lessons/lesson_10.py",
+        "0-script/lessons/roster.py",
+        "0-script/_lib/lesson_kit.py"
+      ],
+      "sources": [
+        "lesson-10-testing-tdd-coverage/samples/"
+      ],
+      "gate": "0-script/verify_samples.py",
+      "pdf_style": "full-spectrum",
+      "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
+      "pages": 21,
+      "readme": "lesson-10-testing-tdd-coverage/README.md"
+    },
+    "lesson-11-security-identity/lesson-11-security-identity.pdf": {
+      "kind": "generated",
+      "spec": "1-analysis/spec_lesson-pdfs/lesson-11-security-identity.md",
+      "builder": "0-script/build_lessons.py",
+      "data": [
+        "0-script/lessons/lesson_11.py",
+        "0-script/lessons/roster.py",
+        "0-script/_lib/lesson_kit.py"
+      ],
+      "sources": [
+        "lesson-11-security-identity/samples/"
+      ],
+      "gate": "0-script/verify_samples.py",
+      "pdf_style": "full-spectrum",
+      "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
+      "pages": 22,
+      "readme": "lesson-11-security-identity/README.md"
+    },
+    "lesson-12-cloud-native-modernization/lesson-12-cloud-native-modernization.pdf": {
+      "kind": "generated",
+      "spec": "1-analysis/spec_lesson-pdfs/lesson-12-cloud-native-modernization.md",
+      "builder": "0-script/build_lessons.py",
+      "data": [
+        "0-script/lessons/lesson_12.py",
+        "0-script/lessons/roster.py",
+        "0-script/_lib/lesson_kit.py"
+      ],
+      "sources": [
+        "lesson-12-cloud-native-modernization/samples/"
+      ],
+      "gate": "0-script/verify_samples.py",
+      "pdf_style": "full-spectrum",
+      "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
+      "pages": 22,
+      "readme": "lesson-12-cloud-native-modernization/README.md"
     }
   }
 }

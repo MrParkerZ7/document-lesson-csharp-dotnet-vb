@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Translates a C# predicate (an expression tree) into a DynamoDB-style filter expression.
+       No AWS SDK dependency: the sample stops at the expression text and its placeholder maps. -->
+</Project>

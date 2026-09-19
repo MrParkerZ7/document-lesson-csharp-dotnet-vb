@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The MotorQuote types. TargetFramework, Nullable and ImplicitUsings come from Directory.Build.props. -->
+</Project>

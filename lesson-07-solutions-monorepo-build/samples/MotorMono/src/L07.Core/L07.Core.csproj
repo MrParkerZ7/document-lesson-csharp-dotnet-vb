@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Nothing else: framework, analyzers and version come from the Directory.* files above. -->
+  <PropertyGroup>
+    <Description>MotorQuote domain types shared by every module.</Description>
+  </PropertyGroup>
+</Project>

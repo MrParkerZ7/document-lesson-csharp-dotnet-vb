@@ -1,0 +1,60 @@
+# Lesson 07 sample workflow for MotorMono. It is NOT active in this repository: GitHub only runs
+# files under .github/workflows/. To use it, copy it there in a repository whose root holds
+# global.json, the root Directory.Build.props (MotorMono imports it) and the MotorMono folder.
+name: motormono
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+  packages: write # dotnet nuget push to GitHub Packages on a version tag
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: MotorMono
+    env:
+      DOTNET_NOLOGO: "1"
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+    steps:
+      #region build
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json # the same SDK as every developer
+          cache: true # NuGet cache keyed on the hash of the lock files
+          cache-dependency-path: "**/packages.lock.json"
+
+      # a tag v1.4.2 ships 1.4.2; every other build ships 1.4.0-ci.<run number>
+      - if: github.ref_type == 'tag'
+        run: echo "VERSION_ARGS=-p:Version=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+      - if: github.ref_type != 'tag'
+        run: echo "VERSION_ARGS=-p:VersionSuffix=ci.${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+
+      # GitHub sets CI=true, so Directory.Build.props switches restore to locked mode
+      - run: dotnet restore MotorMono.slnx
+      - run: dotnet format MotorMono.slnx --verify-no-changes --no-restore
+      - run: dotnet build MotorMono.slnx -c Release --no-restore $VERSION_ARGS -bl:build.binlog
+      - run: dotnet test MotorMono.slnx -c Release --no-build
+      - run: dotnet pack MotorMono.slnx -c Release --no-build $VERSION_ARGS -o packages
+      #endregion
+
+      #region publish
+      - uses: actions/upload-artifact@v7
+        if: always() # keep the binary log of a failed build too
+        with:
+          name: packages-and-binlog
+          path: |
+            MotorMono/packages/*.nupkg
+            MotorMono/build.binlog
+      - if: github.ref_type == 'tag'
+        run: >
+          dotnet nuget push "packages/*.nupkg" --api-key "${{ secrets.GITHUB_TOKEN }}"
+          --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+      #endregion

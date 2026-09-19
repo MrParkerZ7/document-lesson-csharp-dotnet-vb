@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- no reference to L07.Core: it arrives transitively through both of these -->
+    <ProjectReference Include="..\L07.Pricing\L07.Pricing.csproj" />
+    <ProjectReference Include="..\L07.Pricing.Vb\L07.Pricing.Vb.vbproj" />
+  </ItemGroup>
+</Project>

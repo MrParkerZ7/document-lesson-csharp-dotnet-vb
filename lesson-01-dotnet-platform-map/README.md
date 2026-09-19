@@ -8,9 +8,9 @@
 ## You will be able to
 
 - Explain CoreCLR, IL, tiered JIT, ReadyToRun, Native AOT and NuGet in terms of the JVM parts you already know
-- Date any .NET codebase from its project file and target framework moniker, and state its support status
+- Date any .NET codebase from its project file and target framework moniker, state its support status and say which runtime it will start on
 - Say what C#, VB and F# share on one runtime — and where Visual Basic stops (consumption-only)
-- Drive the dotnet CLI the way you drive Gradle, Maven or npm, and choose a deployment mode
+- Drive the dotnet CLI the way you drive Gradle or npm, and combine the publish options
 - Build and run the samples: one C# library consumed by a C# app and a VB app
 
 ## Maps from your stack

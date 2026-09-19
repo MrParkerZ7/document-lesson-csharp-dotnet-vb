@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- VB prefixes every Namespace statement with RootNamespace: the files declare none -->
+    <RootNamespace>MotorQuote.Rating</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- ASP.NET Core is a shared framework: a plain VB library can reference it -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+</Project>

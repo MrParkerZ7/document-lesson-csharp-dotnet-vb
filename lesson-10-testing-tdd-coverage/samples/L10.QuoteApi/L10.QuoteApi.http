@@ -1,0 +1,23 @@
+@HostAddress = http://localhost:5069
+
+# Illustrative rates, not a real tariff. Run the API first: dotnet run --project L10.QuoteApi
+
+# @name create
+POST {{HostAddress}}/quotes
+Content-Type: application/json
+
+{
+  "vehicle": { "make": "Toyota", "model": "Yaris", "year": 2023, "engineCc": 1200,
+               "use": "Private", "sumInsured": { "amount": 600000, "currency": "THB" } },
+  "driver": { "dateOfBirth": "1990-10-01", "licenceYears": 10, "claimsLast5Years": 0 },
+  "coverage": "Class1",
+  "startDate": "2026-10-01"
+}
+
+###
+
+GET {{HostAddress}}/quotes/{{create.response.body.$.id}}
+
+###
+
+POST {{HostAddress}}/quotes/{{create.response.body.$.id}}/accept

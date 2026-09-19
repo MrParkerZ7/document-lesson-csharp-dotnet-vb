@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- MotorQuote domain, a deterministic quote dataset and the dashboard queries.
+       TargetFramework, Nullable and ImplicitUsings come from Directory.Build.props. -->
+</Project>

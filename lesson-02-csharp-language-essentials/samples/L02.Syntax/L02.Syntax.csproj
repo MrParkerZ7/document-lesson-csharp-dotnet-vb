@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- a project-wide import: the MSBuild form of `global using System.Globalization;` -->
+    <Using Include="System.Globalization" />
+    <ProjectReference Include="..\L02.Rating\L02.Rating.csproj" />
+  </ItemGroup>
+</Project>

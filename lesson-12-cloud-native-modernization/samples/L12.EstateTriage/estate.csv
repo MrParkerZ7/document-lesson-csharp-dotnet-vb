@@ -1,0 +1,17 @@
+app,language,framework,kind,signals,traffic,value
+policy-portal,C#,net48,webforms,system-web;session;windows-auth,steady,high
+quote-engine,C#,net472,webapi,system-web,spiky,high
+partner-gateway,C#,net48,wcf,,steady,high
+claims-intake,VB,net48,mvc,system-web;session,steady,high
+broker-desktop,VB,net48,winforms,,internal,medium
+premium-batch,C#,net48,batch,,spiky,high
+renewal-notices,C#,net472,windows-service,msmq,steady,medium
+doc-generator,VB,net40,webapi,com-interop,steady,medium
+agent-commission,VB,vb6,desktop,com-interop,internal,medium
+rates-admin,C#,net8.0,mvc,,internal,medium
+payment-callbacks,C#,net8.0,webapi,,spiky,high
+legacy-reports,VB,net35,webforms,com-interop,internal,none
+hr-leave,-,-,cots,,internal,low
+fx-rates-feed,C#,net472,console,,steady,low
+sms-dispatch,C#,net48,batch,,steady,medium
+vehicle-lookup,C#,net48,webapi,gac,steady,high

@@ -1,0 +1,26 @@
+<Project>
+  <!-- Imported LATE, after the project file, so it sees what every project has set. -->
+  <ItemGroup>
+    <!-- a module that HAS a test project lets it see its internal types -->
+    <InternalsVisibleTo Include="$(MSBuildProjectName).Tests"
+      Condition="Exists('$(MSBuildThisFileDirectory)tests/$(MSBuildProjectName).Tests')" />
+    <!-- an item list built from globs: every project in the mono-repo -->
+    <MotorProject Include="$(MSBuildThisFileDirectory)src/*/*.*proj" />
+    <MotorProject Include="$(MSBuildThisFileDirectory)tests/*/*.*proj" />
+  </ItemGroup>
+
+  <!-- runs only when asked for:  dotnet msbuild <project> -t:ListProjects -->
+  <Target Name="ListProjects">
+    <Message Importance="high" Text="MotorMono: @(MotorProject->Count()) projects" />
+    <Message Importance="high" Text="  %(MotorProject.Filename)%(MotorProject.Extension)" />
+  </Target>
+
+  <!-- hooked into every build of a console app: stamp build facts into the assembly -->
+  <Target Name="StampBuildFacts" BeforeTargets="GetAssemblyAttributes"
+          Condition="'$(OutputType)' == 'Exe'">
+    <ItemGroup>
+      <AssemblyMetadata Include="MotorProjects" Value="@(MotorProject->Count())" />
+      <AssemblyMetadata Include="BuiltFrom" Value="$(MotorMonoBuiltFrom)" />
+    </ItemGroup>
+  </Target>
+</Project>

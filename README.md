@@ -17,6 +17,17 @@ EF Core, testing, Entra ID security, AWS deployment and modernising Windows / II
 | # | Lesson | PDF | Maps from | Samples |
 |---|---|---|---|---|
 | 01 | [The .NET Platform Map](./lesson-01-dotnet-platform-map/README.md) | [pdf](./lesson-01-dotnet-platform-map/lesson-01-dotnet-platform-map.pdf) | JVM · Maven Central · GraalVM native-image | 3 project(s) |
+| 02 | [C# Language Essentials](./lesson-02-csharp-language-essentials/README.md) | [pdf](./lesson-02-csharp-language-essentials/lesson-02-csharp-language-essentials.pdf) | Java 21 · Kotlin · TypeScript syntax | 4 project(s) |
+| 03 | [Types, OOP & Generics](./lesson-03-types-oop-generics/README.md) | [pdf](./lesson-03-types-oop-generics/lesson-03-types-oop-generics.pdf) | Java/Kotlin OOP · SOLID · type erasure | 6 project(s) |
+| 04 | [Collections, LINQ & Functional C#](./lesson-04-linq-collections-functional/README.md) | [pdf](./lesson-04-linq-collections-functional/lesson-04-linq-collections-functional.pdf) | Java Streams · Kotlin collections · TS array methods | 7 project(s) |
+| 05 | [Async, Tasks & Concurrency](./lesson-05-async-concurrency/README.md) | [pdf](./lesson-05-async-concurrency/lesson-05-async-concurrency.pdf) | Kotlin coroutines · Spring WebFlux · Node event loop | 7 project(s) |
+| 06 | [VB.NET for Legacy Estates](./lesson-06-vbnet-legacy-estates/README.md) | [pdf](./lesson-06-vbnet-legacy-estates/lesson-06-vbnet-legacy-estates.pdf) | Java EE / JSP legacy maintenance · polyglot repos | 9 project(s) |
+| 07 | [Solutions, MSBuild & Mono-repos](./lesson-07-solutions-monorepo-build/README.md) | [pdf](./lesson-07-solutions-monorepo-build/lesson-07-solutions-monorepo-build.pdf) | Gradle Kotlin DSL · Maven multi-module · Lerna | 5 project(s) |
+| 08 | [ASP.NET Core Web APIs](./lesson-08-aspnet-core-web-apis/README.md) | [pdf](./lesson-08-aspnet-core-web-apis/lesson-08-aspnet-core-web-apis.pdf) | Spring Boot · NestJS · Express | 6 project(s) |
+| 09 | [Data Access with EF Core](./lesson-09-data-access-efcore/README.md) | [pdf](./lesson-09-data-access-efcore/lesson-09-data-access-efcore.pdf) | JPA/Hibernate · TypeORM · Flyway/Liquibase | 5 project(s) |
+| 10 | [Testing, TDD & 100% Coverage](./lesson-10-testing-tdd-coverage/README.md) | [pdf](./lesson-10-testing-tdd-coverage/lesson-10-testing-tdd-coverage.pdf) | JUnit · Mockito · MockMvc · Postman · BDD | 9 project(s) |
+| 11 | [Security & Identity with Entra ID](./lesson-11-security-identity/README.md) | [pdf](./lesson-11-security-identity/lesson-11-security-identity.pdf) | Spring Security · OAuth2/OIDC · Entra ID / AD B2C | 6 project(s) |
+| 12 | [Cloud-Native .NET on AWS & Modernization](./lesson-12-cloud-native-modernization/README.md) | [pdf](./lesson-12-cloud-native-modernization/lesson-12-cloud-native-modernization.pdf) | AWS Lambda · ECS Fargate · Terraform · GitHub Actions · IIS estates | 7 project(s) |
 <!-- LESSONS:END -->
 
 ## Repository layout

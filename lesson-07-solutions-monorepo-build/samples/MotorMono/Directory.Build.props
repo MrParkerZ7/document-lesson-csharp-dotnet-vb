@@ -1,0 +1,25 @@
+<Project>
+  <!-- MSBuild imports only the NEAREST Directory.Build.props: chain to the one above by hand -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props',
+                                                   '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- one version for every package this mono-repo ships; CI adds a VersionSuffix -->
+    <VersionPrefix>1.4.0</VersionPrefix>
+    <Company>MotorQuote sample</Company>
+    <!-- the same quality gates in every module -->
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- lock files everywhere; on CI (environment variable CI=true) they may not change -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode Condition="'$(CI)' == 'true'">true</RestoreLockedMode>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <!-- Directory.Build.rsp overrides this on command-line builds -->
+    <MotorMonoBuiltFrom Condition="'$(MotorMonoBuiltFrom)' == ''">IDE</MotorMonoBuiltFrom>
+  </PropertyGroup>
+
+  <!-- a convention instead of per-project settings: *.Tests projects never ship -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+</Project>
