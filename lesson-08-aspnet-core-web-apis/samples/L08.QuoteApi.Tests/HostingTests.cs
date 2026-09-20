@@ -76,7 +76,7 @@ public sealed class HostingTests(QuoteApiFactory factory) : IClassFixture<QuoteA
     public void Options_are_bound_from_appsettings_json()
     {
         Assert.Equal(30, factory.Services.GetRequiredService<IOptions<QuoteOptions>>().Value.ValidityDays);
-        Assert.Equal(0.025m, factory.Services.GetRequiredService<IOptions<RatingOptions>>().Value.Class1Rate);
+        Assert.Equal(0.021m, factory.Services.GetRequiredService<IOptions<RatingOptions>>().Value.Class1Rate);
     }
 
     private sealed class PolicyCache(PolicyNumbers numbers)
@@ -88,21 +88,53 @@ public sealed class HostingTests(QuoteApiFactory factory) : IClassFixture<QuoteA
 public sealed class VbRatingTests
 {
     #region vb-rating-test
-    [Theory]
-    [InlineData(36, 10, 0, VehicleUse.Private, 16_114.20)]
-    [InlineData(22, 2, 1, VehicleUse.Private, 29_005.56)]
-    [InlineData(40, 20, 0, VehicleUse.Commercial, 18_531.33)]
+    [Theory]                         // Class 1 on 800,000 THB: the track's canonical tariff
+    [InlineData(36, 10, 0, VehicleUse.Private, 1_800, 9_023.95)]
+    [InlineData(22, 2, 1, VehicleUse.Private, 1_800, 23_462.28)]
+    [InlineData(40, 20, 0, VehicleUse.Commercial, 1_800, 11_279.94)]
+    [InlineData(40, 20, 0, VehicleUse.Commercial, 3_500, 12_182.34)]
     public void Visual_Basic_calculator_prices_the_illustrative_tariff(
-        int age, int licenceYears, int claims, VehicleUse use, double expectedTotal)
+        int age, int licenceYears, int claims, VehicleUse use, int engineCc, double expectedTotal)
     {
         var calculator = new PremiumCalculator(Options.Create(new RatingOptions()));
 
-        var premium = calculator.Calculate(
-            new RatingInput(CoverageClass.Class1, 800_000m, age, licenceYears, claims, use));
+        var premium = calculator.Calculate(new RatingInput(
+            CoverageClass.Class1, 800_000m, age, licenceYears, claims, use, engineCc));
 
         Assert.Equal((decimal)expectedTotal, premium.Total);
     }
+
+    // The canonical tariff declines three or more claims in five years instead of pricing them.
+    [Fact]
+    public void Three_claims_in_five_years_are_declined_rather_than_loaded()
+    {
+        var calculator = new PremiumCalculator(Options.Create(new RatingOptions()));
+
+        var premium = calculator.Calculate(new RatingInput(
+            CoverageClass.Class1, 800_000m, 36, 10, 3, VehicleUse.Private, 1_800));
+
+        Assert.True(premium.IsDeclined);
+        Assert.Equal("3+ claims in 5 years", premium.DeclineReason);
+        Assert.Equal(0m, premium.Total);
+    }
     #endregion
+
+    // The worked example of _curriculum.md "Canonical tariff": Class 1, 550,000 THB, driver 23 with four
+    // claim-free licence years. Every rung of the tariff is exercised, so a drift fails here first.
+    [Fact]
+    public void The_curriculum_worked_example_prices_to_the_published_total()
+    {
+        var calculator = new PremiumCalculator(Options.Create(new RatingOptions()));
+
+        var premium = calculator.Calculate(new RatingInput(
+            CoverageClass.Class1, 550_000m, 23, 4, 0, VehicleUse.Private, 1_800));
+
+        Assert.Equal(11_550.00m, premium.BasePremium);
+        Assert.Equal(8_316.00m, premium.NetPremium);
+        Assert.Equal(33.26m, premium.StampDuty);
+        Assert.Equal(584.45m, premium.Vat);
+        Assert.Equal(8_933.71m, premium.Total);
+    }
 }
 
 /// <summary>Each case boots its own app: before the fix, a failed message stopped the host.</summary>

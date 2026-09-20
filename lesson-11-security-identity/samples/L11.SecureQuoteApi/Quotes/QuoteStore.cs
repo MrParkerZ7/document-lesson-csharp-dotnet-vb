@@ -10,11 +10,21 @@ public sealed record Quote(string QuoteId, string OwnerId, Money Total, QuoteSta
 
 public sealed record QuoteRequest(string Make, int Year, decimal SumInsured);
 
-/// <summary>In-memory quotes. Every premium here is illustrative, not a real tariff.</summary>
+/// <summary>
+/// In-memory quotes. Every premium here is illustrative, not a real tariff: the MotorQuote tariff
+/// shared by every lesson of the track, reduced to what a bare sum insured allows - Class 1, private
+/// use, no loadings and no no-claim discount, because the request carries no driver or claims data.
+/// </summary>
 public sealed class QuoteStore
 {
     private readonly ConcurrentDictionary<string, Quote> _quotes = new();
     private int _lastId = 1000;
+
+    private const decimal Class1Rate = 0.021m;
+
+    // money rounds half away from zero, to the satang - the default (half to even) can lose one
+    private static decimal Round(decimal amount) =>
+        decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
 
     public QuoteStore()
     {
@@ -24,9 +34,9 @@ public sealed class QuoteStore
 
     public Quote Add(string ownerId, decimal sumInsured)
     {
-        var net = decimal.Round(sumInsured * 0.021m, 2);          // illustrative class-1 rate
-        var duty = decimal.Round(net * 0.004m, 2);                 // stamp duty 0.4%
-        var vat = decimal.Round((net + duty) * 0.07m, 2);          // VAT 7% on net + duty
+        var net = Round(sumInsured * Class1Rate);            // base x (1 + no loadings) x (1 - 0%)
+        var duty = Round(net * 0.004m);                     // stamp duty 0.4% of net
+        var vat = Round((net + duty) * 0.07m);              // VAT 7% on net + duty
         var id = $"Q-{Interlocked.Increment(ref _lastId)}";
         var quote = new Quote(id, ownerId, new Money(net + duty + vat), QuoteStatus.Quoted);
         _quotes[id] = quote;

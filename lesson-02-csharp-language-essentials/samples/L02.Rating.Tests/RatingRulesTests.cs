@@ -8,7 +8,7 @@ public class RatingRulesTests
         { CoverageClass.Class1, 11_550m },
         { CoverageClass.Class2Plus, 6_600m },
         { CoverageClass.Class3Plus, 4_950m },
-        { CoverageClass.Class3, 2_400m },
+        { CoverageClass.Class3, 2_200m },
     };
 
     [Theory]
@@ -28,11 +28,8 @@ public class RatingRulesTests
     {
         { 18, 0.20m },
         { 24, 0.20m },
-        { 25, 0.10m },
-        { 29, 0.10m },
-        { 30, 0m },
-        { 69, 0m },
-        { 70, 0.15m },
+        { 25, 0m },
+        { 70, 0m },
     };
 
     [Theory]
@@ -66,10 +63,13 @@ public class RatingRulesTests
 
     // ints and enums ARE valid attribute arguments: express the percentage as an int
     [Theory]
-    [InlineData(1, 0, 0)]
-    [InlineData(2, 0, 20)]
-    [InlineData(4, 0, 30)]
-    [InlineData(5, 0, 40)]
+    [InlineData(0, 0, 0)]
+    [InlineData(1, 0, 20)]
+    [InlineData(2, 0, 25)]
+    [InlineData(3, 0, 30)]
+    [InlineData(4, 0, 40)]
+    [InlineData(5, 0, 50)]
+    [InlineData(9, 0, 50)]
     [InlineData(9, 1, 0)]
     public void NoClaimBonus_grows_with_claim_free_licence_years(int licenceYears, int claims, int percent) =>
         Assert.Equal(percent / 100m,

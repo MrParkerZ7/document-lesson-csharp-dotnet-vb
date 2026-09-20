@@ -1,5 +1,5 @@
 {
-  "measured_on": "2026-09-19",
+  "measured_on": "2026-09-20",
   "sdk": "10.0.401",
   "msbuild": "18.9.11.42413",
   "os": "Windows",
@@ -173,7 +173,7 @@
         "exit": 0
       }
     ],
-    "tests_total": 12,
+    "tests_total": 14,
     "packages": [
       {
         "id": "L07.Core",
@@ -204,7 +204,7 @@
         ]
       }
     ],
-    "binlog_kb": 563
+    "binlog_kb": 571
   },
   "breaks": [
     {
@@ -217,13 +217,13 @@
       "break": "CI=true and a version changed without updating the lock file",
       "exit": 1,
       "code": "NU1004",
-      "message": "The package reference xunit version has changed from [2.9.3, ) to [2.9.2, ).The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."
+      "message": "The package reference xunit.v3.mtp-off version has changed from [4.0.1, ) to [4.0.0, ).The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."
     },
     {
       "break": "a Version attribute left on a PackageReference under CPM",
       "exit": 1,
       "code": "NU1008",
-      "message": "The following PackageReference items cannot define a value for Version: xunit. Projects using Central Package Management must define a Version value on a PackageVersion item. For more information, visit https://aka.ms/nuget/cpm/gettingstarted"
+      "message": "The following PackageReference items cannot define a value for Version: xunit.v3.mtp-off. Projects using Central Package Management must define a Version value on a PackageVersion item. For more information, visit https://aka.ms/nuget/cpm/gettingstarted"
     },
     {
       "break": "a second package source and no packageSourceMapping",

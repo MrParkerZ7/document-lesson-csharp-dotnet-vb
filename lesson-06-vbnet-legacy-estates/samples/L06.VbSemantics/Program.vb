@@ -50,6 +50,13 @@ Module Program
         Console.WriteLine($"18 / 12 = {months / 12}   18 \ 12 = {months \ 12}")
         Console.WriteLine($"18 Mod 12 = {months Mod 12}")
         Console.WriteLine($"CInt(18 / 12) = {CInt(months / 12)}   CInt(11 / 12) = {CInt(11 / 12)}")
+
+        Dim big As Integer = Integer.MaxValue          ' checked unless -removeintchecks
+        Try
+            Console.WriteLine($"Integer.MaxValue + 1  {big + 1}")
+        Catch ex As OverflowException
+            Console.WriteLine($"Integer.MaxValue + 1  {ex.GetType().Name}")
+        End Try
 #End Region
     End Sub
 

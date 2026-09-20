@@ -11,6 +11,7 @@ Module Program
 #Region "conversion"
         Dim conversion =
             From q In quotes
+            Where q.Status <> QuoteStatus.Declined
             Group By q.Coverage Into
                 Quoted = Count(),
                 Accepted = Count(q.IsAccepted)
@@ -52,12 +53,12 @@ Module Program
 
         Dim window = From q In quotes
                      Order By q.Total.Amount
-                     Skip While q.Total.Amount < 8400D
-                     Take While q.Total.Amount < 8600D
+                     Skip While q.Total.Amount < 8600D
+                     Take While q.Total.Amount < 8900D
                      Select q.QuoteId, q.Total.Amount
 #End Region
         Console.WriteLine($"makes          {String.Join(",", makes)}")
-        Console.WriteLine("premiums from 8,400 to under 8,600 THB")
+        Console.WriteLine("premiums from 8,600 to under 8,900 THB")
         For Each x In window
             Console.WriteLine($"  {x.QuoteId}  {x.Amount,9:N2}")
         Next

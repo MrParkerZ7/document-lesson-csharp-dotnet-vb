@@ -41,7 +41,7 @@ public sealed class CrossCuttingTests(QuoteApiFactory factory) : IClassFixture<Q
         Assert.Equal(HttpStatusCode.OK, first.StatusCode);
         var row = await first.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal("Class3Plus", row.GetProperty("coverage").GetString());
-        Assert.Equal(0.012m, row.GetProperty("baseRate").GetDecimal());
+        Assert.Equal(0.009m, row.GetProperty("baseRate").GetDecimal());
         Assert.False(first.Headers.Contains("Age"));
         Assert.True(second.Headers.Contains("Age"));     // served by the output cache
     }

@@ -14,6 +14,8 @@ public class VbAsyncRulesTests
     [InlineData("Rejected/AsyncMain.vb", "BC36934", true)]
     [InlineData("Rejected/SyncLockOnLock.vb", "BC37329", false)]
     [InlineData("Rejected/AwaitForEach.vb", "BC30201", false)]
+    [InlineData("Rejected/AwaitUsing.vb", "BC30201", false)]
+    [InlineData("Rejected/UsingAsyncDisposable.vb", "BC36010", false)]
     public void Vb_compiler_rejects(string file, string expectedId, bool exe)
     {
         var errors = CompileVb(file, exe ? OutputKind.ConsoleApplication : OutputKind.DynamicallyLinkedLibrary);

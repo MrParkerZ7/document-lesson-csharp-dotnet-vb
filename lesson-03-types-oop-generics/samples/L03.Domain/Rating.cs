@@ -5,23 +5,23 @@ namespace L03.Domain;
 #region interfaces
 public interface IRateTable
 {
-    decimal BaseRate(CoverageClass coverage);
+    decimal RateFor(CoverageClass coverage);
 
     // C# 8 default interface method: a class need not implement it, but
     // it does not inherit it: call it through an IRateTable reference
     Money BasePremium(QuoteRequest request) =>
-        request.Vehicle.SumInsured * BaseRate(request.Coverage);
+        request.Vehicle.SumInsured * RateFor(request.Coverage);
 }
 
-/// <summary>Illustrative rates, not a real tariff.</summary>
+/// <summary>The curriculum tariff: illustrative rates, not a real tariff.</summary>
 public sealed class StandardRateTable : IRateTable
 {
-    public decimal BaseRate(CoverageClass coverage) => coverage switch
+    public decimal RateFor(CoverageClass coverage) => coverage switch
     {
-        CoverageClass.Class1 => 0.0250m,
-        CoverageClass.Class2Plus => 0.0160m,
-        CoverageClass.Class3Plus => 0.0120m,
-        CoverageClass.Class3 => 0.0040m,
+        CoverageClass.Class1 => 0.021m,
+        CoverageClass.Class2Plus => 0.012m,
+        CoverageClass.Class3Plus => 0.009m,
+        CoverageClass.Class3 => 0.004m,
         _ => throw new ArgumentOutOfRangeException(nameof(coverage)),
     };
 }
@@ -31,6 +31,9 @@ public sealed class StandardRateTable : IRateTable
 public abstract class RatingRule
 {
     public abstract string Name { get; }
+
+    // virtual too: loadings add up, a discount multiplies
+    public virtual bool IsDiscount => false;
 
     // virtual: a derived class MAY override it
     public virtual decimal Factor(QuoteRequest r) => 1.00m;
@@ -53,31 +56,57 @@ public sealed class YoungDriverLoading : RatingRule
 }
 #endregion
 
+/// <summary>Three or more claims in five years: the tariff declines the quote.</summary>
+public sealed class QuoteDeclinedException(QuoteRequest request)
+    : InvalidOperationException("3+ claims in 5 years")
+{
+    public QuoteRequest Request { get; } = request;
+}
+
 public sealed class ClaimsLoading : RatingRule
 {
     public override string Name => "claims";
 
-    public override decimal Factor(QuoteRequest r) =>
-        1.00m + 0.15m * r.Driver.ClaimsLast5Years;
+    public override decimal Factor(QuoteRequest r) => r.Driver.ClaimsLast5Years switch
+    {
+        0 => 1.00m,
+        1 => 1.10m,
+        2 => 1.25m,
+        _ => throw new QuoteDeclinedException(r),
+    };
 }
 
 public sealed class NoClaimBonus : RatingRule
 {
     public override string Name => "no-claim bonus";
 
-    // 5% per claim-free licence year, capped at 25% (illustrative)
-    public override decimal Factor(QuoteRequest r) =>
-        r.Driver.ClaimsLast5Years == 0
-            ? 1.00m - 0.05m * Math.Min(r.Driver.LicenceYears, 5)
-            : 1.00m;
+    // the only rule that discounts, so the calculator multiplies it in last
+    public override bool IsDiscount => true;
+
+    public override decimal Factor(QuoteRequest r) => ClaimFreeYears(r.Driver) switch
+    {
+        0 => 1.00m,   // 0% off
+        1 => 0.80m,   // 20%
+        2 => 0.75m,   // 25%
+        3 => 0.70m,   // 30%
+        4 => 0.60m,   // 40%
+        _ => 0.50m,   // 50%
+    };
+
+    private static int ClaimFreeYears(Driver driver) =>
+        driver.ClaimsLast5Years == 0 ? driver.LicenceYears : 0;
 }
 
 public sealed class CommercialUseLoading : RatingRule
 {
     public override string Name => "commercial use";
 
-    public override decimal Factor(QuoteRequest r) =>
-        r.Vehicle.Use == VehicleUse.Commercial ? 1.25m : 1.00m;
+    public override decimal Factor(QuoteRequest r) => r.Vehicle switch
+    {
+        { Use: VehicleUse.Private } => 1.00m,
+        { EngineCc: > 3_000 } => 1.35m,
+        _ => 1.25m,
+    };
 }
 
 #region primary-ctor
@@ -91,9 +120,17 @@ public sealed class PremiumCalculator(
 
     public Premium Calculate(QuoteRequest request)
     {
-        var net = rates.BasePremium(request); // captured
+        var loadings = 0m;
+        var discount = 1.00m;
         foreach (var rule in _rules)
-            net *= rule.Factor(request);
+            if (rule.IsDiscount)
+                discount *= rule.Factor(request);
+            else
+                loadings += rule.Factor(request) - 1.00m;
+
+        // one rounding, on the tariff's own composition
+        var net = rates.BasePremium(request)   // captured
+                  * ((1.00m + loadings) * discount);
         return new Premium(net);
     }
 }

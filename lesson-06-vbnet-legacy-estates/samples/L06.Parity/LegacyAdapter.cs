@@ -16,8 +16,8 @@ public static class LegacyAdapter
             r.CoverCode, r.SumInsured,
             r.DateOfBirth.ToDateTime(TimeOnly.MinValue),
             r.StartDate.ToDateTime(TimeOnly.MinValue),
-            r.LicenceMonths, r.ClaimFreeYears, r.Claims,
-            commercial: r.Commercial,
+            r.LicenceMonths, r.Claims,
+            commercial: r.Commercial, engineCc: r.EngineCc,
             declineReason: ref declineReason);
         reason = declineReason;
         return premium == -1 ? null : premium;   // -1 meant "declined"

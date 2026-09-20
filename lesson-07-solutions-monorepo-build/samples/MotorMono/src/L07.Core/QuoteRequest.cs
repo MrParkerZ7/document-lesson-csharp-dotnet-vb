@@ -22,4 +22,5 @@ public sealed record QuoteRequest(
     int DriverAge,
     int ClaimFreeYears,
     int ClaimsLast5Years,
-    VehicleUse Use = VehicleUse.Private);
+    VehicleUse Use = VehicleUse.Private,
+    int EngineCc = 1_600);

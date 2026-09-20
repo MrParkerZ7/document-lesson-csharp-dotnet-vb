@@ -80,7 +80,7 @@ using (var tracked = new SqliteDb().Seed(20))
     var commands = await Commands(tracked, async db =>
     {
         #region expire-tracked
-        // SELECT: 10 rows loaded and tracked
+        // SELECT: 9 rows loaded and tracked
         var stale = await db.Quotes
             .Where(q => q.Status == QuoteStatus.Quoted
                      && q.ValidUntil < QuoteSeed.Today)

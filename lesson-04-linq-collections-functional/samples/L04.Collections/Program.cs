@@ -43,13 +43,14 @@ Console.WriteLine("3. frozen lookup table");
 FrozenDictionary<CoverageClass, decimal> baseRates =
     new Dictionary<CoverageClass, decimal>
     {
-        [CoverageClass.Class1] = 0.022m,
-        [CoverageClass.Class2Plus] = 0.016m,
-        [CoverageClass.Class3Plus] = 0.012m,
+        [CoverageClass.Class1] = 0.021m,
+        [CoverageClass.Class2Plus] = 0.012m,
+        [CoverageClass.Class3Plus] = 0.009m,
+        [CoverageClass.Class3] = 0.004m,
     }.ToFrozenDictionary();
 
 Console.WriteLine($"  Class2Plus base rate  {baseRates[CoverageClass.Class2Plus]}");
-Console.WriteLine($"  has a Class3 rate?    {baseRates.ContainsKey(CoverageClass.Class3)}");
+Console.WriteLine($"  classes with a rate   {baseRates.Count}");
 #endregion
 
 Console.WriteLine("4. deferred execution");
@@ -74,11 +75,11 @@ Console.WriteLine($"  ToList + 3 reads  calls = {calls}");
 Console.WriteLine($"  ({count} accepted, first {first.QuoteId})");
 
 #region captured
-var threshold = 10_000m;
+var threshold = 4_000m;
 var pricey = quotes.Where(q => q.Total.Amount > threshold);
 Console.WriteLine($"  > threshold, run 1  {pricey.Count()}");
 
-threshold = 12_000m; // the lambda captured the VARIABLE
+threshold = 6_000m; // the lambda captured the VARIABLE
 Console.WriteLine($"  > threshold, run 2  {pricey.Count()}");
 #endregion
 

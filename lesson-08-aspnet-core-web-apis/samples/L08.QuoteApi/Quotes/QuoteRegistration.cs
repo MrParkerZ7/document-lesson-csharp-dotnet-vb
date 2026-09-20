@@ -14,10 +14,10 @@ public sealed class QuoteOptions
     public string Currency { get; set; } = "THB";
 }
 
-public static class QuoteModule
+public static class QuoteRegistration
 {
     #region register
-    public static IServiceCollection AddQuoteModule(
+    public static IServiceCollection AddQuoteFeature(
         this IServiceCollection services,
         IConfiguration config)
     {

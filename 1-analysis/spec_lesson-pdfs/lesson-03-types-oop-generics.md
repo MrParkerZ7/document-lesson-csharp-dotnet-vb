@@ -13,6 +13,18 @@ operators — then the same ideas as architecture: a generic multi-format report
 Basic, with the C#/VB language boundary pinned by compiler tests. All premiums use the MotorQuote rules and are
 labelled illustrative, not a real tariff.
 
+**Tariff.** Every premium in this lesson comes from the curriculum's canonical tariff (`_curriculum.md` § "Canonical
+tariff — one tariff for the whole track"): Class 1 2.1% · Class 2+ 1.2% · Class 3+ 0.9% · Class 3 0.4% of the sum
+insured; loadings added together (young driver +20%, one claim +10%, two +25%, commercial +25% or +35% over
+3,000 cc); no-claim ladder 0/20/25/30/40/50% on `ClaimsLast5Years == 0 ? LicenceYears : 0`; one rounding of
+`base × (1 + Σ loadings) × (1 − discount)`; stamp duty 0.4% of net, VAT 7% of net + duty, all `decimal.Round(…, 2,
+MidpointRounding.AwayFromZero)`. **No deliberate variant** — the lesson implements the table exactly. Three or more
+claims in five years declines the quote; because this lesson teaches types and exceptions, `ClaimsLoading` throws
+`QuoteDeclinedException` (declared in `L03.Domain/Rating.cs`) rather than setting `QuoteStatus.Declined`, and
+"Before you start" says so and names the data-shaped alternative. The interface member that returns a *rate* is
+named `RateFor(CoverageClass)` so it does not collide with lesson 02's money-returning `BaseRate`; the default
+interface method `BasePremium(QuoteRequest)` returns `Money` and is what the calculator calls.
+
 ## 2 · Ownership & cadence
 
 Owner **claude**, regenerable. Re-verify every November (a new C# ships with each .NET major): the C# 15 preview
@@ -30,7 +42,7 @@ re-run `VbCompilerTests`. Re-capture `TOUR_OUT` / `VB_OUT` whenever a console sa
 | — | Contents | `toc` depth 2 (fills page 1) · html style (keep `h2` and callout headings with their content, links break at word boundaries, compact Contents lines) · an empty block with `break-before:page` so §1 starts on page 2 |
 | 1 | Why the type system is where Java instincts break | story (4 ¶, scope boundaries to 02/04/08, C# 14 date with VERIFIED + link) · `kpi` 1.1 (5 tiles) · `legend(T_CS, T_RUNTIME)` · info callout "Before you start" (4, one explains the VERIFIED / ESTIMATE / MEASURED chips) |
 | 2 | Five kinds of type — and where their bytes live | story (4 ¶) · cards 2.1 (2 cards: class, struct) + "(continued)" band (3 cards: record, record struct, enum; `toc: False`) · mermaid 2.2 flowchart (three arrays of 1,000 amounts) · code 2.3 (`Money`) · code 2.4 (`TypesTour#copy-trap`: a struct read from a list, `default(Money)`) · chartrow 2.5 bar (bytes for 1,000 amounts) + 2.6 bar (methods emitted) · mermaid 2.7 flowchart (which kind of type — MotorQuote decisions) · mapping 2.8 (19 rows) |
-| 3 | Members — properties, construction and the C# 14 field keyword | story (4 ¶) · code 3.1 (`Quote`: required, init, `field`) · mermaid 3.2 stateDiagram-v2 (quote lifecycle, starts at `Quoted`) · compare 3.3 (Kotlin named arguments ↔ C# object initializer, `Samples.cs#object-initializer`) · compare 3.4 (Kotlin constructor ↔ C# primary constructor) · table 3.5 (6 property forms) |
+| 3 | Members — properties, construction and the C# 14 field keyword | story (4 ¶) · code 3.1 (`Quote`: required, init, `field`) · mermaid 3.2 stateDiagram-v2 (quote lifecycle, starts at `Quoted`) · compare 3.3 (Kotlin named arguments ↔ C# object initializer, `Samples.cs#object-initializer`) · compare 3.4 (Kotlin constructor ↔ C# primary constructor; both sides compose the canonical tariff identically — loadings added, discount multiplied) · table 3.5 (6 property forms) |
 | 4 | Inheritance and interfaces — methods are non-virtual by default | story (4 ¶) · compare 4.1 (Java ↔ C# rule hierarchy) · compare 4.2 (C# calls ↔ captured output) · mermaid 4.3 flowchart (which method runs) · code 4.4 (default interface method) · code 4.5 (static abstract members) · table 4.6 (inheritance keywords: Java, Kotlin, C#, VB — 9 rows) · code 4.7 (the same hierarchy in VB, member for member) |
 | 5 | Generics — reified, constrained and variant | story (3 ¶) · chart 5.1 bar (bytes to store 1,000 ints) · compare 5.2 (Java erasure workaround ↔ C# `T.Parse`) · compare 5.3 (Kotlin ↔ C# variance) · code 5.4 (generic math `Sum`) · table 5.5 (8 constraints) · code 5.6 (`(Of T As …)` in VB, `Program.vb#vb-generic`) |
 | 6 | Extension members, equality and operators | story (4 ¶) · compare 6.1 (Kotlin enum class ↔ C# 14 extension block) · code 6.2 (classic `this`-parameter extension, `Extensions.cs#classic-extension`) · compare 6.3 (hand-written `IEquatable` ↔ record with replaced equality) · code 6.4 (boxes, `==`, broken hash code) |
@@ -58,11 +70,11 @@ Check yourself and the footer).
   over declared methods + constructors. Because the charts are parsed from the same text as panel 8.2, they cannot
   disagree with it. `TOUR_OUT` and `VB_OUT` were compared against a fresh run of both consoles on 2026-09-20: identical.
 - **KPI "Lesson 03 tests"** and chart 8.5 — MEASURED at build by `_test_cases_by_class()`: `[Fact]` = 1, each
-  `[InlineData(` = 1, grouped by `public class`. The build-time total (71) equals `dotnet test -c Release` on the
-  build machine: 42 in `L03.Domain.Tests` + 29 in `L03.Reports.Tests`. Chart 8.5 shows the five largest classes
-  and combines the rest into one "N other classes" bar (said in its caption).
+  `[InlineData(` = 1, grouped by `public class`. The build-time total (80) equals `dotnet test -c Release` on the
+  build machine on 2026-09-20: 51 in `L03.Domain.Tests` + 29 in `L03.Reports.Tests`. Chart 8.5 shows the five
+  largest classes and combines the rest into one "N other classes" bar (said in its caption).
 - **KPI "Lesson 03 samples"**, chart 8.4 and its note — `loc()` over every `.cs` / `.vb` file per project (MEASURED);
-  the note's two totals are the two test projects (471 lines at the last build) vs the two libraries they test (403).
+  the note's two totals are the two test projects (514 lines at the last build) vs the two libraries they test (437).
   The note states that line counts are not coverage and points to lesson 10, which measures coverage.
 - **Table 7.6** — MEASURED by compilation: every row is an `InlineData` case in
   `L03.Reports.Tests/VbCompilerTests.cs`, which compiles Visual Basic (`Option Strict On`) against the lesson
@@ -82,9 +94,17 @@ Check yourself and the footer).
 - **Panel 4.2 output, panel 8.2, panel 8.3, and "prints …" statements in notes 4.4, 4.7, 5.2, 5.4, 5.6, 6.4** —
   captured from real runs of `L03.TypesTour` and `L03.VbInterop` (Release) on the build machine; both samples fix the
   culture to invariant and use no clock or randomness.
-- **Premium figures** (11,475.00 net · 45.90 stamp duty · 806.46 VAT · 12,327.36 total; 15,319.23; 27,646.59) —
-  computed by the samples and asserted in `PremiumTests` / `ReportServiceTests`; illustrative rates, labelled so in
-  "Before you start".
+- **Premium figures** — computed by the samples from the canonical tariff (§1) and asserted in `PremiumTests` /
+  `ReportServiceTests`; illustrative rates, labelled so in "Before you start". The figures the PDF prints:
+  the young-driver Class 1 quote (450,000 × 2.1% = 9,450.00 base, +20% young driver, −30% no-claim for 3 claim-free
+  years) is **7,938.00** net · **31.75** duty · **557.88** VAT · **8,527.63** total; the commercial Class 2+ pickup
+  (620,000 × 1.2% = 7,440.00 base, +10% one claim and +25% commercial *added*, no discount) is **10,044.00** net ·
+  **10,790.07** total; the two-quote report totals **19,317.70**. `9,450.00 THB` in note 4.4 is the default
+  interface method's `BasePremium`. `PremiumTests.The_worked_example_of_the_curriculum_tariff_holds` re-computes the
+  curriculum's own worked example (550,000 Class 1, aged 23, 4 claim-free years → 8,316.00 net · 33.26 duty ·
+  584.45 VAT · **8,933.71** total), so a drift from the shared tariff fails the build rather than the reader.
+  `PremiumTests.Three_claims_in_five_years_declines_the_quote` asserts the `QuoteDeclinedException` and its message
+  "3+ claims in 5 years"; `DispatchTests` pins the whole no-claim ladder and the claims loading as theories.
 - **Compiler diagnostics quoted in prose** — VERIFIED against "Versioning with the Override and New Keywords" and
   reproduced with a throw-away C# project against SDK 10.0.401: leaving out `override` on a matching member of a
   *virtual* base member compiles with warning CS0114 and hides the base member (CS0108 is the same warning for a
@@ -133,7 +153,9 @@ callout headings with their content and lets link text break at word boundaries 
 Pagination: an empty `break-before:page` block after the Contents starts §1 on page 2, so its heading is not stranded
 at the foot of page 1. Panels 3.1, 4.4, 4.7, 6.1, 7.7 and 8.2 pass `keep=True`, so they are not cut mid-declaration
 even though they are longer than the kit's keep threshold. The price is foot gaps of at most about a quarter of a page
-(the largest: page 20, where panel 8.3 jumps, 24 %; then pages 9, 6 and 14, 13–18 %). Panel 7.2 and table 4.6 still
+(measured with pymupdf on the 2026-09-20 build: page 20 27 %, where kept panel 8.3 jumps; then pages 6 19 %, 14 15 %,
+11 13 % and 19 13 % — every page well inside the standard's one-third limit, and only the last page, 22, is emptier).
+Panel 7.2 and table 4.6 still
 continue on the next page (2.8 too, with its header repeated); keeping 7.2 and 7.6 whole as well pushed the lesson to
 23 pages. The 2.3 note, the 2.2 caption and the 2.4 note are worded so 2.4's note does not split across pages 4–5. The
 two long region names in compare headers were shortened (`Extensions.cs`, region `vb-csv`) so no header truncates.
@@ -146,12 +168,14 @@ Compare sides ≤ 62 characters, code panels ≤ 100 (no width warnings).
 - `L03.Domain` — C# library: `Money` (readonly record struct + `IAdditionOperators`), `QuoteId` / `PolicyNumber`
   (static abstract `IIdentifier<TSelf>`), `Ids` (reified generic parsing), `Vehicle` / `Driver` / `QuoteRequest` /
   `Premium` / `Policy` records, `Quote` (required / init / `field`), `IRateTable` (default interface method),
-  `RatingRule` hierarchy (virtual vs hidden), `PremiumCalculator` (primary constructor), `Extensions.cs`
+  `RatingRule` hierarchy (virtual vs hidden, with a virtual `IsDiscount` so loadings add and the bonus multiplies),
+  the four canonical rules, `QuoteDeclinedException`, `PremiumCalculator` (primary constructor), `Extensions.cs`
   (`CoverageClassExtensions`: C# 14 extension blocks; `DriverExtensions`: a classic extension method), `Vin` /
-  `VinRecord` / `BrokenVin` (equality), `Totals.Sum` (generic math), `Samples`.
+  `VinRecord` / `BrokenVin` (equality), `Totals.Sum` (generic math), `Samples` (`YoungDriver`, `CommercialPickup`,
+  `ThreeClaims`, `Calculator`, `Quote`).
 - `L03.Reports` — C# library: `Report` / `QuoteReport`, `IReportRenderer<in T>`, `IReportSource<out T>`,
   `ReportRenderer<T>` (template method), CSV / text / JSON / summary-card renderers, `ReportService<T>`.
-- `L03.Domain.Tests` (xUnit v2, 42 cases) and `L03.Reports.Tests` (xUnit v2 + `Microsoft.CodeAnalysis.VisualBasic`
+- `L03.Domain.Tests` (xUnit v2, 51 cases) and `L03.Reports.Tests` (xUnit v2 + `Microsoft.CodeAnalysis.VisualBasic`
   5.9.0, 29 cases including `VbCompilerTests`).
 - `L03.TypesTour` — C# console printing every measurement (including the `Tally` struct behind panel 2.4);
   `L03.VbInterop` — VB console consuming the records, operators and required members, a VB
@@ -182,6 +206,13 @@ Sources (all linked in the PDF):
 ## 7 · Invariants
 
 - Every premium is illustrative, not a real tariff; the lesson says so before the first figure.
+- **The canonical tariff is not this lesson's to change.** `StandardRateTable.RateFor`, `YoungDriverLoading`,
+  `ClaimsLoading`, `NoClaimBonus`, `CommercialUseLoading` and `Premium`'s duty/VAT must equal `_curriculum.md`
+  § "Canonical tariff" exactly; `PremiumTests.The_worked_example_of_the_curriculum_tariff_holds` fails the build if
+  any of them drifts. A rate that returns money keeps a different name from one that returns a rate, so lesson 02's
+  `BaseRate(CoverageClass, Money)` and this lesson's `RateFor(CoverageClass)` never look like the same member.
+- Three or more claims declines: `ClaimsLoading` throws `QuoteDeclinedException`, never returns a factor; the
+  exception type lives in `L03.Domain` so the lesson owns its own decline without reaching into another lesson.
 - `TOUR_OUT` is the single source for the byte and method figures: charts 2.5 / 2.6 / 5.1, diagram 2.2, the cards and
   the KPI tiles parse it, so re-capturing the tour output updates all of them together.
 - Table 7.6 may only cite error ids asserted in `VbCompilerTests.cs` (enforced by `_vb_limits()` at build).
@@ -212,6 +243,11 @@ Sources (all linked in the PDF):
   in this lesson (lesson 08 owns container behaviour).
 - ⚠ Inline Java and Kotlin panels (3.3, 4.1, 5.2, 5.3, 6.1) are not compiled.
 - ⚠ Panel 7.2 (a long panel), table 4.6 (two rows) and the concept map 2.8 continue on the next page; page 20 ends
-  about a quarter empty because kept panel 8.3 jumps.
+  about 27 % empty because kept panel 8.3 jumps.
+- ⚠ The decline path is taught only by a test (`Three_claims_in_five_years_declines_the_quote`) and by the
+  `ClaimsLoading` arm visible in panel 4.1's C# side — there is no dedicated PDF panel for it, because §4 is about
+  dispatch, not tariff rules. `Samples.ThreeClaims()` exists so a reader can reproduce it in one line.
+- ⚠ Table 4.6's `Shadows` row now carries the "hides every overload of the name" caveat and panel 4.7's note repeats
+  it with `ref(6)`; the demonstration itself has a single overload, so the caveat is stated, not proved by a sample.
 - ⚠ §7 spends about two and a half pages on the Visual Basic boundary (7.4–7.8) although lesson 06 owns VB
   semantics; table 7.6 is the single place that lists each limit, the notes point to it instead of repeating it.

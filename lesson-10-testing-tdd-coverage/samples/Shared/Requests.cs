@@ -15,8 +15,9 @@ public static class Requests
         int age = 36,
         int licenceYears = 10,
         int claims = 0,
-        VehicleUse use = VehicleUse.Private) =>
-        new(new Vehicle("Toyota", "Yaris", 2023, 1200, use, new Money(sumInsured, "THB")),
+        VehicleUse use = VehicleUse.Private,
+        int engineCc = 1200) =>
+        new(new Vehicle("Toyota", "Yaris", 2023, engineCc, use, new Money(sumInsured, "THB")),
             new Driver(Start.AddYears(-age), licenceYears, claims),
             coverage,
             Start);

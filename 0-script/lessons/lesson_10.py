@@ -200,13 +200,13 @@ def feature_scenarios(*relative_dirs):
 
 
 # Test-case counts and scores captured from the real runs shown in 9.2 on the build machine.
-CASES = [("C# unit tests", 28), ("VB unit tests", 8), ("Gherkin scenarios", 5),
+CASES = [("C# unit tests", 33), ("VB unit tests", 8), ("Gherkin scenarios", 5),
          ("In-memory API tests", 3), ("Weak-suite demo", 2)]
-STRONG_MUT, WEAK_MUT = 90.91, 11.36           # Stryker.NET mutation scores, %
-MUT_TESTED, MUT_IGNORED, MUT_COMPILE = 44, 4, 4
-STRONG_KILLED, STRONG_SURVIVED = 40, 4
-WEAK_KILLED, WEAK_SURVIVED = 5, 39
-CUT_LINE, CUT_BRANCH = 98.73, 96.55           # coverage with one test deleted
+STRONG_MUT, WEAK_MUT = 91.49, 8.51            # Stryker.NET mutation scores, %
+MUT_TESTED, MUT_IGNORED, MUT_COMPILE = 47, 4, 4
+STRONG_KILLED, STRONG_SURVIVED = 43, 4
+WEAK_KILLED, WEAK_SURVIVED = 4, 43
+CUT_LINE, CUT_BRANCH = 98.86, 97.14           # coverage with one test deleted
 
 RED_OUTPUT = r"""
 # NoClaimBonus.DiscountFor exists but still throws NotImplementedException
@@ -234,7 +234,7 @@ GATE_OUTPUT = r"""
 # one test deleted: the (CoverageClass)99 arm of BaseRate is no longer reached
 dotnet test L10.Pricing.Tests
 
-Passed!  - Failed: 0, Passed: 27, Skipped: 0, Total: 27, Duration: 89 ms
+Passed!  - Failed: 0, Passed: 32, Skipped: 0, Total: 32, Duration: 92 ms
   [coverlet]
   Calculating coverage result...
    Generating report '.build/artifacts/coverage/L10.Pricing.Tests/coverage.cobertura.xml'
@@ -242,7 +242,7 @@ Passed!  - Failed: 0, Passed: 27, Skipped: 0, Total: 27, Duration: 89 ms
 +-------------+--------+--------+--------+
 | Module      | Line   | Branch | Method |
 +-------------+--------+--------+--------+
-| L10.Pricing | 98.73% | 96.55% | 100%   |
+| L10.Pricing | 98.86% | 97.14% | 100%   |
 +-------------+--------+--------+--------+
 
 coverlet.msbuild.targets(73,5): error : The total line coverage is below the specified 100
@@ -278,20 +278,20 @@ PASS  web         5.0s  L10.QuoteApi/L10.QuoteApi.csproj
 9/9 sample projects passed
 
 # 2 · dotnet test L10.Pricing.Tests
-Passed!  - Failed: 0, Passed: 28, Skipped: 0, Total: 28, Duration: 91 ms
+Passed!  - Failed: 0, Passed: 33, Skipped: 0, Total: 33, Duration: 91 ms
 | Module      | Line | Branch | Method |
 | L10.Pricing | 100% | 100%   | 100%   |
 
 # 3 · dotnet run --project L10.Pricing.Tests.Mtp
 Test run summary: Passed! - L10.Pricing.Tests.Mtp.dll (net10.0|x64)
-  total: 28   failed: 0   succeeded: 28   skipped: 0   duration: 320ms
+  total: 33   failed: 0   succeeded: 33   skipped: 0   duration: 306ms
 
 # 4 · dotnet stryker, in each .Mtp project
-[INF] 44 total mutants will be tested
-Killed:   40      Survived:  4      Timeout:   0
-[INF] The final mutation score is 90.91 %
-Killed:    5      Survived: 39      Timeout:   0
-[INF] The final mutation score is 11.36 %
+[INF] 47 total mutants will be tested
+Killed:   43      Survived:  4      Timeout:   0
+[INF] The final mutation score is 91.49 %
+Killed:    4      Survived: 43      Timeout:   0
+[INF] The final mutation score is 8.51 %
 [WRN] Final mutation score is below threshold break. Crashing...
 """
 
@@ -502,7 +502,11 @@ def blocks():
              "<code>xunit.v3</code> takes the release's default MTP version, while "
              "<code>xunit.v3.mtp-off</code> explicitly disables MTP support so the project runs under VSTest — "
              "package variants that arrived in v3 build 3.2.0 (" + XUNITMTP + "). Both suites in this lesson "
-             "are built twice, once each way, from the same source files.</p>"
+             "are built twice, once each way, from the same source files. The test projects in the other "
+             "lessons of this track that have one (02-06, 08, 09, 11 and 12) still reference xUnit v2 "
+             "(<code>xunit</code> 2.9.3): the <code>[Fact]</code>, <code>[Theory]</code> and <code>Assert</code> "
+             "calls they show read the same in v3, so what changes is the project file - an <code>Exe</code> and "
+             "the <code>xunit.v3</code> packages - and lesson 07 publishes the v3 versions for a mono-repo.</p>"
              "<p><b>On the .NET 10 SDK, <code>dotnet test</code> itself has two modes, and the old bridge "
              "between them is being retired.</b> VSTest mode is still the default. MTP mode is new in the "
              ".NET 10 SDK and is switched on in <code>global.json</code> with "
@@ -694,18 +698,44 @@ def blocks():
         {"type": "table", "heading": "3.4 · The rating sheet the theory asserts — worked by hand first",
          "cols": ["Scenario", "Sum insured · class", "Loading", "No-claim bonus", "Total, THB"],
          "rows": [
-             ["Standard — 36, 10 claim-free years", "600,000 · Class 1", "none", "50%", "<b>6,445.68</b>"],
+             ["Standard — 36, 10 claim-free years", "600,000 · Class 1", "none", "50%", "<b>6,767.96</b>"],
              ["Young — 23, one claim, 3 licence years", "600,000 · Class 1", "+20% age, +10% claim", "none",
-              "<b>16,759.41</b>"],
-             ["Commercial — 45, four claims", "400,000 · Class 3", "+30% claims (capped), +25% use", "none",
-              "<b>3,330.91</b>"],
+              "<b>17,596.71</b>"],
+             ["Commercial — 45, two claims", "400,000 · Class 3", "+25% claims, +25% use", "none",
+              "<b>2,578.27</b>"],
+             ["Heavy — 45, 3,500 cc, no claims", "400,000 · Class 3", "+35% use — over 3,000 cc", "50%",
+              "<b>1,160.22</b>"],
              ["Boundary — turns 25 on the start date", "600,000 · Class 1", "none — 25 is not under 25", "50%",
-              "<b>6,445.68</b>"]]},
-        tnote("<b>Every total is net premium + 0.4% stamp duty, rounded up to the baht, + 7% VAT on the sum "
-              "of the two.</b> The premiums are illustrative, not a real tariff — what matters is that each "
-              "one was worked out from the sheet <i>before</i> the code existed. The fourth row was added "
-              "later, <i>after</i> the mutation run in §7 showed that changing <code>&lt; 25</code> to "
-              "<code>&lt;= 25</code> broke nothing any test could see."),
+              "<b>6,767.96</b>"],
+             ["Engine — exactly 3,000 cc, commercial", "400,000 · Class 3",
+              "+25% use — 3,000 is not over 3,000", "50%", "<b>1,074.28</b>"],
+             ["Track — 23, four claim-free years", "550,000 · Class 1", "+20% age", "40%",
+              "<b>8,933.71</b>"],
+             ["Declined — 36, three claims", "600,000 · Class 1", "the tariff refuses, it does not load", "—",
+              "<b>no premium</b>"]]},
+        tnote("<b>Every total is net premium + 0.4% stamp duty + 7% VAT on the sum of the two, each rounded "
+              "to the satang — the canonical tariff the whole track prices against (see the curriculum).</b> "
+              "The rates are illustrative, not a real tariff; what matters is that every total was worked out "
+              "from the sheet <i>before</i> the code existed. Row 7 is the curriculum's own worked example, so "
+              "this suite fails the moment this lesson's arithmetic drifts from the other eleven. Rows 5 and 6 "
+              "are the two boundary cases, and they are why §7 reports every relational mutant dead — they are "
+              "the rows that catch <code>&lt; 25</code> loosened to <code>&lt;= 25</code> and "
+              "<code>&gt; 3_000</code> loosened to <code>&gt;= 3_000</code>. The last row is not a price at all: "
+              "three claims in five years is a declined quote, which is 3.5."),
+
+        pcode(from_sample(CALC, "claims-guard"),
+              "3.5 · The rule that refuses — a guard, not a loading",
+              "<b>The tariff stops pricing at three claims, so the method has no arm that returns a number "
+              "for it.</b> The catch-all throws <code>QuoteDeclinedException</code>, a two-line type in "
+              "<code>Domain.cs</code> — the smallest thing that carries a reason out of a rating rule, and the "
+              "form the curriculum's tariff asks for in a lesson that already has an exception vocabulary "
+              "(" + ref(2) + " owns exceptions; " + ref(9) + " stores the same outcome as "
+              "<code>QuoteStatus.Declined</code>). Two things make this worth its nine lines in a testing "
+              "lesson: <code>Three_or_more_claims_is_declined_rather_than_priced</code> is a "
+              "<code>[Theory]</code> over <code>3</code> and <code>9</code>, so the boundary and the far side "
+              "are both asserted, and the assertion on <code>ex.Message</code> is the one place in this "
+              "library where a message string is part of the contract — which is why §7 finds its surviving "
+              "string mutants everywhere except here."),
 
         # ═══════════════════════════ 4 · FIXTURES AND ISOLATION ═══════════════════════════
         {"type": "story", "heading": "4 · Fixtures and isolation — the constructor is your @BeforeEach",
@@ -813,8 +843,10 @@ def blocks():
              "<p><b>Prefer a fake for state and a substitute for interaction.</b> When a test asks \"was it "
              "saved?\", a substitute with <code>Received(1)</code> answers exactly that. When a test asks "
              "\"what happens after it is saved?\", a real in-memory implementation is simpler, faster to read "
-             "and impossible to over-specify — and it doubles as the API's own repository until " + ref(9) + " "
-             "replaces it with EF Core. Over-mocked tests fail on a rename; state-based ones fail on a "
+             "and impossible to over-specify — which is why <code>L10.QuoteApi</code> keeps one instead of a "
+             "database: the subject here is the test, and " + ref(9) + " already showed the persistent version "
+             "of the same quote store, a <code>MotorQuoteDbContext</code> with a "
+             "<code>DbSet&lt;Quote&gt;</code>. Over-mocked tests fail on a rename; state-based ones fail on a "
              "behaviour change.</p>"
              "<p><b>Never read the clock in production code: take a <code>TimeProvider</code>.</b> It is in "
              "the base class library, so it needs no abstraction of your own, and "
@@ -898,8 +930,8 @@ def blocks():
               "deleted test was the one that passes <code>(CoverageClass)99</code>, so the "
               "<code>_ =&gt; throw</code> arm of <code>BaseRate</code> is never reached: one line and one "
               "branch. Branch coverage falls further than line coverage because there are far fewer branch "
-              "points than lines — 29 against 79 in that run — so one uncovered branch costs 3.45 points "
-              "and one uncovered line 1.27, which is exactly why gating both is worth the extra property. "
+              "points than lines — 35 against 88 in that run — so one uncovered branch costs 2.86 points "
+              "and one uncovered line 1.14, which is exactly why gating both is worth the extra property. "
               + MEASURED + " on the build machine from a scratch copy of the samples with that one test "
               "removed; the committed suite holds 100 / 100 / 100."),
 
@@ -909,8 +941,9 @@ def blocks():
                   "ylabel": "% of L10.Pricing", "tone": "teal", "width": 560, "height": 210},
          "caption": "coverlet totals for the L10.Pricing module · the configured threshold is 100 for both "
                     "line and branch · measured from two real runs on the build machine",
-         "note": "<b>The gap looks tiny and that is the point: a threshold of 100 turns a 1.27-point drop "
-                 f"into a build failure.</b> A gate at 95% would have accepted {CUT_LINE}% line and "
+         "note": f"<b>The gap looks tiny and that is the point: a threshold of 100 turns a "
+                 f"{100 - CUT_LINE:.2f}-point drop into a build failure.</b> A gate at 95% would have "
+                 f"accepted {CUT_LINE}% line and "
                  f"{CUT_BRANCH}% branch without a word. Read the two right-hand bars as the cost of one "
                  "deleted test in a library of " + str(loc_lib) + " lines — then read §7, which shows that "
                  "the bars being back at 100 still does not mean the code is tested. " + MEASURED},
@@ -951,13 +984,17 @@ def blocks():
              f"{MUT_TESTED} tested mutants the strong suite kills {STRONG_KILLED} and the weak suite kills "
              f"{WEAK_KILLED}. The weak suite's survivors are not exotic: <code>&lt; 25</code> becomes "
              "<code>&gt; 25</code>, <code>loading += 0.20m</code> becomes <code>-=</code>, "
-             "<code>Math.Min</code> becomes <code>Math.Max</code>, a whole statement disappears. Every one of "
-             "those would ship a wrong premium, and every one is invisible to a coverage report.</p>"
+             "<code>ClaimsLast5Years == 0</code> becomes <code>!= 0</code> so every careful driver loses the "
+             "no-claim bonus, <code>net * 0.004m</code> becomes a division, a whole statement disappears. "
+             "Every one of those would ship a wrong premium, and every one is invisible to a coverage "
+             "report.</p>"
              f"<p><b>Read your survivors before you chase the number.</b> All {STRONG_SURVIVED} survivors in "
              "the strong suite are string mutations inside exception messages — the text of "
              "<code>\"cannot be negative\"</code>, of <code>\"unknown class\"</code> in "
              "<code>BaseRate</code> and of two interpolated <code>$\"quote {id} ...\"</code> "
-             "messages. Nothing asserts on that text, and for internal exceptions nothing should. The useful "
+             "messages. Nothing asserts on that text, and for internal exceptions nothing should — while the "
+             "one message this library <i>does</i> assert, the decline reason in 3.5, is killed. That is the "
+             "whole rule in miniature: a string is worth mutating only where somebody reads it. The useful "
              "response is to assert the message where a caller depends on it, exclude message mutations "
              "otherwise, and set the threshold below 100 on purpose — the configuration in 7.6 breaks the "
              "build under 80%, which the weak suite promptly does.</p>")},
@@ -1041,7 +1078,7 @@ def blocks():
               "the tests through Microsoft.Testing.Platform. <code>concurrency: 1</code> keeps the run "
               "deterministic on a laptop; raise it in CI. Stryker.NET's default coverage analysis runs only the "
               "tests that cover each mutant (" + STRYKERCFG + "), so a run is far cheaper than one suite "
-              "execution per mutant — about ten seconds for each of the two runs here (" + MEASURED
+              "execution per mutant — 14 seconds for the strong run and 12 for the weak one (" + MEASURED
               + ", one run each, concurrency 1, projects already built). The cost still grows with the "
               "library and the suite, so run it nightly or per pull request on changed projects rather than "
               "on every commit (" + ESTIMATE + " for that cadence)."),
@@ -1175,10 +1212,10 @@ def blocks():
              ["<b>Out-of-process HTTP</b>", "<code>L10.QuoteApi.http</code>",
               "needs the app running; not part of <code>dotnet test</code>",
               "Exploring, demonstrating, or replacing a Postman collection (" + HTTPFILES + ")"],
-             ["<b>Browser / E2E</b>", "mentioned only — " + ref(12) + " owns deployment",
+             ["<b>Browser / E2E</b>", "mentioned only — no lesson in this track builds one",
               "slowest and most brittle", "A user journey no lower layer can prove (" + PLAYWRIGHT + ")"],
              ["<b>Mutation</b>", "<code>*.Mtp</code> + Stryker.NET",
-              "only the covering tests run per mutant — about ten seconds here",
+              "only the covering tests run per mutant — 12–14 seconds here",
               "Judging the suite itself, nightly or per pull request"]]},
 
         # ═══════════════════════════ 9 · HANDS-ON ═══════════════════════════
@@ -1204,7 +1241,7 @@ def blocks():
               "and builds first. <code>dotnet tool restore</code> reads "
               "<code>samples/dotnet-tools.json</code> and installs <code>dotnet-stryker</code> 5.0.0 locally; "
               "Stryker must be started from inside the test project's folder, which is why step 4 changes "
-              "directory. Expect each mutation run to take about ten seconds on a warm build at "
+              "directory. Expect each mutation run to take twelve to fifteen seconds on a warm build at "
               "<code>concurrency: 1</code> (" + MEASURED + " once on the build machine); a cold restore and "
               "build take longer."),
 

@@ -12,11 +12,11 @@ public class PremiumCalculatorTests
 
         Assert.Equal(11_550.00m, p.Base);       // 550,000 x 2.1%
         Assert.Equal(2_310.00m, p.Loadings);    // age 23 -> +20%
-        Assert.Equal(4_158.00m, p.Discount);    // 4 claim-free years -> 30%
-        Assert.Equal(9_702.00m, p.Net);
-        Assert.Equal(38.81m, p.StampDuty);      // 38.808 rounded
-        Assert.Equal(681.86m, p.Vat);           // 681.8567 rounded
-        Assert.Equal(10_422.67m, p.Total);
+        Assert.Equal(5_544.00m, p.Discount);    // 4 claim-free years -> 40%
+        Assert.Equal(8_316.00m, p.Net);
+        Assert.Equal(33.26m, p.StampDuty);      // 33.264 rounded
+        Assert.Equal(584.45m, p.Vat);           // 584.4482 rounded
+        Assert.Equal(8_933.71m, p.Total);
     }
     #endregion
 

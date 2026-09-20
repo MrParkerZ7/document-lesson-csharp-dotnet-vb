@@ -10,6 +10,37 @@ from lesson_kit import (DIFFERENT, MEASURED, REPO, TRAP, VERIFIED, T_ARCH, T_CS,
                         loc, mapping, pill, style_block)
 from lessons.roster import meta, ref
 
+# ── captured from real runs on the build machine (SDK 10.0.401, runtime 10.0.12, re-run 2026-09-20) ──────────────────
+# The whole output of `dotnet run --project L06.ParityReport`, verbatim. Every parity figure in this lesson is parsed
+# from this text (and each count is pinned by GridParityTests), so the printed panel and the prose cannot disagree.
+REPORT = """\
+Parity grid        50,176 quote requests
+Faithful C# port   0 mismatches
+Port variants, one change at a time:
+  TruncatingCasts     22,520   44.9%
+  HalfUpRounding      11,324   22.6%
+  IntegerDivision      3,072    6.1%
+  BirthdayAge          8,064   16.1%
+  CaseSensitiveCodes  16,128   32.1%
+  FiveElementTable     3,072    6.1%
+  DecimalRates           304    0.6%
+Worked example  CLASS1 550000 born 2002-06-15 start 2026-01-01 48m 0cl
+  VB legacy 8933  C# port 8933  canonical 8933.71
+Sample  class1 287500 born 2001-12-31 start 2026-01-01 18m 0cl
+  VB legacy 4864  C# port 4864
+First HalfUpRounding mismatch
+  CLASS1 205000 born 2001-12-31 start 2026-01-01 6m 0cl: legacy 4625, port 3700
+First DecimalRates mismatch
+  CLASS2PLUS 487500 born 2001-12-31 start 2026-01-01 6m 0cl com 3001cc: legacy 8484, port 8485
+"""
+PARITY_CASES = int(re.search(r"Parity grid\s+([\d,]+) quote requests", REPORT).group(1).replace(",", ""))
+PARITY = [(m.group(1), int(m.group(2).replace(",", "")))  # (PortChange, mismatches) — pinned by GridParityTests
+          for m in re.finditer(r"^  (\w+?)\s+([\d,]+)\s+[\d.]+%$", REPORT, re.M)]
+if len(PARITY) != 7 or "0 mismatches" not in REPORT:
+    raise ValueError("REPORT no longer parses: expected 7 port variants and a faithful port with 0 mismatches")
+VB_TEMPLATES = [("Library", 1), ("Console", 1), ("Tests", 5), ("WinForms", 3), ("WPF", 4), ("Web", 0),
+                ("Worker", 0)]  # `dotnet new list --language VB`, grouped by tag
+
 META = meta(
     6,
     subtitle="Read, run and retire Visual Basic .NET — the syntax map, the semantics that change numbers, "
@@ -23,8 +54,8 @@ META = meta(
         "ByRef, optional parameters)",
         "Choose a route per project — rewrite, re-platform, retarget or port — from what .NET 10 still supports "
         "for Visual Basic",
-        "Prove a C# port matches its VB original with VB characterization tests and a 94,080-case parity grid "
-        "before switching traffic",
+        f"Prove a C# port matches its VB original with VB characterization tests and a {PARITY_CASES:,}-case "
+        "parity grid before switching traffic",
     ],
     maps_from="Maintaining legacy Java EE / JSP / Servlet applications you did not write, 100%-coverage test "
               "suites (the specification tests that characterization tests are the mirror image of), migration "
@@ -78,6 +109,8 @@ COMPARE = nolink("Option Compare statement",
                "https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/option-compare-statement")
 STRICT = nolink("Option Strict statement",
               "https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/statements/option-strict-statement")
+REMOVEINT = nolink("-removeintchecks",
+                   "https://learn.microsoft.com/en-us/dotnet/visual-basic/reference/command-line-compiler/removeintchecks")
 ANDOP = nolink("And operator",
              "https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/operators/and-operator")
 NOTHING = nolink("Nothing keyword", "https://learn.microsoft.com/en-us/dotnet/visual-basic/language-reference/nothing")
@@ -97,16 +130,6 @@ CODECONV = nolink("icsharpcode/CodeConverter", "https://github.com/icsharpcode/C
 UA = nolink(".NET Upgrade Assistant overview",
           "https://learn.microsoft.com/en-us/dotnet/core/porting/upgrade-assistant-overview")
 AWSX = nolink("Modernizing .NET with AWS Transform", "https://docs.aws.amazon.com/transform/latest/userguide/dotnet.html")
-
-# ── captured from real runs on the build machine (SDK 10.0.401, runtime 10.0.12, re-checked 2026-09-16) ─────────────
-PARITY_CASES = 94_080
-PARITY = [  # (PortChange, mismatches) — L06.ParityReport output; pinned by GridParityTests
-    ("TruncatingCasts", 56_540), ("HalfUpRounding", 14_920), ("IntegerDivision", 16_076),
-    ("BirthdayAge", 20_122), ("CaseSensitiveCodes", 40_320), ("FiveElementTable", 23_040),
-    ("DecimalRates", 0)]
-VB_TEMPLATES = [("Library", 1), ("Console", 1), ("Tests", 5), ("WinForms", 3), ("WPF", 4), ("Web", 0),
-                ("Worker", 0)]  # `dotnet new list --language VB`, grouped by tag
-
 
 # Pygments' vbnet lexer has no token for VB 14 interpolated strings, so every `$"` prints inside a red
 # error box. The code is valid (the samples compile); drop the box, keep the text. (same fix as lesson 01)
@@ -221,6 +244,8 @@ def blocks():
     vb_lines = sum(n for p, n in loc_by.items() if any(s.endswith(".vb") for s in _sources(p)))
     cs_lines = sum(loc_by.values()) - vb_lines
     vb_tests, cs_tests = _test_cases(LEGACY_TESTS), _test_cases(PARITY_TESTS)
+    if (vb_tests, cs_tests) != (11, 11):   # the break-it experiment in §8 was measured against 11 + 11 tests
+        raise ValueError(f"test counts are now {vb_tests} VB / {cs_tests} C#; re-run the §8 break-it measurements")
     dims = _grid_dimensions()
     worst = max(PARITY, key=lambda r: r[1])
     mistakes = [r for r in PARITY if r[0] != "DecimalRates"]
@@ -292,7 +317,10 @@ def blocks():
              "You will build nine projects: a legacy-style VB rating library with VB xUnit characterization tests, "
              "a faithful C# port, a parity kit with its xUnit tests and a console report, a C# partner SDK consumed "
              "by a VB console that demonstrates the traps, and a VB Windows Forms form that calls the C# port.",
-             "Premiums use the MotorQuote running example. Every rate is <b>illustrative, not a real tariff</b>.",
+             "Premiums use the MotorQuote running example on the track's one canonical tariff (curriculum, "
+             "\"Canonical tariff\"): every rate, loading and discount is <b>illustrative, not a real tariff</b>. "
+             "One deliberate variant: this lesson's legacy VB prices in whole baht with banker's rounding, "
+             "so its worked example is 8,933 where the canonical decimal tariff gives 8,933.71 (§8.2).",
              "<code>L06.WinFormsVb</code> targets <code>net10.0-windows</code> and is build-only; every other sample "
              "targets plain <code>net10.0</code> with no Windows-only API (verified on Windows only)."]},
 
@@ -429,7 +457,9 @@ def blocks():
             ("<code>null</code>", "<code>Nothing</code>", "trap",
              "Nothing assigned to an Integer gives 0, and <code>\"\" = Nothing</code> is True (" + short(NOTHING, "Nothing") + ")"),
             ("<code>==</code> on references", "<code>Is</code> / <code>IsNot</code>", "renamed",
-             "Use <code>Is Nothing</code>, never <code>= Nothing</code>"),
+             "Use <code>Is Nothing</code>, never <code>= Nothing</code>. A type that overloads <code>=</code> "
+             "(<code>String</code>, a C# record) compares by value with <code>=</code>, while <code>Is</code> "
+             "compares identity; on a plain class <code>=</code> does not compile (BC30452) — " + ref(3)),
             ("<code>&amp;&amp;</code> / <code>||</code>", "<code>AndAlso</code> / <code>OrElse</code>", "renamed",
              "Only these short-circuit"),
             ("<code>&amp;</code> / <code>|</code> on booleans", "<code>And</code> / <code>Or</code>", "trap",
@@ -553,12 +583,17 @@ def blocks():
              "1.5 for any two integral operands (" + DIV + "); assign it to an Integer and banker's rounding stores "
              "2, so an 18-month licence counts as two years. Integer division is <code>\\</code>. A C# port that writes "
              "<code>months / 12</code> gets 1.</p>"
-             "<p><b>Four more quirks change results.</b> <code>DateDiff(DateInterval.Year, …)</code> uses only the year "
+             "<p><b>Five more quirks change results.</b> <code>DateDiff(DateInterval.Year, …)</code> uses only the year "
              "parts, so a driver born on 31 December is a year older on 1 January (" + DATEDIFF + "). "
              "<code>Dim ncb(5)</code> declares an upper bound, giving six slots (" + ARRAYS + "). Option Compare Text "
-             "makes string <code>=</code> ignore case (" + COMPARE + "). And <code>And</code>/<code>Or</code> evaluate "
+             "makes string <code>=</code> ignore case (" + COMPARE + "). <code>And</code>/<code>Or</code> evaluate "
              "both operands (" + ANDOP + ") — harmless in arithmetic, fatal when the right side dereferences something "
-             "the left side just checked.</p>")},
+             "the left side just checked. And integer arithmetic is <i>checked</i>: unless a project passes "
+             "<code>-removeintchecks</code> (" + REMOVEINT + "), <code>Integer.MaxValue + 1</code> throws "
+             "<code>OverflowException</code>, where C# wraps silently unless the code says <code>checked</code>. It is "
+             "the one VB default stricter than C#, and " + ref(2) + " §8.3 measures both sides. A port written "
+             "without <code>checked</code> drops a guard nobody wrote down, which is why <code>VbCompat.CInt</code> "
+             "in panel 4.8 wraps its conversions in <code>checked(…)</code>.</p>")},
 
         pcode(head_of(LEGACY, "Dim base As Integer", "top of file"),
              heading="4.1 · The top of a legacy file — two option lines and an implicit conversion",
@@ -591,10 +626,12 @@ def blocks():
                   "<code>policy.Holder.Age &gt; 25</code> after a null check — with <code>And</code> that throws."),
 
         pcode(from_sample(SEM, "arrays-division"),
-             heading="4.5 · Upper bounds and the two divisions",
+             heading="4.5 · Upper bounds, the two divisions and checked arithmetic",
              note="<b><code>Dim ncb(5)</code> has Length 6.</b> <code>ReDim Preserve ncb(7)</code> copies into a new "
                   "array of 8. <code>/</code> gives 1.5 and <code>CInt</code> of it gives 2; <code>\\</code> gives 1. "
-                  "<code>CInt(11 / 12)</code> is 1 — VB rounds to nearest, it never truncates."),
+                  "<code>CInt(11 / 12)</code> is 1 — VB rounds to nearest, it never truncates. "
+                  "<code>Integer.MaxValue + 1</code> throws where the same C# line would wrap to "
+                  "<code>-2147483648</code>."),
 
         pcompare(from_text("""
             And        right side ran 1x
@@ -606,6 +643,7 @@ def blocks():
             18 / 12 = 1.5   18 \\ 12 = 1
             18 Mod 12 = 6
             CInt(18 / 12) = 2   CInt(11 / 12) = 1
+            Integer.MaxValue + 1  OverflowException
             0.5  CInt 0  Fix 0  Math.Round 0  AwayFromZero 1
             1.5  CInt 2  Fix 1  Math.Round 2  AwayFromZero 2
             2.5  CInt 2  Fix 2  Math.Round 2  AwayFromZero 3
@@ -618,8 +656,8 @@ def blocks():
             "CLASS1" = "class1"    False
             AddFee(line.Total)     1000 -> 1035
             AddFee((line.Total))   1035 -> 1035
-            card.LoadingFor(2)     0.30
-            late bound LoadingFor(2)  0.30
+            card.LoadingFor(2)     0.25
+            late bound LoadingFor(2)  0.25
             late bound Discount       MissingMemberException
             "42" + 1  = 43      "42" & 1  = 421
             "CLASS1" = "class1"     True
@@ -631,7 +669,8 @@ def blocks():
                 note="<b>Every line is a trap you can now name.</b> <code>\"CLASS1\" = \"class1\"</code> is False in "
                      "<code>Program.vb</code> (Option Compare Binary) and True in <code>Loose.vb</code> (Text). The "
                      "driver born on 31 December 2001 is 24 on 1 January 2026, but <code>DateDiff</code> says 25. "
-                     "<code>On Error Resume Next</code> swallowed a division by zero and left the result at 0."),
+                     "<code>On Error Resume Next</code> swallowed a division by zero and left the result at 0, while "
+                     "<code>Integer.MaxValue + 1</code> did not wrap: VB threw <code>OverflowException</code>."),
 
         {"type": "chart", "heading": "4.7 · Four midpoints, three rounding rules", "kind": "grouped_bar",
          "args": {"categories": ["0.5", "1.5", "2.5", "3.5"],
@@ -659,13 +698,17 @@ def blocks():
 
             BigDecimal vat = gross.multiply(VAT_RATE)
                 .setScale(0, RoundingMode.HALF_UP);  // half up
+
+            int total = net + duty;                  // wraps silently
             """, "java", file="the instincts you bring"),
                 from_sample(COMPAT, "vb-compat"),
                 heading="4.8 · Java instincts vs the VB semantics a faithful port must keep",
-                note="<b>Every Java line is reasonable and every one changes a premium.</b> The C# port does not "
-                     "sprinkle <code>MidpointRounding.ToEven</code> and year subtraction through the rule; it names each "
-                     "legacy semantic once in <code>VbCompat</code>, so a reviewer sees exactly which quirks are being "
-                     "preserved — and later, which one is being retired."),
+                note="<b>Every Java line is reasonable and every one changes a premium or a guard.</b> The C# port "
+                     "does not sprinkle <code>MidpointRounding.ToEven</code> and year subtraction through the rule; it "
+                     "names each legacy semantic once in <code>VbCompat</code>, so a reviewer sees exactly which quirks "
+                     "are being preserved — and later, which one is being retired. The <code>checked(…)</code> around "
+                     "each cast keeps VB's overflow guard: an out-of-range <code>CInt</code> throws in VB, while an "
+                     "unchecked C# cast does not, and Java's <code>int</code> arithmetic wraps silently."),
 
         # ═══════════════════════════ 5 · INTEROP ═══════════════════════════
         {"type": "story", "heading": "5 · VB ↔ C# interop — one runtime, two compilers' rules",
@@ -727,12 +770,12 @@ def blocks():
 
         pcode(from_text("""
             $ dotnet build L06.VbSemantics -p:DefineConstants=SHOW_CASE_COLLISION=True
-            Program.vb(90,27): error BC31429: 'loading' is ambiguous because multiple kinds
+            Program.vb(97,27): error BC31429: 'loading' is ambiguous because multiple kinds
                 of members with this name exist in class 'PartnerRateCard'.
             Build FAILED.
 
             $ dotnet build L06.VbSemantics -p:DefineConstants=SHOW_MY_COMPUTER=True
-            Program.vb(100,27): error BC30456: 'Computer' is not a member of 'L06.VbSemantics.My'.
+            Program.vb(107,27): error BC30456: 'Computer' is not a member of 'L06.VbSemantics.My'.
             Build FAILED.
             """, "shell", file="captured on the build machine · long lines wrapped for print"),
              heading="5.4 · Two compile errors worth recognising",
@@ -754,7 +797,8 @@ def blocks():
               "ByRef → <code>ref</code>; C# must pass a variable", "Return a record or tuple instead"],
              ["Case-only names", "Unusable (BC31429)", "VB names are case-insensitive by design",
               "<code>[assembly: CLSCompliant(true)]</code> on shared C# libraries"],
-             ["Records, init-only", "Consumed; VB 16.9 reads init-only (" + short(VBNEW, "VB 16.9") + ")", "VB cannot declare records",
+             ["Records, init-only", "Consumed; VB 16.9 reads init-only (" + short(VBNEW, "VB 16.9") + "); "
+              "<code>=</code> compares records by value", "VB cannot declare records",
               "Keep shared models in C#"],
              ["Events", "<code>WithEvents</code> + <code>Handles</code>, or <code>AddHandler</code>",
               "<code>+=</code> on a VB <code>Event</code>", "Same CLR event underneath"],
@@ -794,8 +838,8 @@ def blocks():
              heading="6.1 · Characterization tests in VB — pinning the quirks on purpose",
              note="<b>These tests would fail code review as specifications, and that is the point.</b> They assert what "
                   "production does today: cover codes ignore case and spaces, <code>DateDiff</code> ages a 31 December "
-                  "birthday early, 18 months rounds to two years, and seven claim-free years reuse the sixth slot. xUnit "
-                  "attributes look the same in VB, in angle brackets."),
+                  "birthday early, 18 months rounds to two years, seven claim-free years reuse the sixth slot, and any "
+                  "claim removes the no-claim discount. xUnit attributes look the same in VB, in angle brackets."),
 
         {"type": "mermaid", "inline": True,
          "heading": "6.2 · Choosing a route for one VB project",
@@ -902,20 +946,27 @@ def blocks():
              "<p><b>A parity grid runs old and new code over every combination of the inputs a rule reads, and demands "
              "identical outputs.</b> It is the characterization test scaled up: instead of choosing twenty cases, "
              "enumerate each dimension — cover code with its casing, sum insured, birth date against start date, "
-             "licence months, claim-free years, claims, commercial use — and take the Cartesian product. Here that is "
+             "licence months, claims, commercial use and engine size — and take the Cartesian product. Here that is "
              f"{PARITY_CASES:,} quote requests, and the console report compares the faithful port and seven "
-             "one-change variants against the VB original in about half a second on the build machine.</p>"
+             "one-change variants against the VB original in under a second on the build machine (0.8 s for the "
+             "whole run, start-up included).</p>"
              "<p><b>Choose values at the edge of each quirk, not at random.</b> Sums insured that land on .5 after the "
-             "rate, birth dates on 31 December and 1 January, 17 and 18 months, five and seven claim-free years, codes "
-             f"in mixed case. A grid built that way caught all six injected port mistakes; each changed between "
-             f"{_pct(lo)} and {_pct(worst[1])} of premiums. A twenty-case suite picked by hand has to be lucky.</p>"
-             "<p><b>The same grid tells you when a fix is safe.</b> The team wants decimal rates instead of Double. "
-             f"Injected as its own change it altered 0 of {PARITY_CASES:,} premiums — evidence to ship it separately, "
-             "now. The birthday rule is the opposite: a correct age changes "
-             f"{_pct(dict(PARITY)['BirthdayAge'])} of quotes, so it is a pricing decision for the business, not a "
-             "refactoring. Reshaping the port's flat <code>QuoteRequest</code>, which mirrors the legacy "
-             "signature, into the running example's <code>Vehicle</code>, <code>Driver</code> and "
-             "<code>Money</code> types is another later, separately gated step under this same grid.</p>"
+             "rate, birth dates on 31 December and 1 January, 6, 18, 30 and 42 months (half a licence year, where "
+             "the rounding rules part), 60 and 90 months (the sixth table slot), 3,000 and 3,001 cc "
+             "(the commercial engine-size step), three claims (declined) and codes in mixed case. A grid built that "
+             f"way caught all six injected port mistakes; each changed between {_pct(lo)} and {_pct(worst[1])} of "
+             "premiums. A twenty-case suite picked by hand has to be lucky.</p>"
+             "<p><b>The same grid puts a size on a fix.</b> The team wants decimal rates instead of Double, surely a "
+             f"pure improvement. Injected as its own change it altered {dict(PARITY)['DecimalRates']} of "
+             f"{PARITY_CASES:,} premiums ({_pct(dict(PARITY)['DecimalRates'])}): <code>0.35</code> has no exact binary "
+             "form, so the first mismatch prices <code>5,850 × 0.35</code> as 2,047.4999… in Double (legacy rounds it "
+             "down to 2,047), while Decimal holds exactly 2,047.5 and rounds half to even up to 2,048. The fix is "
+             "correct and it still moves prices, so it ships on its own, with that number attached. The birthday "
+             f"rule is larger: a correct age changes {_pct(dict(PARITY)['BirthdayAge'])} of quotes, so it is a "
+             "pricing decision for the business, not a refactoring. Reshaping the port's flat "
+             "<code>QuoteRequest</code>, which mirrors the legacy signature, into the running example's "
+             "<code>Vehicle</code>, <code>Driver</code> and <code>Money</code> types is another later, separately "
+             "gated step under this same grid.</p>"
              "<p><b>Compare results, not implementations.</b> The runner counts \"both declined\" as a match and an "
              "exception as a mismatch, and the xUnit theory pins every count, so a number printed in this lesson "
              "fails the build if the samples drift from it.</p>")},
@@ -925,15 +976,17 @@ def blocks():
                 note="<b>Line for line, on purpose.</b> VB's implicit <code>Integer = Double</code> conversion becomes "
                      "an explicit <code>VbCompat.CInt</code>; <code>licenceMonths / 12</code> becomes "
                      "<code>CInt(LicenceMonths / 12.0)</code>; <code>DateDiff</code> becomes "
-                     "<code>DateDiffYears</code>. The port is uglier than a rewrite would be — that is the price of "
-                     "zero mismatches, paid once and refactored later under the same grid. Every rate is illustrative, not "
-                     "a real tariff."),
+                     "<code>DateDiffYears</code>. The values are the canonical tariff's: +20% under 25, +10% or +25% "
+                     "for one or two claims, three declined, +25% commercial or +35% above 3,000 cc. The port is "
+                     "uglier than a rewrite would be — that is the price of zero mismatches, paid once and refactored "
+                     "later under the same grid. Every rate is illustrative, not a real tariff."),
 
         pcompare(from_sample(LEGACY, "legacy-discount-total"), from_sample(PORT, "port-discount-total"),
-                heading="7.2 · The discount table, the floor and the total — VB original and C# port",
+                heading="7.2 · The discount table and the total — VB original and C# port",
                 note="<b><code>Dim ncb(5)</code> becomes a six-element array literal, spelled out.</b> The "
-                     "<code>If claimFreeYears &gt; 5</code> clamp becomes <code>Math.Min</code>, and every implicit "
-                     "Decimal-to-Integer assignment (<code>discount</code>, <code>duty</code>) goes through "
+                     "claim-free years are the licence years when there are no claims and 0 otherwise; the "
+                     "<code>If claimFreeYears &gt; 5</code> clamp becomes <code>Math.Min</code>, and every Decimal or "
+                     "Double converted to Integer (<code>discount</code>, <code>duty</code>) goes through "
                      "<code>VbCompat.CInt</code> because VB rounds those to even. The VAT line needs no helper: "
                      "<code>Math.Round</code> already rounds to even in both languages."),
 
@@ -948,14 +1001,17 @@ def blocks():
              heading="7.4 · The grid — boundary values, multiplied out",
              note=f"<b>{' × '.join(str(v) for v in dims.values())} = {PARITY_CASES:,} cases.</b> Each array holds the "
                   "values where a quirk changes behaviour: <code>\"Class1\"</code> for Option Compare Text, 31 December "
-                  "2001 for <code>DateDiff</code>, 17/18/30 months for rounding, 5 and 7 years for the six-slot table, "
-                  "<code>CLASS4</code> so declines are compared too."),
+                  "2001 for <code>DateDiff</code>, 6/18/30/42 months for half-year rounding, 60 and 90 months for the "
+                  "six-slot table, 3,000 and 3,001 cc for the commercial step, three claims and <code>CLASS4</code> so "
+                  "declines are compared too."),
 
         pcode(from_sample(PARITY_TESTS, "parity-tests"),
              heading="7.5 · The parity gate in xUnit",
              note="<b>Two assertions carry the migration.</b> The faithful port must produce zero mismatches over the "
-                  "whole grid. The theory then pins how many premiums each alternative would change — including "
-                  "<code>DecimalRates</code> at 0 — so a later refactoring that alters a single quote fails CI."),
+                  "whole grid. The theory then pins how many premiums each alternative would change — "
+                  f"<code>DecimalRates</code> at {dict(PARITY)['DecimalRates']}, not 0 — so a later refactoring that "
+                  "alters a single quote fails CI. A third test ties the legacy to the canonical tariff: the worked "
+                  "example prices 8,933.71 THB in decimal and 8,933 in whole baht."),
 
         pcode(from_sample(PARITY_TESTS, "vb-runtime"),
               heading="7.6 · Checking VbCompat against the Visual Basic runtime",
@@ -970,23 +1026,24 @@ def blocks():
             {"heading": "7.7 · Premiums changed by one port change", "kind": "hbar",
              "args": {"data": sorted(PARITY, key=lambda r: -r[1]), "tone": "red", "width": 390, "labelw": 132},
              "caption": f"measured: L06.ParityReport, {PARITY_CASES:,} requests per variant",
-             "note": "<b>Every mistake is loud on a boundary grid; the planned fix is silent.</b> Truncating casts and "
-                     "case-sensitive codes change most quotes; half-up rounding is the quietest mistake and still "
-                     f"changes {dict(PARITY)['HalfUpRounding']:,}. <code>DecimalRates</code> changed none — safe to "
-                     "ship."},
+             "note": "<b>Every mistake is loud on a boundary grid; the planned fix is quiet, not silent.</b> "
+                     "Truncating casts and case-sensitive codes change the most quotes; the quietest mistakes, integer "
+                     f"division and a five-element table, still change {dict(PARITY)['IntegerDivision']:,} each. "
+                     f"<code>DecimalRates</code> changed {dict(PARITY)['DecimalRates']} — small enough that a "
+                     "hand-picked suite would miss it, and still real prices."},
             {"heading": "7.8 · Values per grid dimension", "kind": "bar",
              "args": {"data": [("Cover", dims["CoverCodes"]), ("Sum", dims["SumsInsured"]),
                                ("Born", dims["BirthDates"]), ("Start", dims["StartDates"]),
-                               ("Months", dims["LicenceMonths"]), ("NCB", dims["ClaimFreeYears"]),
-                               ("Claims", dims["Claims"]), ("Com.", dims["Commercial"])],
+                               ("Months", dims["LicenceMonths"]), ("Claims", dims["Claims"]),
+                               ("Com.", dims["Commercial"]), ("cc", dims["EngineCc"])],
                       "ylabel": "values", "tone": "teal", "width": 390, "height": 220},
              "caption": "measured: parsed from QuoteGrid.cs at build time; the product is checked against the run",
-             "note": f"<b>Three dimensions carry the size.</b> Sums insured ({dims['SumsInsured']}), cover codes "
-                     f"({dims['CoverCodes']}) and claim-free years ({dims['ClaimFreeYears']}) multiply to "
-                     f"{dims['SumsInsured'] * dims['CoverCodes'] * dims['ClaimFreeYears']}; the other five add a "
-                     f"factor of {PARITY_CASES // (dims['SumsInsured'] * dims['CoverCodes'] * dims['ClaimFreeYears'])}. "
+             "note": f"<b>Three dimensions are the widest.</b> Sums insured ({dims['SumsInsured']}), cover codes "
+                     f"({dims['CoverCodes']}) and licence months ({dims['LicenceMonths']}) multiply to "
+                     f"{dims['SumsInsured'] * dims['CoverCodes'] * dims['LicenceMonths']}; the other five add a "
+                     f"factor of {PARITY_CASES // (dims['SumsInsured'] * dims['CoverCodes'] * dims['LicenceMonths'])}. "
                      "Doubling any one dimension doubles the grid, so add a value only where a rule changes "
-                     "behaviour — the run stays in half a second."}]},
+                     "behaviour — the run stays under a second."}]},
 
         # ═══════════════════════════ 8 · HANDS-ON ═══════════════════════════
         {"type": "story", "heading": "8 · Hands-on — run the estate in miniature",
@@ -1001,11 +1058,12 @@ def blocks():
              "tests, then the report. Only when all three agree with the numbers in this lesson is the estate in a "
              "known state.</p>"
              "<p><b>Then break it on purpose, twice, and read what fails.</b> Make <code>VbCompat.CInt(double)</code> "
-             "a plain <code>(int)</code> cast: on the build machine 7 of the 10 parity tests failed, including the VB-runtime check in 7.6, and "
-             "the faithful-port test named its first case — <code>CLASS1 205000 … 6m 0ncb 0cl: legacy 4481, port 4480</code>. Put the "
-             "cast back, then change <code>Option Compare Text</code> to <code>Binary</code> at the top of "
-             "<code>LegacyPremium.vb</code>: 3 of the 8 VB characterization tests failed, every one of them a lower- or "
-             "mixed-case cover code. That is the division of labour you want — the VB tests guard the legacy "
+             f"a plain <code>(int)</code> cast: on the build machine 7 of the {cs_tests} parity tests failed, including "
+             "the VB-runtime check in 7.6, and the faithful-port test named its first case — <code>CLASS1 205000 … 6m "
+             "0cl com 3000cc: legacy 5781, port 5780</code>. Put the cast back, then change <code>Option Compare "
+             "Text</code> to <code>Binary</code> at the top of "
+             f"<code>LegacyPremium.vb</code>: 3 of the {vb_tests} VB characterization tests failed, every one of them a "
+             "lower- or mixed-case cover code. That is the division of labour you want — the VB tests guard the legacy "
              "behaviour, the grid guards the port — and neither needed a debugger.</p>")},
 
         pcode(from_text("""
@@ -1027,27 +1085,17 @@ def blocks():
                   "parity gate relies on; if it fails, the legacy rule changed and every number in §7 is suspect. "
                   "The two <code>-p:DefineConstants</code> builds are meant to fail — they reproduce §5.4."),
 
-        pcode(from_text(f"""
-            Parity grid        {PARITY_CASES:,} quote requests
-            Faithful C# port   0 mismatches
-            Port variants, one change at a time:
-              TruncatingCasts     56,540   60.1%
-              HalfUpRounding      14,920   15.9%
-              IntegerDivision     16,076   17.1%
-              BirthdayAge         20,122   21.4%
-              CaseSensitiveCodes  40,320   42.9%
-              FiveElementTable    23,040   24.5%
-              DecimalRates             0    0.0%
-            Sample  class1 287500 born 2001-12-31 start 2026-01-01 18m 5ncb 0cl
-              VB legacy 2857  C# port 2857
-            First HalfUpRounding mismatch
-              CLASS1 205000 born 2001-12-31 start 2026-01-01 6m 0ncb 0cl: legacy 4481, port 4482
-            """, "text", label="Output — L06.ParityReport", file="captured on the build machine"),
+        pcode(from_text(REPORT, "text", label="Output — L06.ParityReport", file="captured on the build machine"),
              heading="8.2 · What you should see",
-             note="<b>The sample line is worth checking by hand</b> (illustrative tariff). For the first half-up mismatch the base is "
-                  "205,000 × 1.85% = 3,792.5: banker's rounding keeps 3,792, half-up makes 3,793, and the extra baht "
-                  "survives the loading, stamp duty and VAT to reach the total. The faithful port agrees with VB on "
-                  "the mixed-case <code>class1</code> quote to the baht."),
+             note="<b>Two lines are worth checking by hand</b> (canonical illustrative tariff). The worked example is "
+                  "550,000 × 2.1% = 11,550, +20% for age 23 = 13,860, −40% for four claim-free years = net 8,316.00, "
+                  "stamp duty 33.26, VAT 584.45, total <b>8,933.71</b> in decimal; the legacy prices the same quote at "
+                  "8,933 because it rounds every step to whole baht. The <code>class1</code> sample: 287,500 × 2.1% = "
+                  "6,037.5, which banker's rounding keeps as 6,038; 18 months counts as 2 licence years (1.5 rounds "
+                  "to even), so the discount is 25% of 6,038 = 1,509.5, stored as 1,510; net 4,528, duty 18, VAT 318, "
+                  "total 4,864 — the mixed-case code costs nothing, and the faithful port agrees to the baht. In the "
+                  "first half-up mismatch the licence is 6 months, half a year: banker's rounding stores 0 years and "
+                  "no discount (4,625), half-up stores 1 year and a 20% discount (3,700)."),
 
         {"type": "chartrow", "charts": [
             {"heading": "8.3 · Lines of code by migration role", "kind": "hbar",
@@ -1083,7 +1131,8 @@ def blocks():
              f"<b>Porting <code>Dim ncb(5)</code> as <code>new decimal[5]</code>.</b> It compiles, passes every test "
              f"below five claim-free years, and throws for {_pct(dict(PARITY)['FiveElementTable'])} of the grid.",
              f"<b>Fixing while porting.</b> A correct age calculation changed {_pct(dict(PARITY)['BirthdayAge'])} of "
-             "premiums. Port the quirk, pin it, and change it in a separate, signed-off release."]},
+             f"premiums, and even the \"obvious\" Decimal-for-Double swap changed {_pct(dict(PARITY)['DecimalRates'])}. "
+             "Port the quirk, pin it, and change it in a separate, signed-off release."]},
 
         {"type": "callout", "variant": "ok", "heading": "✔ Checkpoint — you are ready for lesson 07 when",
          "items": [

@@ -131,7 +131,7 @@ public class SavingTests
 
         var expired = await db.ExpireStaleAsync(QuoteSeed.Today);
 
-        Assert.Equal(10, expired);
+        Assert.Equal(9, expired);
         Assert.Equal(1, sqlite.Log.Count);
         Assert.Equal(QuoteStatus.Quoted, tracked.Status);     // stale copy
         await db.Entry(tracked).ReloadAsync();
@@ -151,7 +151,7 @@ public class SavingTests
             q.Status = QuoteStatus.Expired;
         var written = await db.SaveChangesAsync();
 
-        Assert.Equal(10, written);
-        Assert.Equal(11, sqlite.Log.Count);   // measured on SQLite: 1 SELECT + 10 UPDATEs
+        Assert.Equal(9, written);
+        Assert.Equal(10, sqlite.Log.Count);   // measured on SQLite: 1 SELECT + 9 UPDATEs
     }
 }

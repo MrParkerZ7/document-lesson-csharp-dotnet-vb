@@ -25,9 +25,22 @@ public sealed class QuoteEndpointTests(QuoteApiFactory factory) : IClassFixture<
         var id = quote.GetProperty("quoteId").GetString();
         Assert.Equal($"/quotes/{id}",
             response.Headers.Location?.OriginalString);
-        Assert.Equal(16_114.20m, Total(quote));
+        Assert.Equal(9_023.95m, Total(quote));
     }
     #endregion
+
+    // A quote the tariff declines is stored as data, not raised as an error: 201 with a status.
+    [Fact]
+    public async Task Three_claims_are_declined_with_a_status_and_a_reason_and_no_premium()
+    {
+        var response = await _client.PostAsJsonAsync("/quotes", Requests.Quote(claims: 3));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var quote = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Declined", quote.GetProperty("status").GetString());
+        Assert.Equal("3+ claims in 5 years", quote.GetProperty("declineReason").GetString());
+        Assert.Equal(JsonValueKind.Null, quote.GetProperty("premium").ValueKind);
+    }
 
     [Fact]
     public async Task Get_returns_the_stored_quote()

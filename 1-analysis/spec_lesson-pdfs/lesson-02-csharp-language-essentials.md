@@ -11,6 +11,17 @@ expressions and patterns, parameters, exceptions and `using` — with each const
 traps labelled, and the Visual Basic form shown beside it. Everything is taught through the MotorQuote rating rules
 (illustrative rates, labelled as such wherever a premium appears).
 
+**Tariff.** `L02.Rating` implements the track's canonical tariff verbatim (`_curriculum.md` § "Canonical tariff"):
+base rate per coverage class (Class 1 2.1% · Class 2+ 1.2% · Class 3+ 0.9% · Class 3 0.4% — a rate, never a flat
+amount), loadings summed then applied to the base (young driver under 25 on the start date +20% · claims 0/+10%/+25%
+and declined at 3 or more · commercial use +25%, +35% over 3,000 cc), the no-claim ladder 0/20/25/30/40/50% on
+claim-free licence years (`ClaimsLast5Years == 0 ? LicenceYears : 0`), stamp duty 0.4% of net, VAT 7% of net + duty,
+every step rounded to 2 places `MidpointRounding.AwayFromZero`. Lesson 02 introduces the tariff, so its worked example
+**8,933.71 THB** is the curriculum's worked example and §9 says so. The decline is an exception here
+(`QuoteDeclinedException`) because §7 teaches exceptions. One deliberate variant, labelled in the sample comment and
+in note 6.3: `MethodsTour.Discount` / `Tour.vb#methods` keep a `roundUp` parameter that calls `Math.Ceiling` — it
+demonstrates an optional `bool`, not the tariff's rounding, which is `RatingRules.Round` (3.2).
+
 ## 2 · Ownership & cadence
 
 Owner **claude**, regenerable. Re-verify every November, when a new C# version ships with the .NET major: the C# 14
@@ -36,9 +47,9 @@ from being stranded at its foot).
 | 6 | Methods and parameters | story (3 ¶) · table 6.1 (parameter passing, 7 rows) · compare 6.2 (TypeScript ↔ C# declarations) · code 6.3 (calls, deconstruction, `out var`, C# 14 lambda) |
 | 7 | Exceptions and resources | story (3 ¶) · compare 7.1 (Java try-with-resources ↔ C# `using` + filter) · code 7.2 (filter order) · mermaid 7.3 sequenceDiagram (two-pass handling) |
 | 8 | Visual Basic alongside | story (3 ¶) · compare 8.1 (C# switch ↔ VB `Select Case`) · compare 8.2 (C# `using var` + filter ↔ VB `Using … End Using` + `Catch … When`) · compare 8.3 (C# unchecked overflow ↔ VB checked-by-default) · table 8.4 (this lesson's C# in VB, 11 rows) |
-| 9 | Hands-on — run the tour, the tests and the file-based app | story (3 ¶) · code 9.1 commands · compare 9.2 (captured: C# tour first part ↔ VB tour) · code 9.3 (captured terminal: test run + both file-based runs) · code 9.4 (`PremiumCalculator.Calculate`) · chart 9.5 waterfall (worked example) · chartrow 9.6 grouped bar (C# vs VB lines per region pair) + 9.7 hbar (test cases per tested member) · warn "Traps" (5) · ok checkpoint (4) · summary "Check yourself" (7) · footer (Next: lesson 03) |
+| 9 | Hands-on — run the tour, the tests and the file-based app | story (4 ¶ — the 4th, "It is also the number to carry forward", states that the whole track prices with this one tariff and names lesson 06 as the deliberate variant) · code 9.1 commands · compare 9.2 (captured: C# tour first part ↔ VB tour) · code 9.3 (captured terminal: test run + both file-based runs) · code 9.4 (`PremiumCalculator.Calculate`) · chart 9.5 waterfall (worked example) · chartrow 9.6 grouped bar (C# vs VB lines per region pair) + 9.7 hbar (test cases per tested member) · warn "Traps" (5) · ok checkpoint (4) · summary "Check yourself" (7) · footer (Next: lesson 03) |
 
-Standard minimums as built: 9 numbered stories · 1 mapping · 2 card bands (3 cards each) · 3 mermaid in 3 families
+Standard minimums as built: 9 numbered stories (§9's is 4 ¶) · 1 mapping · 2 card bands (3 cards each) · 3 mermaid in 3 families
 (flowchart, stateDiagram-v2, sequenceDiagram) · 4 charts (heatmap, waterfall, grouped bar, hbar) · 26 code panels
 (13 `code` + 13 `compare`) · C# ↔ VB compares 8.1, 8.2, 8.3 (plus the captured-output pair 9.2) · Java / Kotlin /
 TypeScript ↔ C# compares 2.2, 3.1, 3.2, 4.1, 5.1, 6.2, 7.1 · 1 twocol · 4 tables besides the mapping (2.6, 5.6, 6.1,
@@ -52,13 +63,13 @@ TypeScript ↔ C# compares 2.2, 3.1, 3.2, 4.1, 5.1, 6.2, 7.1 · 1 twocol · 4 ta
   bytes; double ~15–17, 8 bytes; decimal 28–29, 16 bytes).
 - **KPI "Pattern kinds 10"** — VERIFIED: the Patterns reference lists declaration, type, constant, relational,
   logical, property, positional, `var`, discard and list patterns.
-- **KPI "Rating test cases"**, chart 9.7 and the "12 of the 31" in note 5.3 — MEASURED at build by
+- **KPI "Rating test cases"**, chart 9.7 and the "15 of the 31" in note 5.3 — MEASURED at build by
   `test_cases_by_rule()`: `[Fact]` = 1, each `[InlineData]` = 1, `[MemberData(nameof(X))]` = the `{ … },` rows of
   TheoryData property `X`, grouped by the test-method prefix before the first underscore (31 at this build, equal to
-  the `dotnet test` totals; per member: AgeLoading 8, BaseRate 5, NoClaimBonus 5, ClaimsLoading 4, UseLoading 3,
+  the `dotnet test` totals; per member: NoClaimBonus 8, BaseRate 5, AgeLoading 5, ClaimsLoading 4, UseLoading 3,
   Calculate 2, AgeOn 2, Round 1, TryCalculate 1).
 - **KPI "Lesson 02 samples"** — `loc()` over the 16 C# source files (9 in L02.Syntax, 4 in L02.Rating, 2 test files,
-  the file-based app) and the 2 VB files: 545 + 149 = 694 lines at this build (MEASURED).
+  the file-based app) and the 2 VB files: 545 + 145 = 690 lines at this build (MEASURED).
 - **Mermaid 2.5** — the "9 .cs files" node label is counted at build from `samples/L02.Syntax/*.cs`; the generated
   file is `<ProjectName>.GlobalUsings.g.cs` (`L02.Syntax.GlobalUsings.g.cs`, confirmed on disk under
   `.build/artifacts/obj/L02.Syntax/debug/`).
@@ -77,16 +88,19 @@ TypeScript ↔ C# compares 2.2, 3.1, 3.2, 4.1, 5.1, 6.2, 7.1 · 1 twocol · 4 ta
   with `MidpointRounding.AwayFromZero`); the Java `setScale` results are language facts, not compiled.
 - **Chart 9.5 waterfall** — MEASURED: the seven figures are parsed at build by `asserted_premium()` from the
   `Assert.Equal(…m, p.X)` lines of region `worked-example` in `PremiumCalculatorTests.cs`, a passing test (base
-  11,550.00 · loadings 2,310.00 · no-claim bonus 4,158.00 · net 9,702.00 · stamp duty 38.81 · VAT 681.86 · total
-  10,422.67). The note gives the exact figures; the axis labels are abbreviated by `chart_svg`.
+  11,550.00 · loadings 2,310.00 · no-claim bonus 5,544.00 · net 8,316.00 · stamp duty 33.26 · VAT 584.45 · total
+  8,933.71 — the curriculum's canonical worked example). The chart heading, the note, the 9.3 note and the checkpoint
+  item all interpolate `p["Total"]`, so none of them can drift from the tested code; the axis labels are abbreviated
+  by `chart_svg`.
 - **Chart 9.6** — MEASURED: `region_loc()` (non-blank, non-comment lines) over five region pairs holding the same
   statements (`TypesTour#money`↔`Tour.vb#money`, `NullsTour#nulls`↔`#nulls`, `RatingRules#age-loading`↔`#select-case`,
-  `MethodsTour#declarations`↔`#methods`, `ErrorsTour#resources`↔`#errors`); at this build C#/VB 14/13, 10/12, 8/14,
+  `MethodsTour#declarations`↔`#methods`, `ErrorsTour#resources`↔`#errors`); at this build C#/VB 14/13, 10/12, 6/10,
   15/19, 13/11. The note names the pairs with the largest and smallest VB−C# difference at build time and explains each
   from the fixed `VB_REASON` table. VB is drawn first, so it takes the chart palette's blue, the colour of the VB panel
   header; C# takes teal (the kit's `grouped_bar` takes no colour argument).
-- **Captured output** (Windows 11 x64, SDK 10.0.401, 2026-09-16, re-run 2026-09-20 with identical output apart from
-  durations): panel 9.2 from `dotnet run` of `L02.Syntax` and `L02.SyntaxVb`; panel 9.3 from `dotnet test … --tl:on`
+- **Captured output** (Windows 11 x64, SDK 10.0.401, re-captured in full on 2026-09-20 after the tariff alignment —
+  every premium figure in 9.2, 9.3 and the *Printed:* notes comes from that run): panel 9.2 from `dotnet run` of
+  `L02.Syntax` and `L02.SyntaxVb`; panel 9.3 from `dotnet test … --tl:on`
   (the terminal-logger form an interactive terminal prints — ANSI colour codes and the restore, build and xUnit
   progress lines are left out, as the panel says) and from `dotnet premium-check.cs` / `dotnet premium-check.cs -- 3`;
   the classic `Passed! - Failed: 0, Passed: 31` line quoted in the 9.3 note is the redirected-output form of the same
@@ -134,8 +148,8 @@ precede the card bands in §3; the type-card deck is two bands of three; the bre
 long calls panel 6.3; panel 5.4 is kept whole (as a split panel it left a three-line tail at the top of the next page);
 the version history is a table (2.6) because a mermaid timeline rendered too small to read; diagram 2.5 is a 4-column
 `flowchart LR` with compact spacing. Measured on the rasterized pages, the largest bottom gaps at this build are page 4
-22 % (diagram 2.5 cannot fit below the file-based-app panel), page 11 22 %, page 9 19 %, page 7 18 % and page 15 17 %
-(diagram 7.3 jumps whole); every other page is under 10 % and none reaches a third. The §4 and §7 stories continue onto
+20 % (diagram 2.5 cannot fit below the file-based-app panel), page 9 16 %, page 7 16 %, page 11 16 % and page 15 10 %
+(diagram 7.3 jumps whole); every other page is under 7 % and none reaches a third. The §4 and §7 stories continue onto
 the next page. Compare sides ≤ 62 characters and code panels ≤ 100 (no `lesson_kit` width warnings).
 
 ## 6 · Inputs
@@ -163,8 +177,13 @@ Sources (all linked in the PDF):
 
 - Every rate, loading and total is labelled **illustrative, not a real tariff** wherever a premium appears (§1 story,
   §9 story, chart 9.5 caption, `RatingRules.cs` and `Model.cs` comments).
-- The worked example (10,422.67 THB) is asserted component by component in `Calculate_matches_the_worked_example`;
-  chart 9.5 reads those assertions, so the chart cannot drift from the tested code.
+- **Every rate, loading, discount, tax and rounding rule equals `_curriculum.md` § "Canonical tariff" exactly** —
+  this lesson introduces the tariff and the rest of the track copies it, so a change here is a change to the
+  curriculum and to every lesson that prices a quote. The only permitted local variant is one that says so in a
+  sentence and names the canonical tariff (today: `Discount(…, roundUp)`'s `Math.Ceiling`, note 6.3).
+- The worked example (8,933.71 THB) is asserted component by component in `Calculate_matches_the_worked_example`;
+  chart 9.5, its heading, the 9.3 note and checkpoint item 1 read those assertions, so none of them can drift from
+  the tested code.
 - Test-method names start with the rule under test (`AgeLoading_…`, `Calculate_…`); every TheoryData row stays on its
   own `{ …, … },` line — `test_cases_by_rule()` depends on both.
 - `CAPTURED_TESTS` equals the measured test count, or the build fails and panel 9.3 must be re-captured.
@@ -183,8 +202,10 @@ Sources (all linked in the PDF):
 
 - ⚠ `verify_samples.py` only discovers `.csproj` / `.vbproj`: the file-based app is **not** built or run by the gate.
   It was run by hand on the build machine (both invocations in 9.3, re-run 2026-09-20).
-- ⚠ Output panels and *Printed:* notes are pasted text; only the test count is guarded. Durations in 9.3 (1.0 s,
-  0.9 s, 2.1 s) vary per run.
+- ⚠ Output panels and *Printed:* notes are pasted text; only the test count is guarded. Durations in 9.3 (2.1 s,
+  2.1 s, 3.1 s) vary per run. A tariff change therefore has to be re-captured by hand from `dotnet run` /
+  `dotnet test` / `dotnet premium-check.cs`, as the 2026-09-20 alignment was — nothing fails the build if a premium
+  in a pasted panel goes stale.
 - ⚠ The culture outputs (`FİLE`, `1/10/2569`, the soft-hyphen `IndexOf`) depend on the ICU data of the machine; a
   container in globalization-invariant mode prints different results, and the lesson does not demonstrate that
   (lesson 12 owns containers).

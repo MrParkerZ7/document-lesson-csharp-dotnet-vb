@@ -5,7 +5,7 @@ namespace L05.AsyncTraps;
 public static class Lowered
 {
     #region lowered
-    // async Task<decimal> GetPremiumAsync() { await Task.Delay(50); return 6_450m; }
+    // async Task<decimal> GetPremiumAsync() { await Task.Delay(50); return 8_933.71m; }
     // written out by hand (the real output is a state-machine struct)
     public static Task<decimal> GetPremiumLowered()
     {
@@ -17,7 +17,7 @@ public static class Lowered
 
         void Resume()                         // everything after the await
         {
-            try { awaiter.GetResult(); result.SetResult(6_450m); }   // GetResult rethrows a failure
+            try { awaiter.GetResult(); result.SetResult(8_933.71m); }   // rethrows a failure
             catch (Exception ex) { result.SetException(ex); }
         }
     }
@@ -31,7 +31,7 @@ public static class Deadlock
     private static async Task<decimal> GetPremiumAsync(bool captureContext)
     {
         await Task.Delay(50).ConfigureAwait(captureContext);
-        return 6_450m;   // with a captured context, this line must run ON that context's thread
+        return 8_933.71m;   // with a captured context, this line must run ON that context's thread
     }
 
     // a "UI thread": owns a one-thread context, then blocks on .Result

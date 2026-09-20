@@ -9,7 +9,7 @@ static class StringsTour
 
         #region strings
         var make = "Toyota";
-        decimal total = 10_422.67m;
+        decimal total = 8_933.71m;              // the worked example's total
         var de = CultureInfo.GetCultureInfo("de-DE");
 
         // interpolation + format specifiers; the CURRENT culture picks the separators

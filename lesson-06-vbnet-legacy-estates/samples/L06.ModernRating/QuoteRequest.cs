@@ -8,7 +8,7 @@ public sealed record QuoteRequest(
     DateOnly DateOfBirth,
     DateOnly StartDate,
     int LicenceMonths,
-    int ClaimFreeYears,
     int Claims,
-    bool Commercial = false);
+    bool Commercial = false,
+    int EngineCc = 1_500);
 #endregion

@@ -96,15 +96,15 @@ OUT_COLLECTIONS = """
   frozen    2
   after cast + Remove  2
 3. frozen lookup table
-  Class2Plus base rate  0.016
-  has a Class3 rate?    False
+  Class2Plus base rate  0.012
+  classes with a rate   4
 4. deferred execution
   declared          calls = 0
   three passes      calls = 482
   ToList + 3 reads  calls = 240
-  (141 accepted, first Q-0002)
-  > threshold, run 1  48
-  > threshold, run 2  18
+  (127 accepted, first Q-0002)
+  > threshold, run 1  123
+  > threshold, run 2  67
   InvalidOperationException
 5. iterators
   iterator created
@@ -119,7 +119,7 @@ OUT_COLLECTIONS = """
   draft notes  created | renewal
   same list?   True
 8. delegate types are nominal
-  Count 141, FindAll 141
+  Count 127, FindAll 127
 9. a key that is not there
   lookup     0 Tesla quotes
   dictionary KeyNotFoundException
@@ -127,29 +127,30 @@ OUT_COLLECTIONS = """
 
 OUT_DASHBOARD = """
 MotorQuote dashboard: 240 quotes, illustrative rates
+declined, never priced         24 (3+ claims in 5 years)
 conversion by coverage class   quoted accepted rate
-  Class1                       60       25   41.7%
-  Class2Plus                   60       34   56.7%
-  Class3Plus                   60       37   61.7%
-  Class3                       60       45   75.0%
-premium bands, all quotes
-  < 3k        60
-  3k-6k       18
-  6k-9k       92
-  9k-12k      52
-  12k+        18
+  Class1                       54       22   40.7%
+  Class2Plus                   54       32   59.3%
+  Class3Plus                   54       32   59.3%
+  Class3                       54       41   75.9%
+premium bands, priced quotes
+  < 3k        40
+  3k-6k      109
+  6k-9k       50
+  9k-12k      16
+  12k+         1
 top makes, accepted quotes
-  1. Toyota    31
-  2. Honda     26
-  3. Isuzu     17
-  4. MG        17
-  5. Nissan    17
+  1. Toyota    27
+  2. Honda     22
+  3. MG        16
+  4. Isuzu     15
+  5. Nissan    14
 accepted premium by class, THB
-  Class1          198,362
-  Class2Plus      297,928
-  Class3Plus      348,568
-  Class3           84,600
-issuance       141 accepted, 23 pending
+  Class1          136,262
+  Class2Plus      169,483
+  Class3Plus      174,299
+  Class3          130,512
+issuance       127 accepted, 21 pending
 export batches 100 + 100 + 40
 lookup         49 Toyota quotes
 """
@@ -166,28 +167,29 @@ Values            [:v0, Class1], [:v1, 15000], [:v2, To]
 OUT_VB = """
 VB dashboard: 240 quotes, illustrative rates
 conversion by coverage class   quoted accepted rate
-  Class1                       60       25   41.7%
-  Class2Plus                   60       34   56.7%
-  Class3Plus                   60       37   61.7%
-  Class3                       60       45   75.0%
+  Class1                       54       22   40.7%
+  Class2Plus                   54       32   59.3%
+  Class3Plus                   54       32   59.3%
+  Class3                       54       41   75.9%
 top makes, accepted quotes
-  1. Toyota    31
-  2. Honda     26
-  3. Isuzu     17
-  4. MG        17
-  5. Nissan    17
-accepted       141 quotes, 929,457 THB, largest 16,759
+  1. Toyota    27
+  2. Honda     22
+  3. MG        16
+  4. Isuzu     15
+  5. Nissan    14
+accepted       127 quotes, 610,555 THB, largest 12,182
 makes          BYD,Ford,Honda,Isuzu,Mazda,MG,Nissan,Toyota
-premiums from 8,400 to under 8,600 THB
-  Q-0014   8,459.96
-  Q-0080   8,508.30
-  Q-0143   8,508.30
-  Q-0106   8,594.24
+premiums from 8,600 to under 8,900 THB
+  Q-0139   8,685.55
+  Q-0219   8,685.55
+  Q-0005   8,701.67
+  Q-0015   8,862.81
+  Q-0175   8,862.81
 """
 
 OUT_TESTS = """
 Passed!  - Failed: 0, Passed: 24, Skipped: 0, Total: 24 - L04.QueryGen.Tests.dll (net10.0)
-Passed!  - Failed: 0, Passed: 17, Skipped: 0, Total: 17 - L04.QuoteData.Tests.dll (net10.0)
+Passed!  - Failed: 0, Passed: 19, Skipped: 0, Total: 19 - L04.QuoteData.Tests.dll (net10.0)
 """
 
 # Pygments' vbnet lexer has no token for VB 14 interpolated strings, so every `$"` prints inside a red
@@ -262,6 +264,19 @@ def blocks():
     accepted = sum(a for _c, _q, a, _r in conversion)
     quoted = sum(q for _c, q, _a, _r in conversion)
     pending = int(re.search(r"(\d+) pending", OUT_DASHBOARD).group(1))
+    declined = int(re.search(r"declined, never priced\s+(\d+)", OUT_DASHBOARD).group(1))
+    priced = sum(n for _b, n in bands)
+    # every prose figure below is read back out of a captured run, so a re-tariff cannot leave prose behind
+    thresh = [int(n) for n in re.findall(r"^\s+> threshold, run \d\s+(\d+)", OUT_COLLECTIONS, re.M)]
+    nominal = int(re.search(r"Count (\d+), FindAll", OUT_COLLECTIONS).group(1))
+    prem_by_class = dict(re.findall(r"^\s+(Class\w+)\s+([\d,]+)$", OUT_DASHBOARD, re.M))
+    makes = re.findall(r"^\s+\d\. (\w+)\s+(\d+)$", OUT_DASHBOARD, re.M)
+    makes_sentence = ", ".join(f"{m} {n}" for m, n in makes[:-1]) + f" and {makes[-1][0]} {makes[-1][1]}"
+    vb_sum = re.search(r"accepted\s+(\d+) quotes, ([\d,]+) THB, largest ([\d,]+)", OUT_VB).groups()
+    vb_window = re.findall(r"^\s+(Q-\d+)\s+([\d,.]+)$", OUT_VB, re.M)
+    # the first premium the window prints twice, and the two quote ids that share it — stable-sort evidence
+    tie_amount = next(a for i, (_q, a) in enumerate(vb_window) if a == vb_window[i + 1][1])
+    tie_ids = [q for q, a in vb_window if a == tie_amount]
 
     projects = sorted(p for p in (REPO / L).glob("*/*.*proj"))
     loc_by_project = []
@@ -389,8 +404,15 @@ def blocks():
              "deterministic 240-quote book, dashboard queries, rating rules as functions), "
              "<code>L04.QueryGen</code> (expression tree → DynamoDB filter), two C# consoles "
              "(<code>L04.Collections</code>, <code>L04.QuoteAnalytics</code>), a VB console "
-             "(<code>L04.VbLinq</code>) and two xUnit projects. Premiums are illustrative, not a real tariff.",
-             "<b>Not here:</b> <code>IAsyncEnumerable&lt;T&gt;</code> and PLINQ are " + ref(5) + "; how EF Core "
+             "(<code>L04.VbLinq</code>) and two xUnit projects. The rating rules are the track's one illustrative "
+             "tariff — the same base rates, loadings, no-claim ladder and rounding every lesson that prices a "
+             "MotorQuote quote uses, so the figures here and in " + ref(2) + " agree.",
+             "<b>The dataset is an analytics row, not the " + ref(3) + " entity.</b> Every query here is a read, so "
+             "<code>Quote</code> is a <code>record</code> and <code>QuoteId</code> / <code>PolicyNumber</code> are "
+             "flattened to <code>string</code> — the shape a dashboard row and a DynamoDB item actually have. "
+             + ref(3) + " owns the type-kind decision itself (an entity with identity is a <code>sealed class</code>; "
+             "an id is a <code>readonly record struct</code>), and this lesson does not overturn it.",
+             "<b>Not here:</b> <code>IAsyncEnumerable&lt;T&gt;</code> is " + ref(5) + "; how EF Core "
              "translates <code>IQueryable</code> to SQL is " + ref(9) + "; VB language semantics in depth are "
              + ref(6) + ".",
              "Facts that change with releases are marked " + VERIFIED + " and link to the source; figures computed "
@@ -525,7 +547,8 @@ def blocks():
              "its open context — to every caller; " + ref(9) + " covers that case.</p>"
              "<p><b>Deferred also means late.</b> A query reads captured variables and the source collection "
              "when it is enumerated, not when it is written: raising a threshold after declaring the query "
-             "changed its count from 48 to 18. Changing a <code>List&lt;T&gt;</code> while a <code>foreach</code> "
+             "changed its count from " + str(thresh[0]) + " to " + str(thresh[1]) + ". Changing a "
+             "<code>List&lt;T&gt;</code> while a <code>foreach</code> "
              "walks it throws <code>InvalidOperationException</code>, as Java throws "
              "<code>ConcurrentModificationException</code>.</p>"
              "<p><b><code>yield return</code> is how you write your own lazy sequence.</b> The compiler rewrites "
@@ -558,7 +581,7 @@ def blocks():
                   "  Note over C,P: 482 calls, and no result was kept\n"
                   "  C->>Q: ToList()\n"
                   "  Q->>P: 240 calls, once\n"
-                  "  Q-->>C: List of 141 quotes · reads call nothing\n")},
+                  f"  Q-->>C: List of {accepted} quotes · reads call nothing\n")},
 
         listed(compare(from_text("""
             // a Stream is single-use: reuse throws
@@ -602,7 +625,8 @@ def blocks():
                        half(from_sample(COLL, "modified", label="C# · changed list")),
                        heading="3.4 · Deferred means late: captured variables and changing sources",
                        note="<b>The lambda captured the variable <code>threshold</code>, not its value.</b> The "
-                            "same query printed <code>48</code>, then <code>18</code> after the assignment. On the "
+                            f"same query printed <code>{thresh[0]}</code>, then <code>{thresh[1]}</code> after the "
+                            "assignment. On the "
                             "right, <code>Add</code> during enumeration prints "
                             "<code>InvalidOperationException</code>: <code>List&lt;T&gt;</code> enumerators check a "
                             "version number, like Java's fail-fast iterators. Iterate a copy "
@@ -703,7 +727,11 @@ def blocks():
              "same", "The point where the query actually runs"),
             ("Kotlin <code>sequence { yield() }</code>", "<code>yield return</code>", "renamed",
              "The method body starts on the first <code>MoveNext</code>"),
-            ("<code>parallelStream()</code>", "PLINQ <code>AsParallel()</code>", "different", ref(5)),
+            ("<code>parallelStream()</code>", "PLINQ <code>AsParallel()</code>", "different",
+             "<code>AsParallel()</code> partitions an <i>in-memory</i> sequence across the thread pool, and "
+             "<code>AsOrdered()</code> buys the original order back at a cost. This track does not cover PLINQ; "
+             + ref(5) + " covers Task-based parallelism (<code>Task.WhenAll</code>, "
+             "<code>Parallel.ForEachAsync</code>), which is what I/O-bound fan-out needs instead"),
         ]),
 
         {"type": "mermaid", "inline": True,
@@ -728,8 +756,9 @@ def blocks():
                     heading="4.3 · AggregateBy — a fold per key without building groups",
                     note="<b>This is Kotlin's <code>groupingBy { }.fold</code>.</b> One pass keeps one running "
                          "total per coverage class; <code>GroupBy</code> would first collect every quote into a "
-                         "group and then sum each group. The dashboard prints <code>Class1 198,362</code> … "
-                         "<code>Class3 84,600</code> THB (illustrative rates). Like <code>CountBy</code> it "
+                         "group and then sum each group. The dashboard prints <code>Class1 "
+                         + prem_by_class["Class1"] + "</code> … <code>Class3 " + prem_by_class["Class3"]
+                         + "</code> THB (the canonical tariff, illustrative). Like <code>CountBy</code> it "
                          "returns a deferred sequence of <code>KeyValuePair</code>s that is rebuilt on every "
                          "enumeration (the test <code>CountBy_and_AggregateBy_are_deferred…</code> counts it), "
                          "so sort explicitly when order matters and add <code>ToList()</code> or "
@@ -755,13 +784,14 @@ def blocks():
              "<code>Func&lt;Quote, bool&gt;</code> and <code>Predicate&lt;Quote&gt;</code> have the same shape and "
              "still do not convert — the compiler reports CS0029, and the sample converts through "
              "<code>.Invoke</code> instead. Use <code>Func</code> and <code>Action</code> everywhere, and declare "
-             "a named delegate only where the name documents intent, as <code>Adjustment</code> does below "
+             "a named delegate only where the name documents intent, as <code>Loading</code> does below "
              "(" + LAMBDAS + ").</p>"
-             "<p><b>Rules as values is the functional shape of a rating engine.</b> Each rating rule is a named "
-             "function in a list, and the net premium is a fold of the rules over the base premium: no mutable "
-             "state, same input, same output. That is what makes the rules trivially testable — the "
-             "young-driver theory asserts a pure function — and easy to reorder or extend. The rates are "
-             "illustrative.</p>"
+             "<p><b>Rules as values is the functional shape of a rating engine.</b> Each loading rule is a named "
+             "function in a list, and the total loading is a fold of those rules into one number, which the base "
+             "premium is then multiplied by: no mutable state, same input, same output. That is what makes the "
+             "rules trivially testable — the young-driver theory asserts a pure function — and easy to reorder or "
+             "extend. Because the loadings are <i>added</i> before they are applied, the order of the list cannot "
+             "change the answer, which is a property worth having in a tariff.</p>"
              "<p><b>Closures capture variables, not values — and C#'s two loops differ.</b> A <code>for</code> "
              "loop has one loop variable shared by every lambda created in it, so three lambdas print "
              "<code>3,3,3</code>; a <code>foreach</code> gets a fresh variable per iteration and prints "
@@ -780,12 +810,15 @@ def blocks():
 
         listed(code(from_sample(RATING, "rules-as-functions"),
                     heading="5.1 · Rating rules as a list of functions, folded with Aggregate",
-                    note="<b>Read <code>Net</code> as <code>rules.fold(base) { premium, rule -&gt; rule(r, premium) }</code>.</b> "
-                         "<code>Adjustment</code> is a named delegate type; each tuple pairs a rule name with a "
+                    note="<b>Read the fold as <code>rules.fold(0m) { loading, rule -&gt; loading + rule(r) }</code>.</b> "
+                         "<code>Loading</code> is a named delegate type; each tuple pairs a rule name with a "
                          "lambda. The collection expression builds an <code>IReadOnlyList</code> of tuples. "
-                         "Adding a commercial-fleet rule is one more line, and every rule can be tested alone: "
-                         "<code>Rating.Rules.Single(r =&gt; r.Name == \"young driver\").Apply</code>. Illustrative "
-                         "rates, not a real tariff."),
+                         "Adding a fleet-size rule is one more line, and every rule can be tested alone: "
+                         "<code>Rating.Rules.Single(r =&gt; r.Name == \"young driver\").Rate</code>. These are the "
+                         "rules " + ref(2) + " wrote as <code>switch</code> expressions, re-expressed as values — "
+                         "the track's one illustrative tariff, not a real one; three claims in five years is a "
+                         "decline rather than a loading, which section 6 counts as a "
+                         "<code>QuoteStatus</code>."),
                "5.1 · Rating rules as a list of functions, folded with Aggregate"),
 
         listed(compare(from_text("""
@@ -816,7 +849,8 @@ def blocks():
                        heading="5.3 · Delegates are nominal; with copies are shallow",
                        note="<b>Two small surprises for a Kotlin engineer.</b> Left: the commented line does not "
                             "compile (CS0029, checked on the build SDK); <code>isAccepted.Invoke</code> is a method "
-                            "group that converts to any compatible delegate type. Both counts print 141. Right: "
+                            "group that converts to any compatible delegate type. Both counts print "
+                            + str(nominal) + ". Right: "
                             "the run printed <code>draft notes created | renewal</code> and "
                             "<code>same list? True</code> — changing the renewal's notes changed the draft's."),
                "5.3 · Delegates are nominal; with copies are shallow"),
@@ -871,10 +905,10 @@ def blocks():
                              "Output — L04.QuoteAnalytics, after the conversion and band lines charted in 6.4–6.5"),
                     heading="6.3 · What the dashboard prints",
                     note="<b>Every figure here except the batch sizes and the lookup count is asserted by a "
-                         "test.</b> Rates are illustrative. Toyota leads "
-                         "accepted quotes; Isuzu, MG and Nissan tie at 17 and are ordered by name because the "
-                         "query adds <code>ThenBy(kv =&gt; kv.Key)</code> (code in 8.2). <code>Chunk(100)</code> split the book "
-                         "into export batches of 100 + 100 + 40."),
+                         "test.</b> The premiums come from the track's canonical tariff, which is illustrative. "
+                         f"The ranking is {makes_sentence}; ties are still possible on another dataset, so the "
+                         "query adds <code>ThenBy(kv =&gt; kv.Key)</code> to order them by name (code in 8.2). "
+                         "<code>Chunk(100)</code> split the book into export batches of 100 + 100 + 40."),
                "6.3 · What the dashboard prints"),
 
         {"type": "chartrow", "charts": [
@@ -888,11 +922,13 @@ def blocks():
                      + MEASURED + ", illustrative data."},
             {"heading": "6.5 · Quotes per premium band", "kind": "bar",
              "args": {"data": bands, "ylabel": "quotes", "tone": "indigo", "width": 390, "height": 210},
-             "caption": "all 240 quotes by total premium band, THB · measured from the sample's dashboard output",
+             "caption": f"the {priced} priced quotes by total premium band, THB · the {declined} declined quotes "
+                       "have no premium to band · measured from the sample's dashboard output",
              "note": f"<b>The 6k–9k band holds {dict(bands)['6k-9k']} quotes; &lt; 3k holds "
                      f"{dict(bands)['< 3k']}.</b> Band edges are business choices, so the chart is only as "
-                     "meaningful as <code>BandOf</code>. The bars sum to 240 — the test <code>Bands_account_for_every_quote</code> "
-                     "checks that no quote falls outside a band. " + MEASURED + ", illustrative data."}]},
+                     f"meaningful as <code>BandOf</code>. The bars sum to {priced}, not {priced + declined} — the "
+                     "test <code>Bands_account_for_every_priced_quote</code> checks that no <i>priced</i> quote "
+                     "falls outside a band. " + MEASURED + ", illustrative data."}]},
 
         # ═══════════════════════════ 7 · EXPRESSION TREES ═══════════════════════════
         {"type": "story", "heading": "7 · Expression trees — code as data, and a DynamoDB query generator",
@@ -913,8 +949,11 @@ def blocks():
              "everywhere keeps the generator safe (" + DDBNAMES + " · " + DDBOPS + ").</p>"
              "<p><b>Compile time accepts what translation rejects.</b> Any expression lambda that type-checks "
              "compiles, but a translator — yours or EF Core's — supports a subset. The computed property "
-             "<code>IsAccepted</code> and a call to <code>ToUpperInvariant</code> both compile and both throw "
-             "<code>NotSupportedException</code> at translation. The compiler itself refuses statement lambdas, <code>?.</code>, switch expressions, "
+             "<code>IsAccepted</code> and a call to <code>ToUpperInvariant</code> both compile and both fail at "
+             "translation, each with its own exception: <code>DynamoFilter</code> throws "
+             "<code>NotSupportedException</code> naming the node it met, while EF Core throws "
+             "<code>InvalidOperationException</code> (“The LINQ expression … could not be translated”) — "
+             + ref(9) + " pins that type in a test. The compiler itself refuses statement lambdas, <code>?.</code>, switch expressions, "
              "collection expressions, tuple literals and <code>is</code> patterns inside an expression tree; an "
              "interpolated string compiles, to a <code>string.Format</code> call that few providers can "
              "translate.</p>"
@@ -1088,7 +1127,7 @@ def blocks():
                        note="<b>The same ranking, two idioms.</b> C# uses the .NET 9 <code>CountBy</code> and "
                             "<code>Index</code> to count and number in the pipeline; VB groups, orders by the named "
                             "aggregate and <code>Take 5</code>, and numbers the rows in the loop that prints them. "
-                            "Both print Toyota 31, Honda 26, then Isuzu, MG and Nissan at 17."),
+                            f"Both print {makes_sentence}."),
                "8.2 · Top makes — CountBy and Index vs a five-line VB query"),
 
         listed(compare(half(from_sample(DASH, "summary", label="C# · port")),
@@ -1096,7 +1135,8 @@ def blocks():
                        heading="8.3 · Aggregate … Into — a clause C# does not have",
                        note="<b>VB's <code>Aggregate</code> runs immediately and returns one object.</b> It "
                             "returned <code>Policies</code>, <code>Premium</code> and <code>Largest</code> "
-                            "properties: <code>141 quotes, 929,457 THB, largest 16,759</code>. C# has no such "
+                            f"properties: <code>{vb_sum[0]} quotes, {vb_sum[1]} THB, largest {vb_sum[2]}</code>. "
+                            "C# has no such "
                             "clause: the port materialises the amounts once with <code>ToList</code> and reads "
                             "<code>Count</code>, <code>Sum</code> and <code>Max</code> from the list."),
                "8.3 · Aggregate … Into — a clause C# does not have"),
@@ -1105,8 +1145,9 @@ def blocks():
                        half(from_sample(VB, "distinct-skip-while", label="VB · Skip While")),
                        heading="8.4 · Distinct, Skip While and Take While — clauses C# spells as methods",
                        note="<b>Both cut the same window from the premium-ordered book.</b> "
-                            "<code>OrderBy</code> is stable, so the two quotes tied at 8,508.30 keep their book "
-                            "order (Q-0080, then Q-0143) in C# and in VB. <code>Distinct</code> and "
+                            f"<code>OrderBy</code> is stable, so the two quotes tied at {tie_amount} keep their "
+                            f"book order ({tie_ids[0]}, then {tie_ids[1]}) in C# and in VB. <code>Distinct</code> "
+                            "and "
                             "<code>Order</code> give the eight makes. The test <code>The_C_sharp_ports_reproduce_the_captured_"
                             "Visual_Basic_output</code> asserts both ports against the figures the VB console "
                             "printed."),

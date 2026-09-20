@@ -26,10 +26,20 @@ public sealed class RawQuoteHandler
                 out CoverageClass coverage))
             return Respond(400, "\"unknown coverage\"");
 
-        var p = Rating.Quote(coverage, input.SumInsured,
-            input.DriverAge, input.ClaimsLast5Years,
-            input.Commercial);
-        return Respond(201, JsonSerializer.Serialize(p, Json));
+        try
+        {
+            var p = Rating.Quote(coverage, input.SumInsured,
+                input.DriverAge, input.LicenceYears,
+                input.ClaimsLast5Years, input.Commercial,
+                input.EngineCc);
+            return Respond(201,
+                JsonSerializer.Serialize(p, Json));
+        }
+        catch (QuoteDeclinedException declined)
+        {
+            return Respond(422, JsonSerializer.Serialize(
+                declined.Message, Json));
+        }
     }
 
     static APIGatewayHttpApiV2ProxyResponse Respond(

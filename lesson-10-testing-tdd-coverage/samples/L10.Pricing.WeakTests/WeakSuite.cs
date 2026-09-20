@@ -14,6 +14,8 @@ public class WeakSuite
     {
         for (var years = -1; years <= 5; years++)
             Swallow(() => NoClaimBonus.DiscountFor(years));
+        for (var claims = 0; claims <= 3; claims++)
+            Swallow(() => PremiumCalculator.ClaimsLoading(claims));
         foreach (var coverage in Enum.GetValues<CoverageClass>())
             PremiumCalculator.BaseRate(coverage);
         Swallow(() => PremiumCalculator.BaseRate((CoverageClass)99));
@@ -24,6 +26,8 @@ public class WeakSuite
         Assert.NotNull(calculator.Calculate(Requests.Standard()));
         Assert.NotNull(calculator.Calculate(Requests.Standard(
             age: 23, claims: 1, use: VehicleUse.Commercial)));
+        Assert.NotNull(calculator.Calculate(Requests.Standard(
+            claims: 2, use: VehicleUse.Commercial, engineCc: 3_500)));
     }
     #endregion
 

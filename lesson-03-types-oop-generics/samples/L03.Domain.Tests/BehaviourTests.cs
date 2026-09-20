@@ -43,19 +43,47 @@ public class PremiumTests
     [Fact]
     public void Young_driver_class_1_breaks_down_as_expected()
     {
+        // 450,000 x 2.1% = 9,450.00 base; +20% young driver; -30% no-claim (3 claim-free years)
         var premium = Samples.Calculator().Calculate(Samples.YoungDriver());
-        Assert.Equal(Money.Thb(11_475.00m), premium.Net);
-        Assert.Equal(Money.Thb(45.90m), premium.StampDuty);
-        Assert.Equal(Money.Thb(806.46m), premium.Vat);
-        Assert.Equal(Money.Thb(12_327.36m), premium.Total);
+        Assert.Equal(Money.Thb(7_938.00m), premium.Net);
+        Assert.Equal(Money.Thb(31.75m), premium.StampDuty);
+        Assert.Equal(Money.Thb(557.88m), premium.Vat);
+        Assert.Equal(Money.Thb(8_527.63m), premium.Total);
     }
 
     [Fact]
     public void Commercial_pickup_with_one_claim_breaks_down_as_expected()
     {
+        // 620,000 x 1.2% = 7,440.00 base; +10% one claim and +25% commercial added, not multiplied
         var premium = Samples.Calculator().Calculate(Samples.CommercialPickup());
-        Assert.Equal(Money.Thb(14_260.00m), premium.Net);
-        Assert.Equal(Money.Thb(15_319.23m), premium.Total);
+        Assert.Equal(Money.Thb(10_044.00m), premium.Net);
+        Assert.Equal(Money.Thb(10_790.07m), premium.Total);
+    }
+
+    [Fact]
+    public void The_worked_example_of_the_curriculum_tariff_holds()
+    {
+        // Class 1, 550,000 THB, private, aged 23 with 4 claim-free licence years
+        var request = new QuoteRequest(
+            Samples.YoungDriver().Vehicle with { SumInsured = Money.Thb(550_000m) },
+            new Driver(new DateOnly(2003, 5, 10), LicenceYears: 4, ClaimsLast5Years: 0),
+            CoverageClass.Class1,
+            Samples.StartDate);
+        var premium = Samples.Calculator().Calculate(request);
+        Assert.Equal(Money.Thb(8_316.00m), premium.Net);
+        Assert.Equal(Money.Thb(33.26m), premium.StampDuty);
+        Assert.Equal(Money.Thb(584.45m), premium.Vat);
+        Assert.Equal(Money.Thb(8_933.71m), premium.Total);
+    }
+
+    [Fact]
+    public void Three_claims_in_five_years_declines_the_quote()
+    {
+        var request = Samples.ThreeClaims();
+        var declined = Assert.Throws<QuoteDeclinedException>(
+            () => Samples.Calculator().Calculate(request));
+        Assert.Equal("3+ claims in 5 years", declined.Message);
+        Assert.Equal(request, declined.Request);
     }
 }
 
@@ -83,7 +111,7 @@ public class DispatchTests
     public void A_default_interface_method_is_reached_through_the_interface()
     {
         IRateTable table = new StandardRateTable();
-        Assert.Equal(Money.Thb(11_250m), table.BasePremium(Young));
+        Assert.Equal(Money.Thb(9_450m), table.BasePremium(Young));
     }
 
     [Fact]
@@ -91,16 +119,38 @@ public class DispatchTests
         Assert.Null(typeof(StandardRateTable).GetMethod(nameof(IRateTable.BasePremium)));
 
     [Theory]
-    [InlineData(0, 3, "0.85")]
-    [InlineData(0, 9, "0.75")]
-    [InlineData(2, 9, "1.00")]
-    public void No_claim_bonus_is_capped_at_five_years(int claims, int licenceYears, string expected)
+    [InlineData(0, 0, "1.00")]
+    [InlineData(0, 1, "0.80")]
+    [InlineData(0, 3, "0.70")]
+    [InlineData(0, 4, "0.60")]
+    [InlineData(0, 9, "0.50")]
+    [InlineData(2, 9, "1.00")]   // a claim resets the claim-free years to zero
+    public void No_claim_bonus_follows_the_claim_free_ladder(int claims, int licenceYears, string expected)
     {
         var request = Young with
         {
             Driver = Young.Driver with { ClaimsLast5Years = claims, LicenceYears = licenceYears },
         };
         Assert.Equal(decimal.Parse(expected, CultureInfo.InvariantCulture), new NoClaimBonus().Factor(request));
+    }
+
+    [Theory]
+    [InlineData(0, "1.00")]
+    [InlineData(1, "1.10")]
+    [InlineData(2, "1.25")]
+    public void The_claims_loading_follows_the_tariff(int claims, string expected)
+    {
+        var request = Young with { Driver = Young.Driver with { ClaimsLast5Years = claims } };
+        Assert.Equal(decimal.Parse(expected, CultureInfo.InvariantCulture), new ClaimsLoading().Factor(request));
+    }
+
+    [Fact]
+    public void Only_the_no_claim_bonus_discounts()
+    {
+        Assert.True(new NoClaimBonus().IsDiscount);
+        Assert.False(new ClaimsLoading().IsDiscount);
+        Assert.False(new YoungDriverLoading().IsDiscount);
+        Assert.False(new CommercialUseLoading().IsDiscount);
     }
 }
 

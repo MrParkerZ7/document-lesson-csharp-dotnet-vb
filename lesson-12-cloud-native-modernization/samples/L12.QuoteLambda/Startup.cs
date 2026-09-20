@@ -40,7 +40,8 @@ public static class SnapStart
         SnapshotRestore.RegisterBeforeSnapshot(() =>
         {
             var body = JsonSerializer.Serialize(
-                new QuoteRequest("class1", 800_000m, 30, 0, false), JsonSerializerOptions.Web);
+                new QuoteRequest("class1", 550_000m, 23, 4, 0, false, 1500),
+                JsonSerializerOptions.Web);
             var request = new APIGatewayHttpApiV2ProxyRequest { Body = body };
             var handler = new RawQuoteHandler();
             for (var i = 0; i < 10; i++)

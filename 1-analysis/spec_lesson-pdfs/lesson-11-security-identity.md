@@ -22,26 +22,35 @@ defaults for `net10.0`, the .NET 10 cookie-redirect breaking change, the Auth0 `
 OWASP Top 10:2025 category names. Re-capture the five output panels (3.2, 3.6, 7.5, 8.4, 9.5) whenever a sample's
 `Console.WriteLine` or the test count changes, and update `TESTS_PASSED` / `TEST_SUMMARY` in the module.
 
+**Tariff (cross-lesson review, 2026-09-20).** The only sample that prices a quote is `Quotes/QuoteStore.cs`. It applies the
+track's canonical MotorQuote tariff (`_curriculum.md` § Canonical tariff) reduced to a bare sum insured: Class 1 at 2.1 %,
+no loadings, no no-claim discount (the request carries no driver or claims data), stamp duty 0.4 % of net, VAT 7 % on
+net + duty, every amount rounded to 2 places with `MidpointRounding.AwayFromZero`. The reduction is said in one
+sentence in the callout of section 1 and in the class comment; no premium figure is printed in the PDF. Any change to
+the canonical tariff must be mirrored in `QuoteStore.cs`; the tests assert owner and status, not totals, and the only
+total-sensitive line is the `Referrals()` threshold (15,000 THB: the two seeded quotes total 19,175.90 and 9,475.15).
+
 ## 3 · Structure
 
 | § | Heading | Blocks |
 |---|---|---|
 | — | Contents | `toc` depth 2 · style block (callouts kept whole, story and panel headings kept with their first line, link labels wrap at spaces, compact Contents so it stays on page 1) |
-| 1 | Why this lesson — the security you have shipped, in .NET terms | story (4 paragraphs) · `kpi` 1.1 (5 tiles) · `legend` (architecture, cloud — the only tags used) · info callout "Before you start" (4) |
-| 2 | The model — schemes, policies and the pipeline | story · mapping 2.1 (14 rows, Spring Security / NestJS → ASP.NET Core) · code 2.2 (`pipeline`) · mermaid 2.3 flowchart (401 / 403 / 429 origins: policy first, then authenticated? → 401 or 403) · code 2.4 (`order-trap` test) · code 2.5 (`fallback-trap` test: 200 without a fallback policy, 401 with one) |
+| 1 | Why this lesson — the security you have shipped, in .NET terms | story (4 paragraphs) · `kpi` 1.1 (5 tiles) · `legend` (architecture, cloud — the only tags used) · info callout "Before you start" (4; the fourth item ends with the one-sentence tariff reduction) |
+| 2 | The model — schemes, policies and the pipeline | story · mapping 2.1 (14 rows, Spring Security / NestJS → ASP.NET Core) · code 2.2 (`pipeline`, first line `UseForwardedHeaders`; the note says why it is first) · mermaid 2.3 flowchart (401 / 403 / 429 origins: policy first, then authenticated? → 401 or 403) · code 2.4 (`order-trap` test) · code 2.5 (`fallback-trap` test: 200 without a fallback policy, 401 with one) |
 | 3 | Tokens — what JwtBearer checks, and what it renames | story · code 3.1 (TokenLab `cases`) · code 3.2 (captured TokenLab output) · chart 3.3 bar (clock skew seconds) · compare 3.4 (C# `has-scope` ↔ VB `has-scope`) · code 3.5 (VB `read-user`) · code 3.6 (captured ClaimsVb output part 1) · twocol 3.7 (delegated vs app-only tokens) |
 | 4 | Entra ID, External ID and the other authorities | story · table 4.1 (Entra, External ID, B2C, Auth0, Cognito) · code 4.2 (`jwt-bearer`) · code 4.3 (`entra`: repeats the claim and clock-skew settings of 4.2) |
 | 5 | Flows — who gets a token for whom | story · cards 5.1 in three bands of two: auth code + PKCE, on-behalf-of · client credentials, workload identity federation · gateway token relay, secrets · mermaid 5.2 sequenceDiagram (customer → gateway → API → OBO → partner) · code 5.3 (`downstream`) · code 5.4 (`appsettings.json` `"AzureAd"` — the `SignedAssertionFilePath` credential, cut from the file) |
 | 6 | Authorization design — policies, resources and the gateway | story · compare 6.1 (Kotlin Spring Security DSL ↔ C# `policies`) · code 6.2 (`read-endpoint`) · code 6.3 (`owner-handler`) · code 6.4 (Gateway `gateway-policies`) · compare 6.5 (Spring Cloud Gateway YAML ↔ YARP `"Routes"` cut from `L11.Gateway/appsettings.json`) |
-| 7 | Secrets and hardening — STRIDE for one API | story · chart 7.1 heatmap (OWASP Top 10:2025 rubric) · table 7.2 (STRIDE: threat, control, evidence) · code 7.3 (`hardening`) · code 7.4 (ProtectLab `protect`) · code 7.5 (captured ProtectLab output) |
+| 7 | Secrets and hardening — STRIDE for one API | story · chart 7.1 heatmap (OWASP Top 10:2025 rubric; the note teaches the two log hooks for the empty A09 row) · table 7.2 (STRIDE: threat, control, evidence) · code 7.3 (`hardening`: CORS, `ForwardedHeadersOptions` with `Proxy:Network`, the partitioned limiter; the note explains the balancer trap) · code 7.4 (ProtectLab `protect`) · code 7.5 (captured ProtectLab output) |
 | 8 | VB and legacy — Forms and Windows authentication | story · table 8.1 (Framework piece → .NET 10 replacement, with Kind chips) · mermaid 8.2 flowchart (choosing the replacement login) · code 8.3 (VB `legacy-principal`) · code 8.4 (captured ClaimsVb output part 2) |
 | 9 | Hands-on — test-signed tokens and a 401/403/200 matrix | story · code 9.1 (`test-tokens`) · code 9.2 (`factory`) · code 9.3 (`matrix`) · code 9.4 (commands) · code 9.5 (captured `dotnet test` summary) · chartrow 9.6 hbar (test cases per class) + 9.7 bar (lines per project) · chartrow 9.8 heatmap (status matrix) + 9.9 donut (outcomes) · warn "Traps" (5) · ok checkpoint (4) · summary "Check yourself" (7, covering §2–§7 including the gateway / enumeration question) · footer (Next: lesson 12) |
 
 Counts checked by `lint_blocks`: 9 numbered stories · 1 mapping · 3 cards bands (2 + 2 + 2) · 3 mermaid (flowchart,
 sequenceDiagram, flowchart) · 6 charts · 27 code panels (24 `code` + 3 `compare`) · C# ↔ VB compare 3.4 ·
-Kotlin ↔ C# compare 6.1 · YAML ↔ JSON compare 6.5 · twocol 3.7 · 3 extra tables · 43 distinct links (the 40 of the
-first build returned HTTP 200 on 2026-09-16; the three added since — Configure OpenID Connect web authentication,
-Azure Key Vault configuration provider, SonarQube VB.NET analysis — were fetched on 2026-09-20).
+Kotlin ↔ C# compare 6.1 · YAML ↔ JSON compare 6.5 · twocol 3.7 · 3 extra tables · 46 distinct links (the 40 of the
+first build returned HTTP 200 on 2026-09-16; the six added since — Configure OpenID Connect web authentication,
+Azure Key Vault configuration provider, SonarQube VB.NET analysis, Configure ASP.NET Core to work with proxy servers
+and load balancers, JwtBearerEvents, Authorization middleware result handler — were fetched on 2026-09-20).
 Rendered: 22 A4 pages.
 
 ## 4 · Derivation
@@ -65,23 +74,38 @@ Rendered: 22 A4 pages.
   labels are the real status codes. 9 callers × 4 endpoints. Donut counts: 11 allowed · 12 × 401 · 13 × 403. The 9.8
   note names the three 403 cells decided by the owner handler: `other-customer` read and accept, `underwriter-rw`
   accept; the `underwriter` and `back-office-app` accept 403s come from policy `quotes.write` (6.3 note).
-- **KPI "Lesson 11 tests 47"**, chart 9.6 and panel 9.5 — MEASURED: `_test_cases()` counts `[Fact]` = 1,
+- **KPI "Lesson 11 tests 49"**, chart 9.6 and panel 9.5 — MEASURED: `_test_cases()` counts `[Fact]` = 1,
   `[InlineData]` = 1, `[MemberData]` = matrix rows × endpoints per `*Tests.cs` class, and raises if the total differs
-  from `TESTS_PASSED` (47), the count of the captured `dotnet test` run. Per class: StatusMatrixTests 36,
-  SecurityBehaviourTests 4, MiddlewareOrderTests 4, GatewayTests 3.
+  from `TESTS_PASSED` (49), the count of the captured `dotnet test` run. Per class: StatusMatrixTests 36,
+  SecurityBehaviourTests 4, MiddlewareOrderTests 4, GatewayTests 3, ForwardedHeadersTests 2.
 - **KPI "Lesson 11 samples" and chart 9.7** — MEASURED: `loc()` over the `.cs` / `.vb` files of each of the six
-  projects (at the final build: API 240, Tests 281, ClaimsVb 79, TokenLab 56, ProtectLab 42, Gateway 24). The 9.7
-  note names the largest project from the data.
+  projects (at the final build: API 253, Tests 330, ClaimsVb 79, TokenLab 56, ProtectLab 42, Gateway 24 = 784). The 9.7
+  note names the largest project and the tests-to-API ratio (1.3x) from the data.
 - **Chart 7.1 heatmap** — ESTIMATE: the author's rubric (tested / shown / —) for six OWASP Top 10:2025 categories
   and the five sample projects; labelled "a rubric, not a benchmark" in the caption, which also says that A05, A06,
   A08 and A10 are not scored, and "Estimate" in the note. Category names VERIFIED against top10.owasp.org/2025.
 - **Output panels 3.2, 3.6, 7.5, 8.4 and 9.5** — captured from real runs of `L11.TokenLab`, `L11.ClaimsVb`,
   `L11.ProtectLab` and `dotnet test` on the build machine (Windows 11, SDK 10.0.401, runtimes 10.0.12); the three
-  console outputs were re-run and compared on 2026-09-20, the test summary (47 passed, 275 ms) was captured on the
-  same day. The test summary is wrapped before the file name (said in the note).
+  console outputs were re-run and compared on 2026-09-20, the test summary (49 passed, "Duration: 1 s") was captured
+  on the same day after the forwarded-headers test was added. The test summary is wrapped before the file name (said in the note).
 - **Order trap 2.4 and fallback trap 2.5** — MEASURED: `MiddlewareOrderTests` passes all four cases (authentication
   first → 200; authorization first → 401 for the same token; endpoint with no metadata → 200 without and 401 with a
   fallback policy).
+- **Balancer trap (7.3 note)** — MEASURED: `ForwardedHeadersTests` (two cases). A start-up filter gives every request the
+  remote address 10.0.1.5 (TestServer has no socket) and two callers send different `X-Forwarded-For` values against a
+  limit of one request per minute on the anonymous `/health`: with `Proxy:Network = 10.0.0.0/16` the second caller gets
+  200; without it (the default trusts loopback only) it gets 429, the shared bucket. VERIFIED against "Configure
+  ASP.NET Core to work with proxy servers and load balancers": loopback-only default for known proxies and networks,
+  forwarded-headers middleware runs before other middleware, headers accepted only from known proxies or networks.
+  `ForwardedHeadersOptions.KnownIPNetworks` (with `System.Net.IPNetwork`) compiles on SDK 10.0.401 without a warning.
+- **Security-logging hooks (7.1 note)** — VERIFIED, not sampled: `JwtBearerEvents.OnAuthenticationFailed` and
+  `OnForbidden` (API reference: "Invoked if Authorization fails and results in a Forbidden response") and
+  `IAuthorizationMiddlewareResultHandler`, whose `PolicyAuthorizationResult.AuthorizationFailure.FailedRequirements`
+  lists the failed requirements (Customize the behavior of AuthorizationMiddleware). On 2026-09-20 a throw-away test
+  (deleted, not part of the samples) confirmed that `OnForbidden` fires for both a policy failure and the
+  resource-handler `Results.Forbid()` of `GET /quotes/Q-1002`. The row stays "—" in heat map 7.1: no sample logs a
+  denial and no test would notice. Where structured logs go is the CloudWatch Logs example of lesson 12 (6.2, which
+  exists); alarms are not covered by any lesson and the note says so.
 - **Claim-mapping facts in §3** — MEASURED by `L11.ClaimsVb` output and `Default_claim_mapping_renames_scp_so_the_owner_gets_403`;
   default `MapInboundClaims = true` VERIFIED on the API page.
 - **Audience fails closed** — MEASURED: TokenLab case "API sets no audience" → `SecurityTokenInvalidAudienceException`.
@@ -135,25 +159,25 @@ chartrows of §9 are ordered smaller first (tests / lines, then heat map / donut
 cell 40 (7.1) and 36 (9.8); 7.1 at cell 27 printed overlapping labels. Compare sides ≤ 62 characters and code panels ≤
 100 (no width warnings at the final build). Cards are bands of two (a band never splits across pages).
 
-Pagination at the final build (empty share of each page, PyMuPDF): pages 1–22 all ≤ 20 %, except the last (69 %,
-the Check-yourself list and the footer). Largest interior gaps: page 10 (20 %, the fifth and sixth flow cards do not
-fit under the first four), pages 12, 16 and 19 (14 % each).
+Pagination at the final build (empty share of each page, measured on the rendered page images): all pages ≤ 21 %, except
+the last (69 %, the Check-yourself list and the footer). Largest interior gaps: page 10 (21 %, the fifth and sixth flow
+cards do not fit under the first four) and page 12 (14 %).
 
 ## 6 · Inputs
 
 `roster.py`; samples:
-- `L11.SecureQuoteApi` (web, build-only): `Program.cs` (provider switch, policies + fallback, CORS, partitioned
-  rate limiter, pipeline, endpoints), `Security/AuthenticationSetup.cs` (plain JwtBearer; Microsoft.Identity.Web
+- `L11.SecureQuoteApi` (web, build-only): `Program.cs` (provider switch, policies + fallback, CORS, forwarded headers,
+  partitioned rate limiter, pipeline, endpoints), `Security/AuthenticationSetup.cs` (plain JwtBearer; Microsoft.Identity.Web
   with token acquisition and a downstream API, both with `MapInboundClaims = false`, `NameClaimType`,
   `RoleClaimType` and a 30 s `ClockSkew`), `Security/QuoteClaims.cs`, `Security/QuoteAuthorizationHandler.cs`,
   `Partners/PartnerRatesClient.cs` (OBO and client-credentials calls, compiled, not run), `Quotes/QuoteStore.cs`
-  (illustrative premiums), `appsettings.json` (placeholder tenant, `SignedAssertionFilePath` credential,
+  (the canonical tariff reduced to a sum insured, half-away-from-zero rounding), `appsettings.json` (placeholder tenant, `SignedAssertionFilePath` credential,
   `DownstreamApis:PartnerRates`). Packages: JwtBearer 10.0.12, Microsoft.Identity.Web and .DownstreamApi 4.14.2.
 - `L11.Gateway` (web, build-only): YARP 2.3.0 with JwtBearer and two route policies; three routes, each naming an
   `AuthorizationPolicy`, in `appsettings.json` (nested regions `gateway` ⊃ `gateway-policies` in `Program.cs`).
 - `L11.SecureQuoteApi.Tests` (xUnit v2, `Microsoft.AspNetCore.Mvc.Testing` 10.0.12): `TestTokens`, `TestKeyFactory`,
   `StatusMatrixTests` (9 callers × 4 endpoints, including `underwriter-rw`), `GatewayTests`, `SecurityBehaviourTests`,
-  `MiddlewareOrderTests` (order trap and fallback trap) — 47 cases.
+  `MiddlewareOrderTests` (order trap and fallback trap), `ForwardedHeadersTests` (the balancer trap) — 49 cases.
 - `L11.TokenLab` (C# console, `Microsoft.IdentityModel.JsonWebTokens` 8.22.0): eight tokens against one parameter set.
 - `L11.ProtectLab` (C# console, `FrameworkReference Microsoft.AspNetCore.App`): time-limited protector, purposes,
   tampering, expiry and separate in-memory key rings.
@@ -170,7 +194,9 @@ Resource-based authorization · YARP authentication and authorization · Safe st
 Azure Key Vault configuration provider · Data Protection key management and lifetime · Configure Data Protection ·
 Enforce HTTPS · Prevent cross-site request forgery · Auditing package dependencies · GenericPrincipal · Configure
 Windows Authentication · Cookie login redirects disabled for API endpoints · Share authentication cookies among
-ASP.NET apps · Integration tests in ASP.NET Core. GitHub — AzureAD/microsoft-identity-web ·
+ASP.NET apps · Integration tests in ASP.NET Core · Configure ASP.NET Core to work with proxy servers and load
+balancers · JwtBearerEvents (API reference) · Customize the behavior of AuthorizationMiddleware (linked as
+"Authorization middleware result handler"). GitHub — AzureAD/microsoft-identity-web ·
 aws/aws-dotnet-extensions-configuration · aws/aws-ssm-data-protection-provider-for-aspnet · CodeQL supported
 languages. SonarSource docs — VB.NET analysis. AWS docs — Cognito access token · IAM outbound identity federation.
 Spring Security reference — Resource Server JWT. Auth0 docs — RBAC for APIs. OWASP Top 10:2025.
@@ -188,11 +214,13 @@ Spring Security reference — Resource Server JWT. Auth0 docs — RBAC for APIs.
   (not a policy) that refuses `other-customer` and `underwriter-rw`.
 - The API does not call `UseHttpsRedirection` or `UseHsts` (documented in the `pipeline` comment and §7).
 - ProtectLab uses in-memory key rings only (it writes no keys to the user profile).
-- Every premium is illustrative; tenant and client IDs are zero-filled placeholders; every host except Entra's public
+- Every premium is illustrative and follows the canonical tariff (see § 2); tenant and client IDs are zero-filled placeholders; every host except Entra's public
   sign-in address (`login.microsoftonline.com`, the `AzureAd:Instance` value) ends in `example.test`.
 - Boundaries: hosting, DI, options, middleware basics → lesson 08; test frameworks and `WebApplicationFactory`
   basics → lesson 10; NuGet audit configuration → lesson 07; VB migration → lesson 06; incremental migration with
-  YARP / System.Web adapters, forwarded headers, OpenTelemetry → lesson 12. Each gets one sentence and `ref(n)`.
+  YARP / System.Web adapters and where structured logs go (CloudWatch Logs) → lesson 12. Each gets one sentence and
+  `ref(n)`, and every such pointer was checked against the text of lesson 12 (2026-09-20). Forwarded headers and the
+  security-logging hooks are taught here (7.3, 7.1), because lesson 12 contains neither.
 - No employer, client or personal names (grep of the module, samples, spec and PDF text on 2026-09-20: none).
 
 ## 8 · Known gaps
@@ -202,13 +230,18 @@ Spring Security reference — Resource Server JWT. Auth0 docs — RBAC for APIs.
   path in 5.4 is illustrative.
 - ⚠ The Kotlin Spring Security panel in 6.1 and the Spring Cloud Gateway YAML in 6.5 are not compiled; the ROLE_
   authorities in 6.1 assume a custom JWT converter.
-- ⚠ Output panels are pasted text; the test duration (275 ms) varies per run.
+- ⚠ Output panels are pasted text; the test duration ("1 s") varies per run.
 - ⚠ Rubric 7.1 is a judgement and scores 6 of the 10 OWASP categories; OWASP A09 (logging and alerting) is
-  deliberately shown as not covered.
+  deliberately shown as not covered: the note teaches the two hooks from the official docs but no sample logs a denied
+  request, and no lesson builds an alarm on the rate of 401 / 403 answers.
 - ⚠ Table 4.1 rows for External ID and Azure AD B2C describe claim sources in general terms; no External ID or B2C
   tenant was used to capture a token. The Auth0 and Cognito rows come from their documentation, not from captured
   tokens.
 - ⚠ Decision logging for repudiation (table 7.2) is recommended but not implemented in the samples.
+- ⚠ The balancer trap runs against TestServer with a faked remote address; no real load balancer or `X-Forwarded-For`
+  chain (with `ForwardLimit` above 1) was exercised, and the `Proxy:Network` value 10.0.0.0/16 is a placeholder range.
+- ⚠ `QuoteStore` prices only the no-loadings case of the canonical tariff (no age, claims, use or no-claim discount, no
+  declined quote); the tests do not assert a premium total.
 - ⚠ The gateway 502 observation (3.3 note) depends on the test having no reachable destination and was made by hand;
   it is labelled as an observation.
 - ⚠ Two code panels split across a page break by design (2.4 and 6.3) and the STRIDE table 7.2 continues on the next

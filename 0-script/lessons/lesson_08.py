@@ -22,8 +22,8 @@ META = meta(
         "health checks and CORS deliberately",
         "Call external rating partners through IHttpClientFactory and the standard resilience handler, and run "
         "background work in a hosted service without taking the host down",
-        "Test the whole pipeline in memory with WebApplicationFactory, and plug a Visual Basic library into a "
-        "C# web host",
+        "Host the whole pipeline in memory with WebApplicationFactory to prove your own endpoints, and plug a "
+        "Visual Basic library into a C# web host",
     ],
     maps_from="Spring Boot services (auto-configuration, @RestController, @ConfigurationProperties, Actuator, "
               "Resilience4j, @Scheduled, @SpringBootTest), NestJS and Express APIs, and the partner integrations "
@@ -38,7 +38,7 @@ NOTIFY = f"{API}/Notifications/Notifications.cs"
 PARTNERS = f"{API}/Partners/Partners.cs"
 CONTRACTS = f"{API}/Quotes/QuoteContracts.cs"
 ENDPOINTS = f"{API}/Quotes/QuoteEndpoints.cs"
-MODULE = f"{API}/Quotes/QuoteModule.cs"
+REGISTRATION = f"{API}/Quotes/QuoteRegistration.cs"
 VB_DIR = f"{L}/L08.Rating.Vb"
 VB_MODULE = f"{VB_DIR}/RatingModule.vb"
 LAB = f"{L}/L08.HostingLab/Program.cs"
@@ -46,7 +46,6 @@ PLAB = f"{L}/L08.PartnerLab/Program.cs"
 TOUR = f"{L}/L08.ApiTour/Program.cs"
 TESTS = f"{L}/L08.QuoteApi.Tests"
 FACTORY = f"{TESTS}/QuoteApiFactory.cs"
-ENDPOINT_TESTS = f"{TESTS}/QuoteEndpointTests.cs"
 
 # ── official sources (checked 2026-09-16) ───────────────────────────────────────────────────────────
 WHATSNEW = link("What's new in ASP.NET Core in .NET 10",
@@ -79,24 +78,24 @@ BG6 = link(".NET 6 hosting exception handling",
 BG10 = link(".NET 10 BackgroundService change", "https://learn.microsoft.com/en-us/dotnet/core/compatibility/"
             "extensions/10.0/backgroundservice-executeasync-task")
 ITEST = link("Integration tests in ASP.NET Core", "https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests")
-PUBLIC_PROGRAM = link("dotnet/aspnetcore PR 58199", "https://github.com/dotnet/aspnetcore/pull/58199")
 IIS_INPROC = link("In-process hosting with IIS",
                   "https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/iis/in-process-hosting")
 VALIDATION = link("Validation in ASP.NET Core", "https://learn.microsoft.com/en-us/aspnet/core/fundamentals/validation")
 LOGGING = link("Logging in .NET", "https://learn.microsoft.com/en-us/dotnet/core/extensions/logging/overview")
 WEBAPI = link("Create web APIs with ASP.NET Core", "https://learn.microsoft.com/en-us/aspnet/core/web-api/")
 
-# ── captured from real runs on the build machine (Windows 11, SDK 10.0.401, ASP.NET Core 10.0.12, 2026-09-16) ──
+# ── captured from real runs on the build machine (Windows 11, SDK 10.0.401, ASP.NET Core 10.0.12, 2026-09-20) ──
 TOUR_OUT = """
-POST /quotes                               201  net 15,000.00  total 16,114.20 THB
-POST /quotes  (driver 22, 1 claim)         201  net 27,000.00  total 29,005.56 THB
+POST /quotes                               201  net 8,400.00  total 9,023.95 THB
+POST /quotes  (driver 22, 1 claim)         201  net 21,840.00  total 23,462.28 THB
+POST /quotes  (3 claims in 5 years)        201  Declined, 3+ claims in 5 years
 POST /quotes  (invalid body)               400  errors: Vehicle.SumInsured, NotifyVia
-POST /quotes  (4th write this minute)      429  application/problem+json
+POST /quotes  (5th write this minute)      429  application/problem+json
 GET  /quotes/{id}                          200  Quoted
 GET  /quotes/{unknown id}                  404  application/problem+json
 POST /quotes/{id}/accept                   200  policy MQ-000001, 2026-09-15 to 2027-09-14
 POST /quotes/{id}/accept  (again)          409  The quote is AlreadyAccepted.
-GET  /tariff/Class3Plus  (VB endpoint)     200  {"coverage":"Class3Plus","baseRate":0.012}
+GET  /tariff/Class3Plus  (VB endpoint)     200  {"coverage":"Class3Plus","baseRate":0.009}
 GET  /partners/p07/rates  (fails twice)    200  partner attempts 3
 GET  /partners/p09/rates  (always fails)   503  partner attempts 4, Retry-After 30
 GET  /health                               200  Degraded
@@ -397,8 +396,11 @@ def blocks():
              "<p><b>The running example is the MotorQuote API.</b> <code>L08.QuoteApi</code> creates, reads and "
              "accepts quotes, prices them with rating rules written in Visual Basic (<code>L08.Rating.Vb</code>), "
              "calls rating partners through a resilient typed client, and notifies the customer from a background "
-             "service. Premiums are illustrative, not a real tariff. " + ref(9) + " replaces the in-memory store "
-             "with EF Core; " + ref(11) + " secures the API.</p>")},
+             "service. It prices with the track's canonical tariff — illustrative rates, not a real one — and its "
+             "quote store stays in memory for the whole lesson: persistence is not this lesson's subject. "
+             + ref(9) + " models the same quotes in a real database, a <code>DbContext</code> and migrations in "
+             "projects of its own rather than by editing this API; " + ref(11) + " secures an API like this "
+             "one.</p>")},
 
         {"type": "kpi", "heading": "1.1 · The numbers to leave this lesson with",
          "items": [
@@ -499,7 +501,7 @@ def blocks():
         pcode(from_sample(PROGRAM, "services"), "2.2 · Program.cs, part 1 — the services",
               "<b>Read it as the Spring application class with the scanning written out.</b> Framework features "
               "first — ProblemDetails, the exception handler, .NET 10 validation, OpenAPI, health checks — then "
-              "one <code>Add…</code> call per feature module, C# and VB side by side, then the cross-cutting "
+              "one <code>Add…</code> call per feature registration, C# and VB side by side, then the cross-cutting "
               "policies of §6. Look twice at the JSON lines: minimal APIs read "
               "<code>ConfigureHttpJsonOptions</code> and controllers read <code>AddJsonOptions</code>, two "
               "separate option sets. Configure one and the other endpoint style keeps its defaults — the test "
@@ -592,14 +594,16 @@ def blocks():
                  "<code>ValidateOnStart()</code>: <code>StartAsync</code> throws "
                  "<code>OptionsValidationException</code> before any request is served."),
 
-        pcompare(from_sample(MODULE, "register"), from_sample(VB_MODULE, "register"),
-                 "2.6 · A feature module in C# and in Visual Basic",
-                 "<b>The same registration in both languages.</b> Each module binds its own configuration section, "
-                 "validates it at start-up and registers its services; <code>Program.cs</code> calls "
-                 "<code>AddQuoteModule</code> and <code>AddMotorRating</code> side by side. The VB version needs "
-                 "<code>&lt;Extension&gt;</code> in a <code>Module</code> where C# writes <code>this</code> in a "
-                 "static class, and <code>_</code> to continue a line that ends before the dot. The "
-                 "<code>RatingOptions</code> it binds hold the illustrative rates."),
+        pcompare(from_sample(REGISTRATION, "register"), from_sample(VB_MODULE, "register"),
+                 "2.6 · A feature registration in C# and in Visual Basic",
+                 "<b>The same registration in both languages.</b> Each registration binds its own configuration "
+                 "section, validates it at start-up and registers its services; <code>Program.cs</code> calls "
+                 "<code>AddQuoteFeature</code> and <code>AddMotorRating</code> side by side. Both are feature seams "
+                 "inside an assembly, not the assembly-sized module " + ref(7) + " maps onto a Gradle module. The VB "
+                 "version needs <code>&lt;Extension&gt;</code> inside a <code>Module</code> — there the VB keyword "
+                 "for a type that holds only shared members — where C# writes <code>this</code> in a static class, "
+                 "and <code>_</code> to continue a line that ends before the dot. The <code>RatingOptions</code> it "
+                 "binds hold the track's canonical rates (§9.2)."),
 
         # ═══════════════════════════ 3 · DI ═══════════════════════════
         {"type": "story", "heading": "3 · Dependency injection — lifetimes are a design decision",
@@ -1045,12 +1049,12 @@ def blocks():
              "clock and a fake partner and prints the status codes, bodies and OpenAPI operations a client sees. "
              "<code>L08.HostingLab</code> and <code>L08.PartnerLab</code> are the labs behind 2.5, 3.1, 3.3 and "
              "7.5–7.7.</p>"
-             "<p><b><code>WebApplicationFactory&lt;Program&gt;</code> is <code>@SpringBootTest</code> with MockMvc "
-             "in one type: the real <code>Program</code>, the real pipeline, no port.</b> If the test does not set "
-             "an environment it runs as Development (" + ITEST + "). In .NET 10 a source generator shipped with the "
-             "ASP.NET Core shared framework emits the <code>public partial class Program</code> that tests need to "
-             "name the entry point (" + PUBLIC_PROGRAM + ") — the sample declares none. <code>ConfigureTestServices</code> swaps the clock and the partner's "
-             "primary handler. Test design, coverage and doubles are " + ref(10) + ".</p>"
+             "<p><b>This lesson's own tests reach the API through "
+             "<code>WebApplicationFactory&lt;Program&gt;</code>, the type that hosts the real "
+             "<code>Program</code> and the real pipeline in memory.</b> That is all §9 uses it for — proving these "
+             "endpoints, the rate limiter and the resilience handler without a port — and 9.3 shows the two seams it "
+             "opens. Integration and API testing as a craft (what to double, how much to cover, driving an endpoint "
+             "test-first) is " + ref(10) + ".</p>"
              f"<p><b>Visual Basic has no ASP.NET Core project templates, but a VB library can carry web code.</b> "
              f"Of the {n_templates} web-tagged templates in SDK 10.0.401, {vb_templates} offer VB, and all of them "
              "are test projects. <code>L08.Rating.Vb</code> references the <code>Microsoft.AspNetCore.App</code> "
@@ -1073,54 +1077,35 @@ def blocks():
               "and runs each console app to completion."),
 
         pcode(captured(TOUR_OUT, "Output — L08.ApiTour"), "9.2 · What you should see",
-              "<b>Every line is one real request through the full pipeline.</b> The totals are the VB rating rules "
-              "(illustrative rates): 16,114.20 for a 36-year-old claim-free driver, 29,005.56 at 22 with one claim. "
-              "The 4th write in the minute gets 429 as problem+json; the partner that fails twice succeeds on the "
+              "<b>Every line is one real request through the full pipeline.</b> The totals come from the VB "
+              "calculator on the track's canonical tariff — illustrative rates, not a real one. Both quotes are "
+              "Class 1 on 800,000 THB (base 2.1% = 16,800): the claim-free 36-year-old with ten licence years takes "
+              "the 50% no-claim discount to a net 8,400.00 and a total of 9,023.95, and the 22-year-old with one "
+              "claim takes +20% young driver and +10% claims to 21,840.00 and 23,462.28, with no discount because a "
+              "claim resets it. Three claims in five years is declined, not priced: this API teaches data, not "
+              "exceptions, so it stores that outcome as <code>QuoteStatus.Declined</code> and still answers 201. "
+              "The 5th write in the minute gets 429 as problem+json; the partner that fails twice succeeds on the "
               "third attempt; the one that always fails ends in 503 with <code>Retry-After</code> and turns "
               "<code>/health</code> Degraded — still 200. The indented lines are the OpenAPI operations counted in "
               "5.1; the last line is written by the background dispatcher.", keep=False),
 
-        pcompare(from_text("""
-            @SpringBootTest
-            @AutoConfigureMockMvc
-            class QuoteEndpointTests(@Autowired val mvc: MockMvc) {
-
-                @Test
-                fun `post quote returns 201 and location`() {
-                    mvc.post("/quotes") {
-                        contentType = MediaType.APPLICATION_JSON
-                        content = Requests.quote()
-                    }.andExpect {
-                        status { isCreated() }
-                        header { exists("Location") }
-                        jsonPath("$.premium.total.amount") {
-                            value(16114.20)
-                        }
-                    }
-                }
-            }
-            """, "kotlin", file="Spring Boot + MockMvc"),
-                 from_sample(ENDPOINT_TESTS, "post-test"),
-                 "9.3 · An endpoint test — MockMvc vs WebApplicationFactory",
-                 "<b>The C# test is an HTTP client, not a mock of one.</b> <code>IClassFixture&lt;QuoteApiFactory&gt;"
-                 "</code> shares one in-memory app across the class (the factory is 9.4), the way Spring caches an "
-                 "application context. "
-                 "The request body is an anonymous object serialised to JSON, so the test sees the wire format a "
-                 "partner portal would send, not shared C# types."),
-
-        pcode(from_sample(FACTORY, "factory"), "9.4 · The test factory — the real Program with two seams",
-              "<b>Configuration first, then services.</b> <code>UseSetting</code> overrides a configuration key (the "
-              "rate-limit test sets 2); <code>ConfigureTestServices</code> runs after <code>Program.cs</code>, so its "
-              "registrations win. Scope validation is on explicitly: the environment is Testing.", keep=False),
+        pcode(from_sample(FACTORY, "factory"), "9.3 · The test factory — the real Program with two seams",
+              "<b>Configuration first, then services.</b> The factory boots <code>Program.cs</code> on a "
+              "<code>TestServer</code> — no port, no network — and would default to Development if it named no "
+              "environment (" + ITEST + "). <code>UseSetting</code> overrides a configuration key, which is how the "
+              "rate-limit test lowers the limit to 2; <code>ConfigureTestServices</code> runs after "
+              "<code>Program.cs</code>, so its fake clock and fake partner handler win. Scope validation is on "
+              "explicitly because the environment is Testing, not Development. This is the seam, not a testing "
+              "curriculum: " + ref(10) + " designs the suite that uses it.", keep=False),
 
         {"type": "chartrow", "charts": [
-            {"heading": "9.5 · Lesson 08 tests by area", "kind": "hbar",
+            {"heading": "9.4 · Lesson 08 tests by area", "kind": "hbar",
              "args": {"data": tests_by_area(), "labelw": 110, "tone": "indigo", "width": 390},
              "caption": "[Fact] methods plus [InlineData] rows per test file · measured at build time",
              "note": f"<b>{n_tests} tests, most of them real HTTP calls through the full pipeline.</b> Endpoint "
                      "tests share one factory; resilience tests build one each so partner attempt counters start "
                      "at zero. " + MEASURED},
-            {"heading": "9.6 · Web-tagged SDK templates by language", "kind": "bar",
+            {"heading": "9.5 · Web-tagged SDK templates by language", "kind": "bar",
              "args": {"data": by_lang, "ylabel": "templates", "tone": "blue", "width": 390, "height": 150},
              "caption": "dotnet new list --tag Web on SDK 10.0.401 · measured from the captured list",
              "note": f"<b>C# owns web development; VB appears on {vb_templates} templates, all test projects.</b> "
@@ -1178,7 +1163,8 @@ def blocks():
                   "middleware in line order behind an implicit <code>UseRouting</code>, typed results with .NET 10 "
                   "validation, an OpenAPI 3.1 document that lists only what you declare, a resilience handler that "
                   "retries every method, and hosted services that never let an exception escape. "
-                  "<br/><b>Next:</b> " + ref(9) + " — replace the in-memory quote store with a real database.")},
+                  "<br/><b>Next:</b> " + ref(9) + " — the same quotes and policies in a real database: a "
+                  "<code>DbContext</code>, migrations and the SQL EF Core generates, built in projects of its own.")},
     ]
 
 

@@ -21,5 +21,9 @@ public sealed record Premium(Money Net, Money StampDuty, Money Vat, Money Total)
 
 public enum QuoteStatus { Draft, Quoted, Accepted, Expired, Declined }
 
+/// <summary>A declined quote is a domain outcome, not a crash: the smallest type that carries
+/// the reason out of the rating rules (the curriculum's canonical tariff declines at 3 claims).</summary>
+public sealed class QuoteDeclinedException(string reason) : Exception(reason);
+
 public sealed record Quote(
     Guid Id, QuoteRequest Request, Premium Premium, DateTimeOffset ValidUntil, QuoteStatus Status);

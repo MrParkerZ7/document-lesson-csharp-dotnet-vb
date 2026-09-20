@@ -18,8 +18,8 @@ builder.Services.ConfigureHttpJsonOptions(o =>           // minimal APIs
 builder.Services.AddControllers().AddJsonOptions(o =>    // controllers: separate options
     o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-builder.Services.AddQuoteModule(builder.Configuration);  // C# module
-builder.Services.AddMotorRating(builder.Configuration);  // VB module
+builder.Services.AddQuoteFeature(builder.Configuration); // C# registration
+builder.Services.AddMotorRating(builder.Configuration);  // the same, written in VB
 builder.Services.AddPartnerClients(builder.Configuration);
 builder.Services.AddNotifications();
 builder.Services.AddQuoteRateLimits();

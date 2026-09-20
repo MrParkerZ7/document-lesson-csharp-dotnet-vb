@@ -12,7 +12,7 @@ Public Class QuoteForm
             CoverCodeBox.Text, SumInsuredBox.Value,
             DateOnly.FromDateTime(BirthDatePicker.Value),
             DateOnly.FromDateTime(Date.Today),
-            LicenceMonths:=120, ClaimFreeYears:=0, Claims:=0)
+            LicenceMonths:=120, Claims:=0)
 
         Dim premium As Decimal? = PremiumCalculator.Calculate(request)
         ResultLabel.Text = If(premium.HasValue,

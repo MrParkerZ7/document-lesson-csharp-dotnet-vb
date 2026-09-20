@@ -45,8 +45,9 @@ static class TypesTour
         Console.WriteLine(m);                // 1.0
 
         // no implicit double -> decimal: say it
-        decimal vat = basePremium * (decimal)0.07;
-        Console.WriteLine($"{basePremium} {vat}");
+        // (the tariff's VAT is on net + stamp duty, 9.4)
+        decimal vatOnBase = basePremium * (decimal)0.07;
+        Console.WriteLine($"{basePremium} {vatOnBase}");
         #endregion
     }
 }

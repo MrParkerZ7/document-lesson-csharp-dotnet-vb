@@ -125,7 +125,7 @@ NOTIFY_OUT = """
     """
 TRAPS_OUT = """
     await, lowered by hand
-      premium 6,450.00 THB
+      premium 8,933.71 THB
     sync-over-async (.Result) on a one-thread context
       await captures the context -> DEADLOCK (gave up after 1 s)
       ConfigureAwait(false)      -> completed
@@ -151,6 +151,11 @@ _VB_RULES = [
      "Async streams since C# 8"),
     ("<code>Await For Each q In quotes</code>", "BC30201", "Expression expected.",
      "<code>await foreach</code> since C# 8"),
+    ("<code>Await Using c As New …</code>", "BC30201", "Expression expected.",
+     "<code>await using</code> since C# 8"),
+    ("<code>Using c As New …</code> on a type with only <code>IAsyncDisposable</code>", "BC36010",
+     "'Using' operand of type 'PartnerConnection' must implement 'System.IDisposable'.",
+     "<code>await using</code> disposes it"),
     ("<code>Async Function … As ValueTask(Of T)</code>", "BC36945",
      "The 'Async' modifier can only be used on Subs, or on Functions that return Task or Task(Of T).",
      "<code>async ValueTask&lt;T&gt;</code> compiles"),
@@ -505,7 +510,10 @@ def blocks():
                   "<code>try</code>/<code>catch</code> works around an <code>await</code>. The real compiler output "
                   "is a state-machine struct driven by <code>AsyncTaskMethodBuilder</code>, and it also flows "
                   "<code>ExecutionContext</code> (for example <code>AsyncLocal</code> values); "
-                  "<code>L05.AsyncTraps</code> runs this version and prints <code>premium 6,450.00 THB</code>."),
+                  "<code>L05.AsyncTraps</code> runs this version and prints <code>premium 8,933.71 THB</code> — the "
+                  "total the MotorQuote running example prices for a Class 1 policy, 550,000 THB insured, driver aged "
+                  "23 with four claim-free years (an illustrative tariff, not a real one), standing in for a slow "
+                  "rating call."),
 
         {"type": "cards",
          "band": {"title": "2.4 · The async toolbox — six types in every .NET service", "note": "API view",
@@ -934,9 +942,13 @@ def blocks():
              "<p><b>Visual Basic has had <code>Async</code> and <code>Await</code> since Visual Studio 2012, and "
              "stopped there.</b> The VB compiler rejects <code>Await</code> in <code>Catch</code>, <code>Finally</code> "
              "and <code>SyncLock</code> (" + VBAWAIT + "), <code>Async Sub Main</code>, async iterators, "
-             "<code>Await For Each</code> and <code>ValueTask</code>-returning async functions. Table 7.7 lists the "
-             "exact errors, captured by compiling each snippet in <code>L05.VbRules.Tests</code>. VB can still "
-             "consume everything the C# library offers — it just does so by hand.</p>")},
+             "<code>Await For Each</code> and <code>ValueTask</code>-returning async functions. It also has no "
+             "<code>Await Using</code>, and a plain <code>Using</code> refuses a type that implements only "
+             "<code>IAsyncDisposable</code> — the <code>await using</code> from " + ref(2) + " has no VB spelling. "
+             "Table 7.7 lists the exact errors, captured by compiling each snippet in "
+             "<code>L05.VbRules.Tests</code>. VB can still consume everything the C# library offers — it just does "
+             "so by hand: <code>Await c.DisposeAsync()</code> after the block, never in <code>Finally</code> "
+             "(7.6).</p>")},
 
         code(from_sample(TRAPS, "deadlock"),
              heading="7.1 · Sync-over-async on a one-thread context",

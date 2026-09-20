@@ -40,16 +40,19 @@ public static class NaivePort
             ? code == expected
             : VbCompat.TextEquals(code, expected);
 
-        (double Rate, decimal RateM) cover;
-        if (Is("CLASS1")) cover = (0.0185, 0.0185m);
-        else if (Is("CLASS2PLUS")) cover = (0.012, 0.012m);
-        else if (Is("CLASS3PLUS")) cover = (0.0095, 0.0095m);
-        else if (Is("CLASS3")) cover = (0.0065, 0.0065m);
+        double rate;
+        if (Is("CLASS1")) rate = 0.021;
+        else if (Is("CLASS2PLUS")) rate = 0.012;
+        else if (Is("CLASS3PLUS")) rate = 0.009;
+        else if (Is("CLASS3")) rate = 0.004;
         else return null;
 
         bool dec = m == PortChange.DecimalRates;
-        int @base = dec ? ToIntM(r.SumInsured * cover.RateM)
-                        : ToInt((double)r.SumInsured * cover.Rate);
+        int @base = dec ? ToIntM(r.SumInsured * (decimal)rate)
+                        : ToInt((double)r.SumInsured * rate);
+        int Scale(int amount, double share) => dec
+            ? ToIntM(amount * (decimal)share)
+            : ToInt(amount * share);
 
         int age = m == PortChange.BirthdayAge
             ? AgeOnDate(r.DateOfBirth, r.StartDate)
@@ -59,18 +62,24 @@ public static class NaivePort
             : ToInt(r.LicenceMonths / 12.0);
 
         int loading = 0;
-        if (age < 25) loading += dec ? ToIntM(@base * 0.25m) : ToInt(@base * 0.25);
-        if (licenceYears < 2) loading += dec ? ToIntM(@base * 0.1m) : ToInt(@base * 0.1);
-        loading += dec ? ToIntM(@base * 0.2m * r.Claims) : ToInt(@base * 0.2 * r.Claims);
-        if (r.Commercial) loading += dec ? ToIntM(@base * 0.3m) : ToInt(@base * 0.3);
+        if (age < 25) loading += Scale(@base, 0.2);
+        switch (r.Claims)
+        {
+            case 0: break;
+            case 1: loading += Scale(@base, 0.1); break;
+            case 2: loading += Scale(@base, 0.25); break;
+            default: return null;
+        }
+        if (r.Commercial) loading += Scale(@base, r.EngineCc > 3000 ? 0.35 : 0.25);
 
         decimal[] ncb = m == PortChange.FiveElementTable
             ? [0m, 0.2m, 0.25m, 0.3m, 0.4m]
             : [0m, 0.2m, 0.25m, 0.3m, 0.4m, 0.5m];
-        int discount = ToIntM((@base + loading) * ncb[Math.Min(r.ClaimFreeYears, 5)]);
+        int claimFree = r.Claims == 0 ? licenceYears : 0;
+        int discount = ToIntM((@base + loading) * ncb[Math.Min(claimFree, 5)]);
 
-        int net = Math.Max(@base + loading - discount, 1000);
-        int duty = dec ? ToIntM(net * 0.004m) : ToInt(net * 0.004);
+        int net = @base + loading - discount;
+        int duty = Scale(net, 0.004);
         decimal vat = Math.Round((net + duty) * 0.07m,
             m == PortChange.HalfUpRounding ? MidpointRounding.AwayFromZero : MidpointRounding.ToEven);
         return net + duty + vat;

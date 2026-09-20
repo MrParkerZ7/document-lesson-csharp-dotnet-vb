@@ -1,4 +1,5 @@
-' MotorQuote rating rules. ILLUSTRATIVE rates only — not a real motor tariff.
+' MotorQuote rating rules: the one illustrative tariff of the whole track
+' (curriculum, "Canonical tariff"). ILLUSTRATIVE rates only — not a real motor tariff.
 
 Public Enum CoverageClass
     Class1       ' comprehensive
@@ -22,30 +23,64 @@ Public Structure PremiumBreakdown
     End Sub
 End Structure
 
+''' <summary>
+''' Three or more claims in five years: the quote is declined. A domain outcome, not a crash,
+''' so every host answers it with HTTP 422. (Exceptions are lesson 02's subject, not this one's.)
+''' </summary>
+Public NotInheritable Class QuoteDeclinedException
+    Inherits Exception
+
+    Public Sub New()
+        MyBase.New("declined: 3 or more claims in the last 5 years")
+    End Sub
+End Class
+
 Public Module Rating
 #Region "rating"
-    ' A Module compiles to a static class: C# calls Rating.Quote(...)
+    ' A Module compiles to a static class: C# calls Rating.Quote(...).
+    ' driverAge is the driver's age on the quote start date.
     Public Function Quote(coverage As CoverageClass, sumInsured As Decimal,
-                          driverAge As Integer, claimsLast5Years As Integer,
-                          commercial As Boolean) As PremiumBreakdown
+                          driverAge As Integer, licenceYears As Integer,
+                          claimsLast5Years As Integer, commercial As Boolean,
+                          engineCc As Integer) As PremiumBreakdown
+        If claimsLast5Years >= 3 Then Throw New QuoteDeclinedException()
+
         Dim rate As Decimal
         Select Case coverage
             Case CoverageClass.Class1 : rate = 0.021D
-            Case CoverageClass.Class2Plus : rate = 0.014D
-            Case CoverageClass.Class3Plus : rate = 0.011D
-            Case Else : rate = 0.006D
+            Case CoverageClass.Class2Plus : rate = 0.012D
+            Case CoverageClass.Class3Plus : rate = 0.009D
+            Case Else : rate = 0.004D
         End Select
 
-        Dim net = sumInsured * rate
-        If driverAge < 25 Then net *= 1.2D                  ' young-driver loading
-        net *= 1D + 0.1D * Math.Min(claimsLast5Years, 3)    ' claims loading
-        If claimsLast5Years = 0 Then net *= 0.9D            ' no-claim bonus
-        If commercial Then net *= 1.15D                     ' commercial use
+        ' loadings add up, then apply to the base premium
+        Dim loadings = 0D
+        If driverAge < 25 Then loadings += 0.2D
+        If claimsLast5Years = 1 Then loadings += 0.1D
+        If claimsLast5Years = 2 Then loadings += 0.25D
+        If commercial Then loadings += If(engineCc > 3000, 0.35D, 0.25D)
 
-        net = Math.Round(net, 2, MidpointRounding.AwayFromZero)
-        Dim duty = Math.Round(net * 0.004D, 2, MidpointRounding.AwayFromZero)
-        Dim vat = Math.Round((net + duty) * 0.07D, 2, MidpointRounding.AwayFromZero)
+        ' the no-claim ladder counts claim-free licence years
+        Dim claimFree = If(claimsLast5Years = 0, licenceYears, 0)
+        Dim discount As Decimal
+        Select Case claimFree
+            Case Is <= 0 : discount = 0D
+            Case 1 : discount = 0.2D
+            Case 2 : discount = 0.25D
+            Case 3 : discount = 0.3D
+            Case 4 : discount = 0.4D
+            Case Else : discount = 0.5D
+        End Select
+
+        Dim net = Satang(sumInsured * rate * (1D + loadings) * (1D - discount))
+        Dim duty = Satang(net * 0.004D)
+        Dim vat = Satang((net + duty) * 0.07D)
         Return New PremiumBreakdown(net, duty, vat)
+    End Function
+
+    ' the satang: 2 decimals, halves round away from zero
+    Private Function Satang(amount As Decimal) As Decimal
+        Return Math.Round(amount, 2, MidpointRounding.AwayFromZero)
     End Function
 #End Region
 End Module

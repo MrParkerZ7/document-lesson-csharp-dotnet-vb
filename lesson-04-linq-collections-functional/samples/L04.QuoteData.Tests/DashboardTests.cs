@@ -9,6 +9,10 @@ public class DashboardTests
 
     private static readonly IReadOnlyList<Quote> Quotes = QuoteBook.Generate();
 
+    // the quotes the tariff actually priced: a declined quote carries a status, not a premium
+    private static readonly IReadOnlyList<Quote> Priced =
+        Quotes.Where(q => q.Status != QuoteStatus.Declined).ToList();
+
     [Fact]
     public void The_dataset_is_deterministic()
     {
@@ -17,19 +21,43 @@ public class DashboardTests
     }
 
     [Fact]
-    public void Conversion_accounts_for_every_quote()
+    public void Conversion_accounts_for_every_priced_quote()
     {
         var conversion = QuoteDashboard.Conversion(Quotes);
 
         Assert.Equal(4, conversion.Count);
-        Assert.Equal(Quotes.Count, conversion.Sum(c => c.Quoted));
+        Assert.Equal(Priced.Count, conversion.Sum(c => c.Quoted));
         Assert.Equal(Quotes.Count(q => q.IsAccepted), conversion.Sum(c => c.Accepted));
     }
 
     [Fact]
-    public void Bands_account_for_every_quote()
+    public void Bands_account_for_every_priced_quote()
     {
-        Assert.Equal(Quotes.Count, QuoteDashboard.Bands(Quotes).Sum(b => b.Value));
+        Assert.Equal(Priced.Count, QuoteDashboard.Bands(Quotes).Sum(b => b.Value));
+    }
+
+    [Fact]
+    public void The_tariff_declines_three_or_more_claims_instead_of_pricing_them()
+    {
+        var declined = Quotes.Where(q => q.Status == QuoteStatus.Declined).ToList();
+
+        Assert.NotEmpty(declined);
+        Assert.All(declined, q => Assert.True(q.Driver.ClaimsLast5Years >= 3));
+        Assert.All(declined, q => Assert.Equal(0m, q.Total.Amount));
+        Assert.All(Priced, q => Assert.True(q.Driver.ClaimsLast5Years < 3 && q.Total.Amount > 0m));
+    }
+
+    [Fact]
+    public void The_canonical_worked_example_prices_to_8_933_71()
+    {
+        // _curriculum.md § Canonical tariff: Class 1, 550,000 THB, private use, driver aged 23,
+        // 4 claim-free licence years. base 11,550.00 -> +20% young -> -40% no-claim -> net 8,316.00
+        var input = new RatingInput(CoverageClass.Class1, 550_000m, DriverAge: 23, Claims: 0,
+            LicenceYears: 4, VehicleUse.Private, EngineCc: 1_500);
+
+        Assert.Equal(11_550.00m, Rating.Base(input));
+        Assert.Equal(8_316.00m, Rating.Net(input));
+        Assert.Equal(8_933.71m, Rating.Total(input).Amount);
     }
 
     [Fact]
@@ -45,16 +73,17 @@ public class DashboardTests
     public void Dashboard_numbers_match_the_captured_lesson_output()
     {
         // lesson 04 prints these figures from a captured run: if a test here fails, re-capture it
-        Assert.Equal("25,34,37,45",
+        Assert.Equal(24, Quotes.Count(q => q.Status == QuoteStatus.Declined));
+        Assert.Equal("22,32,32,41",
             string.Join(",", QuoteDashboard.Conversion(Quotes).Select(c => c.Accepted)));
-        Assert.Equal("< 3k 60,3k-6k 18,6k-9k 92,9k-12k 52,12k+ 18",
+        Assert.Equal("< 3k 40,3k-6k 109,6k-9k 50,9k-12k 16,12k+ 1",
             string.Join(",", QuoteDashboard.Bands(Quotes).Select(b => $"{b.Key} {b.Value}")));
-        Assert.Equal("Toyota 31,Honda 26,Isuzu 17,MG 17,Nissan 17",
+        Assert.Equal("Toyota 27,Honda 22,MG 16,Isuzu 15,Nissan 14",
             string.Join(",", QuoteDashboard.TopMakes(Quotes).Select(m => $"{m.Make} {m.Sold}")));
-        Assert.Equal("198362,297928,348568,84600",
+        Assert.Equal("136262,169483,174299,130512",
             string.Join(",", QuoteDashboard.PremiumByClass(Quotes)
                 .Select(kv => kv.Value.ToString("0", System.Globalization.CultureInfo.InvariantCulture))));
-        Assert.Equal(23, QuoteDashboard.Issuance(Quotes, QuoteBook.IssuePolicies(Quotes))
+        Assert.Equal(21, QuoteDashboard.Issuance(Quotes, QuoteBook.IssuePolicies(Quotes))
             .Count(x => x.Policy == "(pending)"));
     }
 
@@ -89,15 +118,15 @@ public class DashboardTests
     }
 
     [Theory]
-    [InlineData(24, 1.20)]
-    [InlineData(25, 1.00)]
-    public void The_young_driver_rule_is_a_pure_function(int age, double expectedFactor)
+    [InlineData(24, 0.20)]
+    [InlineData(25, 0.00)]
+    public void The_young_driver_rule_is_a_pure_function(int age, double expectedLoading)
     {
-        var youngDriver = Rating.Rules.Single(r => r.Name == "young driver").Apply;
-        var input = new RatingInput(CoverageClass.Class1, 500_000m, age, 0, 3, VehicleUse.Private);
+        var youngDriver = Rating.Rules.Single(r => r.Name == "young driver").Rate;
+        var input = new RatingInput(CoverageClass.Class1, 500_000m, age, 0, 3, VehicleUse.Private, 1_500);
 
-        Assert.Equal((decimal)expectedFactor * 10_000m, youngDriver(input, 10_000m));
-        Assert.Equal(youngDriver(input, 10_000m), youngDriver(input, 10_000m));
+        Assert.Equal((decimal)expectedLoading, youngDriver(input));
+        Assert.Equal(youngDriver(input), youngDriver(input));
     }
 
     [Fact]
@@ -108,7 +137,7 @@ public class DashboardTests
         var bands = QuoteDashboard.Bands(onlyMidBand);
 
         Assert.Equal(QuoteDashboard.BandOrder, bands.Select(b => b.Key));
-        Assert.Equal([0, 18, 0, 0, 0], bands.Select(b => b.Value));
+        Assert.Equal([0, 109, 0, 0, 0], bands.Select(b => b.Value));
     }
 
     [Fact]
@@ -142,11 +171,12 @@ public class DashboardTests
     {
         // lesson 04 prints the Visual Basic console's output: these are the same figures in C#
         var summary = QuoteDashboard.Summarise(Quotes);
-        Assert.Equal(141, summary.Policies);
-        Assert.Equal("16759", summary.Largest.ToString("0", System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal(127, summary.Policies);
+        Assert.Equal("12182", summary.Largest.ToString("0", System.Globalization.CultureInfo.InvariantCulture));
 
-        Assert.Equal("Q-0014,Q-0080,Q-0143,Q-0106",
-            string.Join(",", QuoteDashboard.Window(Quotes, 8_400m, 8_600m).Select(x => x.QuoteId)));
+        // OrderBy is stable, so the two pairs tied at 8,685.55 and 8,862.81 keep their book order
+        Assert.Equal("Q-0139,Q-0219,Q-0005,Q-0015,Q-0175",
+            string.Join(",", QuoteDashboard.Window(Quotes, 8_600m, 8_900m).Select(x => x.QuoteId)));
         Assert.Equal(8, QuoteDashboard.Makes(Quotes).Count());
     }
 

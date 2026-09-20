@@ -9,21 +9,24 @@ Public Class LegacyPremiumCharacterizationTests
     Private Shared Function Quote(code As String,
                                   Optional dob As String = "1990-03-10",
                                   Optional months As Integer = 120,
-                                  Optional claimFree As Integer = 0,
+                                  Optional claims As Integer = 0,
                                   Optional sum As Decimal = 287500D) As Decimal
         Dim born = Date.ParseExact(dob, "yyyy-MM-dd", CultureInfo.InvariantCulture)
         Return LegacyPremium.CalcPremium(code, sum, born, #1/1/2026#,
-                                         months, claimFree, claims:=0)
+                                         months, claims)
     End Function
 
 #Region "pin-premiums"
+    ' The first row is the curriculum's worked example: 8,933.71 THB to the
+    ' satang in the canonical tariff. The legacy prices in whole baht.
     <Theory>
-    <InlineData("CLASS1", 205000, "2001-12-31", 6, 0, 4481)>
-    <InlineData("class1", 287500, "2001-12-31", 18, 5, 2857)>
+    <InlineData("CLASS1", 550000, "2002-06-15", 48, 0, 8933)>
+    <InlineData("class1", 287500, "2001-12-31", 18, 0, 4864)>
+    <InlineData("CLASS2PLUS", 450000, "1990-03-10", 30, 1, 6381)>
     Public Sub PinsTodaysPremium(code As String, sum As Integer, dob As String,
-                                 months As Integer, claimFree As Integer,
+                                 months As Integer, claims As Integer,
                                  expected As Integer)
-        Assert.Equal(CDec(expected), Quote(code, dob, months, claimFree, sum))
+        Assert.Equal(CDec(expected), Quote(code, dob, months, claims, sum))
     End Sub
 #End Region
 
@@ -44,16 +47,25 @@ Public Class LegacyPremiumCharacterizationTests
     End Sub
 
     <Fact>
-    Public Sub EighteenMonthsCountsAsTwoYears()
-        ' 18 / 12 = 1.5 rounds to 2 (experienced); 17 / 12 rounds to 1.
-        Assert.Equal(Quote("CLASS1", months:=120), Quote("CLASS1", months:=18))
+    Public Sub LicenceMonthsRoundToTheNearestEvenYear()
+        ' The no-claim discount follows licence years = months / 12,
+        ' rounded half to even: 18 -> 2, but 30 -> 2 and 42 -> 4.
+        Assert.Equal(Quote("CLASS1", months:=24), Quote("CLASS1", months:=18))
+        Assert.Equal(Quote("CLASS1", months:=24), Quote("CLASS1", months:=30))
+        Assert.Equal(Quote("CLASS1", months:=48), Quote("CLASS1", months:=42))
         Assert.True(Quote("CLASS1", months:=18) < Quote("CLASS1", months:=17))
     End Sub
 
     <Fact>
-    Public Sub ClaimFreeYearsAboveFiveUseTheSixthSlot()
-        Assert.Equal(Quote("CLASS1", claimFree:=5), Quote("CLASS1", claimFree:=7))
-        Assert.True(Quote("CLASS1", claimFree:=5) < Quote("CLASS1", claimFree:=4))
+    Public Sub LicenceYearsAboveFiveUseTheSixthSlot()
+        Assert.Equal(Quote("CLASS1", months:=60), Quote("CLASS1", months:=84))
+        Assert.True(Quote("CLASS1", months:=60) < Quote("CLASS1", months:=48))
+    End Sub
+
+    <Fact>
+    Public Sub AnyClaimLosesTheNoClaimDiscount()
+        Assert.Equal(Quote("CLASS1", months:=6, claims:=1),
+                     Quote("CLASS1", months:=120, claims:=1))
     End Sub
 #End Region
 
@@ -61,9 +73,18 @@ Public Class LegacyPremiumCharacterizationTests
     Public Sub UnknownCoverReturnsMinusOneAndAReason()
         Dim reason As String = Nothing
         Dim premium = LegacyPremium.CalcPremium("CLASS4", 287500D, #3/10/1990#,
-                                                #1/1/2026#, 120, 0, 0, False, reason)
+                                                #1/1/2026#, 120, 0, False, 1500, reason)
         Assert.Equal(-1D, premium)
         Assert.Equal("unknown cover CLASS4", reason)
+    End Sub
+
+    <Fact>
+    Public Sub ThreeClaimsAreDeclinedWithAReason()
+        Dim reason As String = Nothing
+        Dim premium = LegacyPremium.CalcPremium("CLASS1", 287500D, #3/10/1990#,
+                                                #1/1/2026#, 120, 3, False, 1500, reason)
+        Assert.Equal(-1D, premium)
+        Assert.Equal("3+ claims in 5 years", reason)
     End Sub
 
 End Class

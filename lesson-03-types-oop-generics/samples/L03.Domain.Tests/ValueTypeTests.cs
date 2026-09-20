@@ -13,7 +13,7 @@ public class MoneyTests
         Assert.Throws<InvalidOperationException>(() => Money.Thb(1m) + new Money(1m, "USD"));
 
     [Theory]
-    [InlineData("11250", "1.20", "13500.00")]
+    [InlineData("9450", "1.20", "11340.00")]
     [InlineData("0.125", "1", "0.13")]
     [InlineData("0.135", "1", "0.14")]
     public void Multiplying_rounds_to_two_places_away_from_zero(string amount, string factor, string expected)

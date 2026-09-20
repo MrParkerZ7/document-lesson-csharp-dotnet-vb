@@ -11,6 +11,7 @@ public static class QuoteDashboard
     public static IReadOnlyList<ClassConversion> Conversion(
         IEnumerable<Quote> quotes) =>
         quotes
+            .Where(q => q.Status != QuoteStatus.Declined)
             .GroupBy(q => q.Coverage)
             .OrderBy(g => g.Key)
             .Select(g => new ClassConversion(
@@ -37,7 +38,10 @@ public static class QuoteDashboard
     public static IReadOnlyList<KeyValuePair<string, int>> Bands(
         IEnumerable<Quote> quotes)
     {
-        var counts = quotes.CountBy(q => BandOf(q.Total)).ToDictionary();
+        var counts = quotes
+            .Where(q => q.Status != QuoteStatus.Declined) // a declined quote has no premium
+            .CountBy(q => BandOf(q.Total))
+            .ToDictionary();
         return BandOrder
             .Select(band => KeyValuePair.Create(band, counts.GetValueOrDefault(band)))
             .ToList();

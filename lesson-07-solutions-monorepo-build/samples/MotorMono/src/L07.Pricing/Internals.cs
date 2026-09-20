@@ -9,13 +9,14 @@ namespace L07.Pricing;
 // [InternalsVisibleTo("L07.Pricing.Tests")] at build time.
 internal static class BaseRates
 {
-    // share of the sum insured per year: illustrative only
+    // share of the sum insured per year: the tariff
+    // the whole track prices with, illustrative only
     internal static decimal For(CoverageClass coverage) =>
         coverage switch
         {
-            CoverageClass.Class1 => 0.018m,
-            CoverageClass.Class2Plus => 0.011m,
-            CoverageClass.Class3Plus => 0.008m,
+            CoverageClass.Class1 => 0.021m,
+            CoverageClass.Class2Plus => 0.012m,
+            CoverageClass.Class3Plus => 0.009m,
             CoverageClass.Class3 => 0.004m,
             _ => throw new ArgumentOutOfRangeException(
                 nameof(coverage)),

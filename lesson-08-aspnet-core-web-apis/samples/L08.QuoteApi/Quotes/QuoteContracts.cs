@@ -33,7 +33,8 @@ public sealed record PremiumDto(
     Money Net, Money StampDuty, Money Vat, Money Total);
 
 public sealed record QuoteResponse(
-    Guid QuoteId, QuoteStatus Status, PremiumDto Premium, DateTimeOffset ValidUntil);
+    Guid QuoteId, QuoteStatus Status, PremiumDto? Premium, DateTimeOffset ValidUntil,
+    string? DeclineReason = null);
 
 public sealed record PolicyResponse(
     string PolicyNumber, Guid QuoteId, DateOnly Inception, DateOnly Expiry);

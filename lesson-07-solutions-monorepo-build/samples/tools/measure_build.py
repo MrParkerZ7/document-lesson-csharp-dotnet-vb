@@ -312,14 +312,16 @@ def breaks(work):
 
     mono = fresh_copy(work / "b2")
     run(["restore", "MotorMono.slnx", "-tl:off"], mono)
-    edit(mono, "Directory.Packages.props", 'Include="xunit" Version="2.9.3"', 'Include="xunit" Version="2.9.2"')
+    edit(mono, "Directory.Packages.props",
+         'Include="xunit.v3.mtp-off" Version="4.0.1"', 'Include="xunit.v3.mtp-off" Version="4.0.0"')
     code, log = run(["restore", "MotorMono.slnx", "-tl:off"], mono, dict(ENV, CI="true"))
     rows.append({"break": "CI=true and a version changed without updating the lock file", "exit": code,
                  **first_error(log)})
 
     mono = fresh_copy(work / "b3")
     edit(mono, "tests/L07.Pricing.Tests/L07.Pricing.Tests.csproj",
-         '<PackageReference Include="xunit" />', '<PackageReference Include="xunit" Version="2.9.3" />')
+         '<PackageReference Include="xunit.v3.mtp-off" />',
+         '<PackageReference Include="xunit.v3.mtp-off" Version="4.0.1" />')
     code, log = run(["restore", "MotorMono.slnx", "-tl:off"], mono)
     rows.append({"break": "a Version attribute left on a PackageReference under CPM", "exit": code,
                  **first_error(log)})

@@ -3,7 +3,7 @@
   "stage": "lesson-NN-<slug>",
   "revision": 1,
   "built_from": {
-    "commit": "4f35a48",
+    "commit": "13e8067",
     "generated": "2026-09-20"
   },
   "spec": "1-analysis/spec_lesson-pdfs/",
@@ -77,7 +77,7 @@
       "gate": "0-script/verify_samples.py",
       "pdf_style": "full-spectrum",
       "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
-      "pages": 19,
+      "pages": 20,
       "readme": "lesson-04-linq-collections-functional/README.md"
     },
     "lesson-05-async-concurrency/lesson-05-async-concurrency.pdf": {
@@ -113,7 +113,7 @@
       "gate": "0-script/verify_samples.py",
       "pdf_style": "full-spectrum",
       "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
-      "pages": 16,
+      "pages": 17,
       "readme": "lesson-06-vbnet-legacy-estates/README.md"
     },
     "lesson-07-solutions-monorepo-build/lesson-07-solutions-monorepo-build.pdf": {
@@ -185,7 +185,7 @@
       "gate": "0-script/verify_samples.py",
       "pdf_style": "full-spectrum",
       "style_note": "PDF format 00 · Full Spectrum — brief_pdf.py block renderer + lesson_kit code panels",
-      "pages": 21,
+      "pages": 22,
       "readme": "lesson-10-testing-tdd-coverage/README.md"
     },
     "lesson-11-security-identity/lesson-11-security-identity.pdf": {

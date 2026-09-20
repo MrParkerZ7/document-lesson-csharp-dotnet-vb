@@ -13,10 +13,12 @@ namespace L12.QuoteContainer.Tests;
 public sealed class ContainerApiTests(WebApplicationFactory<Program> factory)
     : IClassFixture<WebApplicationFactory<Program>>
 {
+    // the tariff's worked example (curriculum, "Canonical tariff"): total 8,933.71 THB
     static readonly object Request = new
     {
-        coverage = "Class1", sumInsured = 800_000, driverAge = 30,
-        claimsLast5Years = 0, commercial = false,
+        coverage = "Class1", sumInsured = 550_000, driverAge = 23,
+        licenceYears = 4, claimsLast5Years = 0, commercial = false,
+        engineCc = 1500,
     };
 
     [Theory]
@@ -40,7 +42,20 @@ public sealed class ContainerApiTests(WebApplicationFactory<Program> factory)
     {
         var response = await factory.CreateClient().PostAsJsonAsync("/quotes", Request);
         var body = await response.Content.ReadFromJsonAsync<Premium>();
-        Assert.Equal(16243.11m, body!.Total);
+        Assert.Equal(8933.71m, body!.Total);
+    }
+
+    [Fact]
+    public async Task Three_claims_decline_the_quote_with_422()
+    {
+        var declined = new
+        {
+            coverage = "Class1", sumInsured = 550_000, driverAge = 23,
+            licenceYears = 4, claimsLast5Years = 3, commercial = false,
+            engineCc = 1500,
+        };
+        var response = await factory.CreateClient().PostAsJsonAsync("/quotes", declined);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
     #region span-test

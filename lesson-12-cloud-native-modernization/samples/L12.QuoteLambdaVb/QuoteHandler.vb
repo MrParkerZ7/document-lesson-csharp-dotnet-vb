@@ -28,10 +28,16 @@ Public NotInheritable Class QuoteHandler
             Return Respond(400, """unknown coverage""")
         End If
 
-        Dim p = Rating.Quote(coverage, input.SumInsured,
-            input.DriverAge, input.ClaimsLast5Years,
-            input.Commercial)
-        Return Respond(201, JsonSerializer.Serialize(p, Json))
+        Try
+            Dim p = Rating.Quote(coverage, input.SumInsured,
+                input.DriverAge, input.LicenceYears,
+                input.ClaimsLast5Years, input.Commercial,
+                input.EngineCc)
+            Return Respond(201, JsonSerializer.Serialize(p, Json))
+        Catch declined As QuoteDeclinedException
+            Return Respond(422, JsonSerializer.Serialize(
+                declined.Message, Json))
+        End Try
     End Function
 
     Private Shared Function Respond(status As Integer,
@@ -51,6 +57,8 @@ Public NotInheritable Class QuoteInput
     Public Property Coverage As String = ""
     Public Property SumInsured As Decimal
     Public Property DriverAge As Integer
+    Public Property LicenceYears As Integer
     Public Property ClaimsLast5Years As Integer
     Public Property Commercial As Boolean
+    Public Property EngineCc As Integer
 End Class

@@ -1,9 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- an xUnit v3 test project runs itself, so it is an executable, not a library -->
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
   <ItemGroup>
     <!-- no Version attributes: Directory.Packages.props owns every version -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="xunit.v3.mtp-off" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />

@@ -1,6 +1,7 @@
 namespace L02.Rating;
 
-/// <summary>The MotorQuote rating rules. ILLUSTRATIVE rates, not a real tariff.</summary>
+/// <summary>The MotorQuote rating rules — the one tariff the whole lesson track prices with
+/// (_curriculum.md, "Canonical tariff"). ILLUSTRATIVE rates, not a real tariff.</summary>
 public static class RatingRules
 {
     #region constants
@@ -20,7 +21,7 @@ public static class RatingRules
             CoverageClass.Class1 => insured.Amount * 0.021m,
             CoverageClass.Class2Plus => insured.Amount * 0.012m,
             CoverageClass.Class3Plus => insured.Amount * 0.009m,
-            CoverageClass.Class3 => 2_400m,
+            CoverageClass.Class3 => insured.Amount * 0.004m,
             // an enum is an int: (CoverageClass)7 lands here
             _ => throw new ArgumentOutOfRangeException(
                 nameof(coverage)),
@@ -28,12 +29,11 @@ public static class RatingRules
     #endregion
 
     #region age-loading
+    // relational patterns: one young-driver band
     public static decimal AgeLoading(int age) => age switch
     {
         < 18 => throw new NotSupportedException("under 18"),
         < 25 => 0.20m,
-        < 30 => 0.10m,
-        >= 70 => 0.15m,
         _ => 0m,
     };
     #endregion
@@ -51,13 +51,16 @@ public static class RatingRules
         };
     }
 
-    // property patterns: test a record's properties, first match wins
+    // property patterns: test a record's properties, first match wins.
+    // A claim resets the ladder, so the guard arm comes first.
     public static decimal NoClaimBonus(Driver driver) => driver switch
     {
         { ClaimsLast5Years: > 0 } => 0m,
-        { LicenceYears: >= 5 } => 0.40m,
-        { LicenceYears: 3 or 4 } => 0.30m,
-        { LicenceYears: 2 } => 0.20m,
+        { LicenceYears: >= 5 } => 0.50m,
+        { LicenceYears: 4 } => 0.40m,
+        { LicenceYears: 3 } => 0.30m,
+        { LicenceYears: 2 } => 0.25m,
+        { LicenceYears: 1 } => 0.20m,
         _ => 0m,
     };
 

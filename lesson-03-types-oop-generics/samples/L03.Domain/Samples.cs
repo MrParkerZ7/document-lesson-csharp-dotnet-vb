@@ -2,7 +2,7 @@ namespace L03.Domain;
 
 /// <summary>
 /// Deterministic MotorQuote data shared by the lesson-03 samples and tests.
-/// Rates and premiums are illustrative, not a real tariff.
+/// Rates and premiums come from the curriculum's canonical tariff: illustrative, not a real tariff.
 /// </summary>
 public static class Samples
 {
@@ -19,6 +19,13 @@ public static class Samples
         new Driver(new DateOnly(1985, 11, 2), LicenceYears: 18, ClaimsLast5Years: 1),
         CoverageClass.Class2Plus,
         StartDate);
+
+    /// <summary>Three claims in five years: the tariff declines this one.</summary>
+    public static QuoteRequest ThreeClaims()
+    {
+        var request = CommercialPickup();
+        return request with { Driver = request.Driver with { ClaimsLast5Years = 3 } };
+    }
 
     public static PremiumCalculator Calculator() => new(
         new StandardRateTable(),

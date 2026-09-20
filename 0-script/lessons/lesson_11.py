@@ -104,6 +104,12 @@ AUDIT = link("Auditing package dependencies", "https://learn.microsoft.com/en-us
 CODEQL = link("CodeQL supported languages",
               "https://codeql.github.com/docs/codeql-overview/supported-languages-and-frameworks/")
 OWASP = link("OWASP Top 10:2025", "https://top10.owasp.org/2025")
+PROXY = link("Configure ASP.NET Core to work with proxy servers and load balancers",
+             "https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer")
+JWTEVENTS = link("JwtBearerEvents",
+                 "https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.authentication.jwtbearer.jwtbearerevents")
+AUTHRESULT = link("Authorization middleware result handler",
+                  "https://learn.microsoft.com/en-us/aspnet/core/security/authorization/customizingauthorizationmiddlewareresponse")
 GENERIC = link("GenericPrincipal", "https://learn.microsoft.com/en-us/dotnet/api/system.security.principal.genericprincipal")
 WINAUTH = link("Configure Windows Authentication",
                "https://learn.microsoft.com/en-us/aspnet/core/security/authentication/windowsauth")
@@ -163,8 +169,8 @@ PROTECT_OUT = """
     expired a second ago         rejected: The payload expired
     another instance's key ring  rejected: Error occurred during a cryptographic operation
     """
-TESTS_PASSED = 47   # `dotnet test` on the build machine: Passed 47, Failed 0 — checked against the parse below
-TEST_SUMMARY = ("Passed!  - Failed:     0, Passed:    47, Skipped:     0, Total:    47, Duration: 275 ms\n"
+TESTS_PASSED = 49   # `dotnet test` on the build machine: Passed 49, Failed 0 — checked against the parse below
+TEST_SUMMARY = ("Passed!  - Failed:     0, Passed:    49, Skipped:     0, Total:    49, Duration: 1 s\n"
                 "  - L11.SecureQuoteApi.Tests.dll (net10.0)")
 SPRING_SKEW_S = 60  # Spring Security resource server default clock skew — verified (SPRINGJWT)
 
@@ -407,7 +413,10 @@ def blocks():
              "registration's options, but nothing contacts Microsoft.",
              "Tenant and client IDs are zero-filled placeholders and every host except Entra's public sign-in address "
              "ends in <code>example.test</code>. "
-             "Premiums are <b>illustrative, not a real tariff</b>."]},
+             "Premiums are <b>illustrative, not a real tariff</b>: the quote API prices with the MotorQuote tariff "
+             "every lesson shares — Class 1 at 2.1% of the sum insured, 0.4% stamp duty, 7% VAT — reduced to what a "
+             "bare sum insured allows (no loadings, no no-claim discount, because the request carries no driver or "
+             "claims data)."]},
 
         # ═══════════════════════════ 2 · THE MODEL ═══════════════════════════
         {"type": "story", "heading": "2 · The model — schemes, policies and the pipeline",
@@ -471,13 +480,16 @@ def blocks():
                     note="<b>Read it top to bottom as the order every request takes.</b> The rate limiter sits between "
                          "authentication and authorization because it partitions by the token's <code>sub</code>, "
                          "which only exists after <code>UseAuthentication</code>. The first comment is a design "
-                         "decision explained in section 7: an API does not redirect HTTP to HTTPS."),
+                         "decision explained in section 7: an API does not redirect HTTP to HTTPS. "
+                         "<code>UseForwardedHeaders</code> is first so that every later step sees the caller's address, "
+                         "not the load balancer's (7.3)."),
                "2.2 · The pipeline of L11.SecureQuoteApi"),
 
         {"type": "mermaid", "inline": True,
          "heading": "2.3 · Where a 401, a 403 and a 429 come from",
-         "caption": "indigo = request · slate = middleware in Program.cs order, inside the grey box · amber = "
-                    "decision · green = the endpoint runs · red = rejected · the 429 leaves the rate limiter",
+         "caption": "indigo = request · slate = the security middleware in Program.cs order, inside the grey box "
+                    "(UseForwardedHeaders runs before it, 7.3) · amber = decision · green = the endpoint runs · "
+                    "red = rejected · the 429 leaves the rate limiter",
          "code": ('%%{init: {"flowchart": {"nodeSpacing": 30, "rankSpacing": 34}}}%%\n'
                   "flowchart TB\n"
                   '  REQ["GET /quotes/Q-1001<br/>Authorization: Bearer ..."]:::start\n'
@@ -896,9 +908,15 @@ def blocks():
                   "cell": 36, "tone": "teal", "fmt": lambda v: {2: "tested", 1: "shown", 0: "—"}[int(v)]},
          "caption": "tested = asserted by a test or printed by a lab · shown = configured, not asserted · — = not "
                     "covered · a rubric, not a benchmark · A05, A06, A08 and A10 not scored",
-         "note": "<b>The empty row is the honest one.</b> Nothing here logs or alerts on authorization failures — "
-                 "that belongs to " + ref(12) + ". Supply chain is “shown” only: NuGet audit runs on every restore, "
-                 "no test asserts it. Categories from " + OWASP + "; the scores are the author's judgement " + ESTIMATE},
+         "note": "<b>The empty row is the honest one.</b> The samples log nothing when a request is denied, and no "
+                 "test would notice. The hooks are small and official: <code>JwtBearerEvents.OnAuthenticationFailed</code> "
+                 "fires when a token fails validation and <code>OnForbidden</code> when authorization ends in a 403 "
+                 "(" + JWTEVENTS + "); an <code>IAuthorizationMiddlewareResultHandler</code> also sees the failed "
+                 "requirements of a policy (" + AUTHRESULT + "). Log the subject, path and reason with a structured "
+                 "message template — never the token. Where structured logs go is the CloudWatch example of " + ref(12) +
+                 "; an alarm on the rate of 401 and 403 answers is left to your monitoring, and this track builds none. "
+                 "Supply chain is “shown” only: NuGet audit runs on every restore, no test asserts it. Categories from "
+                 + OWASP + "; the scores are the author's judgement " + ESTIMATE},
 
         {"type": "table", "heading": "7.2 · STRIDE for the quote API — threat, control, evidence",
          "cols": ["Threat", "Against MotorQuote", "Control", "Evidence in the samples"],
@@ -922,8 +940,13 @@ def blocks():
         listed(code(from_sample(API_PROGRAM, "hardening"), heading="7.3 · CORS and a per-caller rate limit", keep=False,
                     note="<b>Both are allowlists.</b> CORS names origins, methods and headers and never calls "
                          "<code>AllowCredentials</code>, because this API reads bearer tokens, not cookies. The limiter "
-                         "partitions by the token's subject and falls back to the client IP — behind a load balancer "
-                         "that is the balancer's IP unless forwarded headers are configured (" + ref(12) + ")."),
+                         "partitions by the token's subject and falls back to the client IP. <b>Behind a load balancer "
+                         "that IP is the balancer's,</b> so every anonymous caller shares one bucket. "
+                         "<code>UseForwardedHeaders</code> swaps in the <code>X-Forwarded-For</code> value, but only for a "
+                         "request that arrives from a known proxy or network, and by default only loopback is known "
+                         "(" + PROXY + "). Add the balancer's subnet — <code>Proxy:Network</code> here — and run the "
+                         "middleware before the others. <code>ForwardedHeadersTests</code> asserts both outcomes: with the "
+                         "network trusted the second caller gets 200, without it 429."),
                "7.3 · CORS and a per-caller rate limit"),
 
         listed(code(from_sample(PROTECT_LAB, "protect"), heading="7.4 · Five ways to read one protected share link", keep=False,
@@ -1090,15 +1113,16 @@ def blocks():
              "caption": "[Fact] = 1 · [InlineData] = 1 · [MemberData] = matrix rows × endpoints · parsed at build",
              "note": (f"<b>The matrix is {100 * tests.get('StatusMatrixTests', 0) // n_tests}% of the suite.</b> The "
                       "other classes cover middleware order, claim mapping, the gateway's own rejections, throttling, "
+                      "the forwarded-headers trap, "
                       "an anonymous health check and the Entra registration. " + MEASURED)},
             {"heading": "9.7 · Lines of code per project", "kind": "bar",
              "args": {"data": [(p.replace("L11.", "").replace("SecureQuoteApi", "API"), n) for p, n in loc_by.items()],
                       "ylabel": "lines", "tone": "navy", "width": 390, "height": 200, "rotate_labels": True},
              "caption": "non-blank, non-comment lines of .cs and .vb per project · measured at build",
              "note": (f"<b>{largest[0].replace('L11.', '')} is the largest project, at {largest[1]} lines.</b> "
-                      f"The API's security code and its tests are close in size ({loc_by['L11.SecureQuoteApi']} and "
-                      f"{loc_by['L11.SecureQuoteApi.Tests']}): proving the rules takes about as much code as writing "
-                      "them. " + MEASURED + " — a size signal, not a quality score.")}]},
+                      f"The API ({loc_by['L11.SecureQuoteApi']} lines) and its tests ({loc_by['L11.SecureQuoteApi.Tests']}) "
+                      f"are the same order of size: proving the rules takes about "
+                      f"{loc_by['L11.SecureQuoteApi.Tests'] / loc_by['L11.SecureQuoteApi']:.1f}× the code that writes them. " + MEASURED + " — a size signal, not a quality score.")}]},
 
         {"type": "chartrow", "charts": [
             {"heading": "9.8 · The status matrix as a heat map", "kind": "heatmap",

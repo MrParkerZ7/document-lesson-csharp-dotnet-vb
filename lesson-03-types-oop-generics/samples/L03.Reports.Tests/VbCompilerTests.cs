@@ -35,18 +35,18 @@ public class VbCompilerTests
 
     #region vb-declarations
     [Theory]
-    [InlineData(HalfRates, "BC30149")]    // a default interface member must be re-implemented
+    [InlineData(RateForOnly, "BC30149")]    // a default interface member must be re-implemented
     [InlineData(VbIdentifier, "BC37315")] // static abstract members cannot be implemented
     [InlineData(ParseOnT, "BC32098")]     // T.Parse on a type parameter
     public void A_declaration_fails_to_compile(string vb, string error) =>
         Assert.Equal([error], Errors(vb));
     #endregion
 
-    private const string HalfRates = """
-        Class HalfRates
+    private const string RateForOnly = """
+        Class RateForOnly
             Implements IRateTable
-            Function BaseRate(c As CoverageClass) As Decimal Implements IRateTable.BaseRate
-                Return 0.01D
+            Function RateFor(c As CoverageClass) As Decimal Implements IRateTable.RateFor
+                Return 0.021D
             End Function
         End Class
         """;

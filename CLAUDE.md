@@ -36,6 +36,7 @@ lead; AWS, Terraform, Entra ID, TDD at 100% coverage, mono-repos at scale) drive
 python 0-script/build_lessons.py --list            # roster
 python 0-script/build_lessons.py --only 4 --qa     # render lesson 04 + rasterize for review
 python 0-script/verify_samples.py --only 4         # build / test / run lesson 04 samples
+python 0-script/check_tariff.py                    # every base-rate line matches the canonical MotorQuote tariff
 ```
 
 SDK on the author's machine: `D:\_env_storeage\dotnet` (portable, not on PATH) — set
@@ -45,6 +46,7 @@ SDK on the author's machine: `D:\_env_storeage\dotnet` (portable, not on PATH) �
 
 - `0-script/lessons/roster.py` — the curriculum (numbers, slugs, titles, hours, transfer estimates)
 - `0-script/lessons/lesson_NN.py` — `META` + `blocks()` for one lesson; `lesson_01.py` is the reference shape
+- `0-script/check_tariff.py` — guards the canonical MotorQuote tariff defined in `_curriculum.md` (run it after touching any rating code)
 - `0-script/_lib/lesson_kit.py` — code panels, region snippets, concept-map tables, chip vocabulary
 - `0-script/_lib/brief_pdf.py`, `chart_svg.py` — vendored renderer (do not edit; see `VENDORED.md`)
 - `1-analysis/spec_lesson-pdfs/` — the written contract for the lesson PDFs

@@ -81,7 +81,7 @@ TOUR_OUT = """
     1.20
     young driver x1.20
     young driver (hidden copy)
-    dim        IRateTable.BasePremium = 11,250.00 THB
+    dim        IRateTable.BasePremium = 9,450.00 THB
     reified    QuoteId Q- Q-000000 | PolicyNumber P- P-00000000 | parsed Q-000042, Q-000043
     generics   List<int>=4,056 List<object>=32,056 ArrayList=32,056 bytes for 1,000 ints
     statics    Counter<QuoteId>.Hits=2 Counter<PolicyNumber>.Hits=1
@@ -95,7 +95,7 @@ TOUR_OUT = """
     True
     True
     False
-    premium    net 11,475.00 THB, stamp duty 45.90 THB, VAT 806.46 THB, total 12,327.36 THB
+    premium    net 7,938.00 THB, stamp duty 31.75 THB, VAT 557.88 THB, total 8,527.63 THB
     status     Q-000042 Accepted -> policy P-00000007; Expire() now throws (Accepted -> Expired)
     """
 VB_OUT = """
@@ -103,15 +103,15 @@ VB_OUT = """
     records    equal? True
     copy       equal? False
     operators  1,500.00 THB, same? True
-    required   Q-000007 total 12,327.36 THB
+    required   Q-000007 total 8,527.63 THB
     extension  get_Code(Class2Plus) = 2+
     dispatch   1.20 | young driver x1.20 | young driver (hidden copy)
     generics   Q-000042, Q-000043
     same CSV from C# and VB? True
     # Motor quotes - 2026-10-01
-    Q-000042  Toyota Yaris   class 1        12,327.36 THB
-    Q-000043  Isuzu D-Max    class 2+       15,319.23 THB
-    2 quotes, total 27,646.59 THB
+    Q-000042  Toyota Yaris   class 1         8,527.63 THB
+    Q-000043  Isuzu D-Max    class 2+       10,790.07 THB
+    2 quotes, total 19,317.70 THB
     """
 # the date the C# 15 preview and Visual Basic "what's new" pages were last read — not the build date
 CHECKED = "2026-09-20"
@@ -214,7 +214,7 @@ _VB_LIMITS = [
     ("Default interface member · C# 8", "<code>New StandardRateTable().BasePremium(R)</code>", "BC30456",
      "not a member", "Call it through an <code>IRateTable</code> reference"),
     ("Default interface member · C# 8", "A VB class implementing <code>IRateTable</code> with only "
-     "<code>BaseRate</code>", "BC30149", "must implement", "Write <code>BasePremium</code> in the VB class"),
+     "<code>RateFor</code>", "BC30149", "must implement", "Write <code>BasePremium</code> in the VB class"),
     ("<code>with</code> expression · C# 9", "<code>R With {.Coverage = …}</code>", "BC30205", "syntax error",
      "Call the record's constructor"),
     ("Static abstract member · C# 11", "A VB <code>Structure</code> implementing <code>IIdentifier(Of T)</code>",
@@ -318,8 +318,15 @@ def blocks():
              "<code>L03.Reports</code> (a generic report framework), two xUnit test projects, "
              "<code>L03.TypesTour</code> (a console that prints every measurement quoted here) and "
              "<code>L03.VbInterop</code> (Visual Basic using the C# types and extending the framework).",
-             "<b>Premiums are illustrative, not a real tariff.</b> Base rates, loadings, stamp duty (0.4% of net) and "
-             "VAT (7% of net plus duty) exist so the types have something real-shaped to compute.",
+             "<b>Premiums follow the curriculum's canonical tariff — illustrative, not a real tariff.</b> The same "
+             "rates (Class 1 2.1% of the sum insured, Class 2+ 1.2%, Class 3+ 0.9%, Class 3 0.4%), the same loadings "
+             "(young driver +20%, one claim +10%, two +25%, commercial use +25% or +35% over 3,000 cc), the same "
+             "no-claim ladder (0/20/25/30/40/50% by claim-free licence year) and the same stamp duty (0.4% of net) "
+             "and VAT (7% of net plus duty) run through every lesson, so a premium you compute here matches the one "
+             "you persist in " + ref(9) + " and test in " + ref(10) + ". Three or more claims in five years declines "
+             "the quote: this lesson teaches types and exceptions, so <code>ClaimsLoading</code> throws "
+             "<code>QuoteDeclinedException</code> (the data-shaped lessons record "
+             "<code>QuoteStatus.Declined</code> instead).",
              "Facts that change with releases are marked " + VERIFIED + " and link to Microsoft Learn; judgements "
              "are marked " + ESTIMATE + "; figures computed from the samples are marked " + MEASURED + ". Byte "
              "counts come from one run of <code>L03.TypesTour</code> in a 64-bit process on .NET 10.0.12 — object "
@@ -600,10 +607,14 @@ def blocks():
                 // parameter is visible to initializers only
                 private val rules = rules.toList()
 
-                fun calculate(request: QuoteRequest): Premium {
-                    var net = rates.basePremium(request)
-                    for (rule in rules) net *= rule.factor(request)
-                    return Premium(net)
+                // loadings add up, a discount multiplies
+                fun calculate(req: QuoteRequest): Premium {
+                    var load = ZERO; var disc = ONE
+                    for (r in rules)
+                        if (r.isDiscount) disc *= r.factor(req)
+                        else load += r.factor(req) - ONE
+                    return Premium(rates.basePremium(req)
+                        * ((ONE + load) * disc))
                 }
             }
             """, "kotlin", file="the idea you already know"),
@@ -613,7 +624,10 @@ def blocks():
                      "constructor. <code>rates</code> is used inside a method, so the compiler stores it in a hidden "
                      "field that your own code could reassign; <code>rules</code> is used only in a field initializer, "
                      "so it is never stored at all. Copying <code>rules</code> into a <code>readonly</code> array is "
-                     "the C# way to say <i>this dependency does not change</i>."),
+                     "the C# way to say <i>this dependency does not change</i>. Both sides compose the canonical "
+                     "tariff the same way — every loading is <i>added</i> to one factor, the no-claim discount "
+                     "multiplies, and the single rounding happens in <code>Money</code>'s <code>*</code> operator "
+                     "(panel 2.3)."),
 
         {"type": "table", "heading": "3.5 · Property forms — who can set the value, and when",
          "cols": ["Form", "Declaration", "Who can set it", "From your stack"],
@@ -659,6 +673,9 @@ def blocks():
         compare(from_text("""
             abstract class RatingRule {
                 abstract String name();
+
+                // overridable, like every method below
+                boolean isDiscount() { return false; }
 
                 BigDecimal factor(QuoteRequest r) { return ONE; }
 
@@ -720,12 +737,13 @@ def blocks():
         code(from_sample(f"{DOM}/Rating.cs", "interfaces"),
              heading="4.4 · A default interface method on the rate table", keep=True,
              note="<b>" + DIFFERENT + " from Java defaults.</b> <code>StandardRateTable</code> implements only "
-                  "<code>BaseRate</code>. It does not inherit <code>BasePremium</code>: the interface supplies the "
+                  "<code>RateFor</code>. It does not inherit <code>BasePremium</code>: the interface supplies the "
                   "body, so only an <code>IRateTable</code>-typed reference can call it (a Java class inherits its "
                   "default methods). <code>PremiumCalculator</code> takes an <code>IRateTable</code>, so the call "
-                  "compiles; <code>L03.TypesTour</code> prints <code>11,250.00 THB</code> (450,000 × 2.5%), and "
-                  "<code>DispatchTests</code> asserts the class has no such member. A Visual Basic class implementing "
-                  "this interface must still write <code>BasePremium</code> itself (BC30149, table 7.6)."),
+                  "compiles; <code>L03.TypesTour</code> prints <code>9,450.00 THB</code> (450,000 × 2.1%, the "
+                  "canonical Class 1 rate), and <code>DispatchTests</code> asserts the class has no such member. A "
+                  "Visual Basic class implementing this interface must still write <code>BasePremium</code> itself "
+                  "(BC30149, table 7.6)."),
 
         code(from_sample(f"{DOM}/Identifiers.cs", "static-abstract"),
              heading="4.5 · Static abstract members — a contract on the type",
@@ -752,7 +770,8 @@ def blocks():
               "<code>NotInheritable</code>"],
              ["Stops further overriding", "<code>final</code> method", "<code>final override</code>",
               "<code>sealed override</code>", "<code>NotOverridable Overrides</code>"],
-             ["Hides a base member", "—", "—", "<code>new</code>", "<code>Shadows</code>"],
+             ["Hides a base member", "—", "—", "<code>new</code>",
+              "<code>Shadows</code> (hides every overload of the name)"],
              ["Inherit · implement", "<code>extends</code> · <code>implements</code>", "<code>:</code>",
               "<code>:</code>", "<code>Inherits</code> · <code>Implements</code>"],
              ["Call the base version", "<code>super.m()</code>", "<code>super.m()</code>", "<code>base.M()</code>",
@@ -760,12 +779,15 @@ def blocks():
 
         code(from_sample(VB, "vb-keywords"),
              heading="4.7 · The same rules in Visual Basic — what you will read in a legacy estate", keep=True,
-             note="<b>" + RENAMED + " keyword for keyword, same dispatch.</b> This is panel 4.1's C# hierarchy "
-                  "member for member, declared in the VB project. <code>MustInherit</code> and "
+             note="<b>" + RENAMED + " keyword for keyword, same dispatch for this single method.</b> This is panel "
+                  "4.1's C# hierarchy member for member, declared in the VB project. <code>MustInherit</code> and "
                   "<code>MustOverride</code> are <code>abstract</code>, <code>Overridable</code> is "
                   "<code>virtual</code>, <code>NotInheritable</code> is <code>sealed</code> and <code>Shadows</code> "
-                  "is <code>new</code>. A VB method is non-virtual by default too, so <code>L03.VbInterop</code> "
-                  f"prints <code>{esc(_VB_DISPATCH)}</code> (panel 8.3) — the same three answers as panel 4.2."),
+                  "is <code>new</code> — with one difference that matters as soon as a name is overloaded: "
+                  "<code>Shadows</code> hides <i>every</i> overload of the name, where C# <code>new</code> hides only "
+                  "the matching signature (" + ref(6) + "). A VB method is non-virtual by default too, so "
+                  f"<code>L03.VbInterop</code> prints <code>{esc(_VB_DISPATCH)}</code> (panel 8.3) — the same three "
+                  "answers as panel 4.2."),
 
         # ═══════════════════════════ 5 · GENERICS ═══════════════════════════
         {"type": "story", "heading": "5 · Generics — reified, constrained and variant",

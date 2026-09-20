@@ -24,7 +24,7 @@ await using var api = new WebApplicationFactory<PartnerRateClient>().WithWebHost
 {
     web.UseEnvironment("Tour");
     web.UseSetting("Partners:Resilience:Retry:Delay", "00:00:00.010");
-    web.UseSetting("RateLimits:QuoteWritesPerMinute", "3");
+    web.UseSetting("RateLimits:QuoteWritesPerMinute", "4");
     web.ConfigureLogging(logging => logging.ClearProviders());
     web.ConfigureTestServices(services =>
     {
@@ -37,6 +37,7 @@ var http = api.CreateClient();
 
 var adult = Body(dateOfBirth: "1990-05-01", licenceYears: 10, claims: 0, sumInsured: 800_000, notifyVia: "line");
 var young = Body(dateOfBirth: "2004-01-01", licenceYears: 2, claims: 1, sumInsured: 800_000, notifyVia: "sms");
+var risky = Body(dateOfBirth: "1990-05-01", licenceYears: 10, claims: 3, sumInsured: 800_000, notifyVia: "email");
 var broken = Body(dateOfBirth: "1990-05-01", licenceYears: 10, claims: 0, sumInsured: 10, notifyVia: "fax");
 
 var created = await Send("POST", "/quotes", adult);
@@ -46,13 +47,19 @@ var youngResponse = await Send("POST", "/quotes", young);
 Print("POST", "/quotes  (driver 22, 1 claim)", youngResponse,
     Premium(await youngResponse.Content.ReadFromJsonAsync<JsonElement>()));
 
+// the tariff declines 3+ claims in five years: a status and a reason, not an error
+var risk = await Send("POST", "/quotes", risky);
+var riskQuote = await risk.Content.ReadFromJsonAsync<JsonElement>();
+Print("POST", "/quotes  (3 claims in 5 years)", risk,
+    $"{riskQuote.GetProperty("status").GetString()}, {riskQuote.GetProperty("declineReason").GetString()}");
+
 var invalid = await Send("POST", "/quotes", broken);
 Print("POST", "/quotes  (invalid body)", invalid, "errors: " + string.Join(", ",
     (await invalid.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("errors").EnumerateObject()
         .Select(e => e.Name)));
 
 var limited = await Send("POST", "/quotes", adult);
-Print("POST", "/quotes  (4th write this minute)", limited, $"{limited.Content.Headers.ContentType?.MediaType}");
+Print("POST", "/quotes  (5th write this minute)", limited, $"{limited.Content.Headers.ContentType?.MediaType}");
 
 var id = quote.GetProperty("quoteId").GetString();
 var fetched = await Send("GET", "/quotes/{id}", path: $"/quotes/{id}");

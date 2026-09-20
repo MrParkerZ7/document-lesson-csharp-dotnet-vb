@@ -40,9 +40,47 @@ All rates are **illustrative, not a real tariff** — say so wherever a premium 
 | `Premium` | net premium, loadings, discounts, stamp duty, VAT, total | stamp duty 0.4% of net premium and VAT 7% on (net + duty) — illustrative |
 | `Quote` | `QuoteId`, request, `Premium`, `ValidUntil`, `QuoteStatus { Draft, Quoted, Accepted, Expired, Declined }` | |
 | `Policy` | `PolicyNumber`, `QuoteId`, inception, expiry | issued when a quote is accepted |
-| Rating rules | base rate by class × sum insured; young-driver loading (< 25); claims loading; no-claim bonus by claim-free years; commercial-use loading | the same rules recur so later lessons can test, persist and deploy them |
+| Rating rules | the canonical tariff below | the same rules recur so later lessons can test, persist and deploy them — **the numbers are fixed, see § Canonical tariff** |
 | Partners | `IPartnerRateProvider` — external rating partners, some slow or failing | lesson 05 fan-out, lesson 08 resilient HttpClient |
 | Notifications | SMS · Email · LINE channels | lesson 05 Channels, lesson 08 background service |
+
+### Canonical tariff — one tariff for the whole track
+
+Lesson 01 promises the reader that the same example recurs, and the cross-lesson review (2026-09-20) found six
+different Class 1 rates, four different no-claim schedules, three claims rules and two stamp-duty roundings across
+the lessons. **Every lesson that prices a quote uses exactly this tariff.** It is illustrative, not a real tariff —
+each lesson says so where it prices a quote.
+
+```
+Base premium      = SumInsured x rate(class)
+                    Class1 2.1%   Class2Plus 1.2%   Class3Plus 0.9%   Class3 0.4%      (Class 3 is a rate too, never a flat amount)
+Loadings          added together, then applied to the base:
+                    young driver   age < 25 on the quote start date            +20%
+                    claims         ClaimsLast5Years 0 -> +0%   1 -> +10%   2 -> +25%   3 or more -> the quote is DECLINED
+                    commercial     VehicleUse.Commercial                        +25%, or +35% when EngineCc > 3,000
+No-claim discount claimFreeYears = ClaimsLast5Years == 0 ? LicenceYears : 0
+                    0 -> 0%   1 -> 20%   2 -> 25%   3 -> 30%   4 -> 40%   5 or more -> 50%
+Net premium       = round( base x (1 + sum of loadings) x (1 - no-claim discount) )
+Stamp duty        = round( net x 0.4% )
+VAT               = round( (net + stamp duty) x 7% )
+Total             = net + stamp duty + VAT
+round             = decimal, 2 places, MidpointRounding.AwayFromZero  (the satang)
+```
+
+- **Eligibility guards are not loadings:** a driver under 18 is not eligible (a guard that throws or declines — it
+  never changes a premium the tariff prices), and a sum insured of zero or less is rejected. A lesson that shows
+  such a guard names it as a guard.
+- A declined quote is a domain outcome, not a crash: `QuoteDeclinedException` where a lesson teaches exceptions
+  (lesson 02), `QuoteStatus.Declined` where a lesson teaches data (lessons 04, 09) — the reason is "3+ claims in 5 years".
+- **Worked example to check any implementation against** — Class 1, sum insured 550,000 THB, private use, driver
+  aged 23 with 4 claim-free licence years, start date any: base 11,550.00 · young driver +20% → 13,860.00 ·
+  no-claim −40% → net **8,316.00** · stamp duty **33.26** · VAT **584.45** · total **8,933.71** THB.
+- A lesson may add a deliberate variant (a legacy system that truncates, a teaching device) **only if it says so in
+  one sentence and names this tariff** — never silently. The legacy VB of lesson 06 keeps its legacy rounding quirks
+  on purpose; its tariff *values* still match this table so the parity tests compare like with like.
+- Type-kind decisions from lesson 03 also recur: `Money`, `QuoteId(int)`, `PolicyNumber(int)` are
+  `readonly record struct`, `Quote` is a `sealed class` entity. A later lesson that deliberately flattens them (an
+  analytics row, a DynamoDB item) says so in one sentence and names lesson 03.
 
 ## Lesson boundaries — who owns what
 
@@ -272,7 +310,7 @@ Verify every version-sensitive claim online before writing it (marked **verify**
 4. Infrastructure and delivery — Terraform for Lambda + API Gateway + ECS, a GitHub Actions pipeline with OIDC
    to AWS, AWS CDK in C# as an alternative, Aspire for local orchestration (verify current naming/version).
 5. Observability — OpenTelemetry .NET (traces, metrics, logs) to CloudWatch / X-Ray, structured logging.
-6. Modernising Windows / IIS estates — assess an 80+ application estate, the 6 Rs, .NET Framework → .NET 10
+6. Modernising Windows / IIS estates — triage an application estate (the sample uses an illustrative 16-application inventory) with the AWS 7 Rs, .NET Framework → .NET 10
    porting map (`System.Web` → ASP.NET Core, WCF → CoreWCF/gRPC, Web Forms → Razor/Blazor, `web.config` →
    `appsettings.json`), incremental migration with YARP / System.Web adapters, tooling (verify the current state
    of .NET Upgrade Assistant, GitHub Copilot app modernization and AWS Transform for .NET).

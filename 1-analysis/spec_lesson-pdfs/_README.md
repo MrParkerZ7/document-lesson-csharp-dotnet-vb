@@ -44,6 +44,7 @@ samples/**/*.csproj|*.vbproj ──> verify_samples.py (build · test · run)
 |---|---|
 | `0-script/build_lessons.py` | builder for every unit |
 | `0-script/verify_samples.py` | gate: every sample builds, every test passes, every console sample runs to completion |
+| `0-script/check_tariff.py` | gate: every base-rate line in the samples equals the canonical tariff read from `_curriculum.md` (loadings, no-claim ladder and rounding are checked by each lesson's own tests) |
 | `0-script/_lib/lesson_kit.py` | shared helper (code panels, snippets, concept maps, lint) |
 | `0-script/_lib/brief_pdf.py`, `chart_svg.py` | vendored renderer — do not edit (`_lib/VENDORED.md`) |
 | `0-script/lessons/roster.py` | curriculum data, read by every lesson module |

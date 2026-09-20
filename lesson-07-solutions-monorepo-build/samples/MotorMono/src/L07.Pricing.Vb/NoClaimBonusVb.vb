@@ -2,7 +2,7 @@ Imports L07.Core
 
 #Region "ncb-rule"
 ''' <summary>The original rule, still in Visual Basic,
-''' in the same build graph as its C# port.</summary>
+''' the same ladder, in the same build graph.</summary>
 Public NotInheritable Class NoClaimBonusVb
     Implements IRatingRule
 
@@ -18,8 +18,14 @@ Public NotInheritable Class NoClaimBonusVb
         ArgumentNullException.ThrowIfNull(request)
         If request.ClaimsLast5Years > 0 Then Return 0D
 
-        Dim years = Math.Clamp(request.ClaimFreeYears, 0, 5)
-        Return -0.1D * years
+        Select Case request.ClaimFreeYears
+            Case Is <= 0 : Return 0D
+            Case 1 : Return -0.2D
+            Case 2 : Return -0.25D
+            Case 3 : Return -0.3D
+            Case 4 : Return -0.4D
+            Case Else : Return -0.5D
+        End Select
     End Function
 End Class
 #End Region

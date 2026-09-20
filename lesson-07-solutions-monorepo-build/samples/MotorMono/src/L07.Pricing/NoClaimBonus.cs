@@ -3,8 +3,8 @@ using L07.Core;
 namespace L07.Pricing;
 
 #region ncb-rule
-/// <summary>The C# port: 10% off per claim-free
-/// year, at most 50%, none after a claim.</summary>
+/// <summary>The C# port of the shared no-claim
+/// ladder: 20-50% off, none after a claim.</summary>
 public sealed class NoClaimBonus : IRatingRule
 {
     public string Name => "no-claim bonus";
@@ -17,8 +17,15 @@ public sealed class NoClaimBonus : IRatingRule
             return 0m;
         }
 
-        var years = Math.Clamp(request.ClaimFreeYears, 0, 5);
-        return -0.10m * years;
+        return request.ClaimFreeYears switch
+        {
+            <= 0 => 0m,
+            1 => -0.20m,
+            2 => -0.25m,
+            3 => -0.30m,
+            4 => -0.40m,
+            _ => -0.50m,
+        };
     }
 }
 #endregion

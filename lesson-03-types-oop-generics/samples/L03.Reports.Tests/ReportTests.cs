@@ -17,15 +17,15 @@ public class ReportServiceTests
     {
         const string expected = """
             quote,vehicle,class,total_thb
-            Q-000042,Toyota Yaris,1,12327.36
-            Q-000043,Isuzu D-Max,2+,15319.23
+            Q-000042,Toyota Yaris,1,8527.63
+            Q-000043,Isuzu D-Max,2+,10790.07
             """;
         Assert.Equal(expected.ReplaceLineEndings(), Service().Render(Report(), "csv").ReplaceLineEndings());
     }
 
     [Fact]
     public void The_text_table_totals_every_quote() =>
-        Assert.EndsWith("2 quotes, total 27,646.59 THB", Service().Render(Report(), "text"));
+        Assert.EndsWith("2 quotes, total 19,317.70 THB", Service().Render(Report(), "text"));
 
     [Fact]
     public void Json_is_valid_and_carries_every_line()
@@ -33,7 +33,7 @@ public class ReportServiceTests
         using var json = JsonDocument.Parse(Service().Render(Report(), "json"));
         var lines = json.RootElement.GetProperty("lines");
         Assert.Equal(2, lines.GetArrayLength());
-        Assert.Equal(12_327.36m, lines[0].GetProperty("total").GetDecimal());
+        Assert.Equal(8_527.63m, lines[0].GetProperty("total").GetDecimal());
         Assert.Equal("2026-10-01", json.RootElement.GetProperty("asOf").GetString());
     }
 

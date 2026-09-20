@@ -6,13 +6,15 @@ using L04.QuoteData;
 CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 var quotes = QuoteBook.Generate();
 var policies = QuoteBook.IssuePolicies(quotes);
+var declined = quotes.Count(q => q.Status == QuoteStatus.Declined);
 Console.WriteLine($"MotorQuote dashboard: {quotes.Count} quotes, illustrative rates");
+Console.WriteLine($"declined, never priced         {declined} ({Rating.DeclineReason})");
 
 Console.WriteLine("conversion by coverage class   quoted accepted rate");
 foreach (var c in QuoteDashboard.Conversion(quotes))
     Console.WriteLine($"  {c.Coverage,-11}{c.Quoted,20}{c.Accepted,9}{c.Rate * 100,7:0.0}%");
 
-Console.WriteLine("premium bands, all quotes");
+Console.WriteLine("premium bands, priced quotes");
 foreach (var (band, n) in QuoteDashboard.Bands(quotes))
     Console.WriteLine($"  {band,-9}{n,5}");
 

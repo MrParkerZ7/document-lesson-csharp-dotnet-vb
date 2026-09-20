@@ -2,7 +2,8 @@ using L07.Core;
 
 namespace L07.Pricing;
 
-/// <summary>+25% when the driver is younger than 25. Illustrative, not a real tariff.</summary>
+/// <summary>+20% when the driver is younger than 25 on the quote start date.
+/// Illustrative, not a real tariff — the same tariff as every other lesson.</summary>
 public sealed class YoungDriverLoading : IRatingRule
 {
     public string Name => "young driver";
@@ -10,11 +11,12 @@ public sealed class YoungDriverLoading : IRatingRule
     public decimal Factor(QuoteRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return request.DriverAge < 25 ? 0.25m : 0m;
+        return request.DriverAge < 25 ? 0.20m : 0m;
     }
 }
 
-/// <summary>+10% per claim in the last five years, at most +50%.</summary>
+/// <summary>Claims in the last five years: one is +10%, two is +25%,
+/// three or more is not a loading at all — the quote is declined.</summary>
 public sealed class ClaimsLoading : IRatingRule
 {
     public string Name => "claims";
@@ -22,11 +24,17 @@ public sealed class ClaimsLoading : IRatingRule
     public decimal Factor(QuoteRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return Math.Min(request.ClaimsLast5Years, 5) * 0.10m;
+        return request.ClaimsLast5Years switch
+        {
+            <= 0 => 0m,
+            1 => 0.10m,
+            2 => 0.25m,
+            _ => throw new QuoteDeclinedException(QuoteDeclinedException.ThreeOrMoreClaims),
+        };
     }
 }
 
-/// <summary>+15% for a vehicle in commercial use.</summary>
+/// <summary>Commercial use: +25%, or +35% for an engine above 3,000 cc.</summary>
 public sealed class CommercialUseLoading : IRatingRule
 {
     public string Name => "commercial use";
@@ -34,6 +42,11 @@ public sealed class CommercialUseLoading : IRatingRule
     public decimal Factor(QuoteRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return request.Use == VehicleUse.Commercial ? 0.15m : 0m;
+        if (request.Use != VehicleUse.Commercial)
+        {
+            return 0m;
+        }
+
+        return request.EngineCc > 3_000 ? 0.35m : 0.25m;
     }
 }

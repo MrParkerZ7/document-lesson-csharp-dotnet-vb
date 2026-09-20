@@ -28,18 +28,23 @@ public static class QuoteBook
         var (make, model, cc) = Models[(i * 7 + i / 5) % Models.Length];
         var coverage = (CoverageClass)((i * 3 + i / 4) % 4);
         var use = i % 9 == 4 ? VehicleUse.Commercial : VehicleUse.Private;
-        var sumInsured = coverage == CoverageClass.Class3 ? 0m : 250_000m + (i * 13 % 16) * 50_000m;
+        var sumInsured = 250_000m + (i * 13 % 16) * 50_000m;
         var driver = new Driver(
             DateOfBirth: new DateOnly(1962 + (i * 17) % 42, 1 + i % 12, 1 + (i * 3) % 28),
             LicenceYears: (i * 11) % 15,
-            ClaimsLast5Years: (i * 7 % 10) switch { < 6 => 0, < 9 => 1, _ => 2 });
+            ClaimsLast5Years: (i * 7 % 10) switch { < 6 => 0, < 8 => 1, < 9 => 2, _ => 3 });
         var input = new RatingInput(coverage, sumInsured, Rating.AgeOn(driver.DateOfBirth, AsOf),
-            driver.ClaimsLast5Years, driver.LicenceYears, use);
+            driver.ClaimsLast5Years, driver.LicenceYears, use, cc);
         var vehicle = new Vehicle(make, model, 2014 + (i * 5) % 12, cc, use, new Money(sumInsured));
-        return new Quote($"Q-{i + 1:D4}", vehicle, driver, coverage,
-            AsOf.AddDays(i % 30), Rating.Total(input), StatusOf(i, coverage));
+        var id = $"Q-{i + 1:D4}";
+        var start = AsOf.AddDays(i % 30);
+        // the tariff declines 3+ claims in 5 years, so that quote carries a status instead of a premium
+        return Rating.IsDeclined(input)
+            ? new Quote(id, vehicle, driver, coverage, start, new Money(0m), QuoteStatus.Declined)
+            : new Quote(id, vehicle, driver, coverage, start, Rating.Total(input), StatusOf(i, coverage));
     }
 
+    // only a priced quote reaches this: Declined comes from the tariff, never from the roll
     private static QuoteStatus StatusOf(int i, CoverageClass coverage)
     {
         var roll = (int)((uint)(i + 1) * 2654435761u % 100);
@@ -51,6 +56,6 @@ public static class QuoteBook
             _ => 70,
         };
         if (roll < acceptBelow) return QuoteStatus.Accepted;
-        return (roll % 3) switch { 0 => QuoteStatus.Expired, 1 => QuoteStatus.Declined, _ => QuoteStatus.Quoted };
+        return roll % 2 == 0 ? QuoteStatus.Expired : QuoteStatus.Quoted;
     }
 }

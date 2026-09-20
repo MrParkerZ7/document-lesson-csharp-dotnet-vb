@@ -6,46 +6,66 @@ public sealed record RatingInput(
     int DriverAge,
     int Claims,
     int LicenceYears,
-    VehicleUse Use);
+    VehicleUse Use,
+    int EngineCc);
 
-/// <summary>Illustrative rates only, not a real tariff. Every member is a pure function.</summary>
+/// <summary>The track's one illustrative tariff (_curriculum.md, "Canonical tariff"), not a real one.
+/// Every member is a pure function.</summary>
 public static class Rating
 {
-    #region rules-as-functions
-    // a rule is a value: takes the input and the running premium, returns a new premium
-    public delegate decimal Adjustment(RatingInput input, decimal premium);
+    /// <summary>3 or more claims in 5 years: a decision, not a price. The quote is never rated.</summary>
+    public const string DeclineReason = "3+ claims in 5 years";
 
-    public static readonly IReadOnlyList<(string Name, Adjustment Apply)> Rules =
+    public static bool IsDeclined(RatingInput r) => r.Claims >= 3;
+
+    #region rules-as-functions
+    // a rule is a value: it reads the quote and returns the loading it adds to the base premium
+    public delegate decimal Loading(RatingInput input);
+
+    public static readonly IReadOnlyList<(string Name, Loading Rate)> Rules =
     [
-        ("young driver", (r, p) => r.DriverAge < 25 ? p * 1.20m : p),
-        ("claims loading", (r, p) => p * (1m + 0.15m * r.Claims)),
-        // licence years stand in for claim-free years in this illustrative rule
-        ("no-claim bonus", (r, p) => r.Claims == 0 ? p * NoClaimFactor(r.LicenceYears) : p),
-        ("commercial use", (r, p) => r.Use == VehicleUse.Commercial ? p * 1.25m : p),
+        ("young driver", r => r.DriverAge < 25 ? 0.20m : 0m),
+        ("claims", r => r.Claims switch
+        {
+            0 => 0m, 1 => 0.10m, 2 => 0.25m,
+            _ => throw new InvalidOperationException(DeclineReason), // 3+ is declined, not loaded
+        }),
+        ("commercial use", r => r.Use is not VehicleUse.Commercial ? 0m
+                                : r.EngineCc > 3_000 ? 0.35m : 0.25m),
     ];
 
-    // fold the rules over the base premium: no mutable state, same input -> same output
+    // fold the rules into one loading, then apply it and the no-claim discount to the base premium
     public static decimal Net(RatingInput r) =>
-        Rules.Aggregate(Base(r), (premium, rule) => rule.Apply(r, premium));
+        Round(Base(r) * (1m + Rules.Aggregate(0m, (loading, rule) => loading + rule.Rate(r)))
+                      * (1m - NoClaimDiscount(r)));
 
-    static decimal NoClaimFactor(int years) => 1m - 0.05m * Math.Min(years, 5);
+    // claim-free years earn the ladder; a single claim resets it to zero
+    static decimal NoClaimDiscount(RatingInput r) =>
+        (r.Claims == 0 ? r.LicenceYears : 0) switch
+        {
+            0 => 0m, 1 => 0.20m, 2 => 0.25m, 3 => 0.30m, 4 => 0.40m, _ => 0.50m,
+        };
     #endregion
 
     public static decimal Base(RatingInput r) => r.Coverage switch
     {
-        CoverageClass.Class1 => r.SumInsured * 0.022m,
-        CoverageClass.Class2Plus => r.SumInsured * 0.016m,
-        CoverageClass.Class3Plus => r.SumInsured * 0.012m,
-        _ => 1_800m, // Class 3: third-party only, flat
+        CoverageClass.Class1 => r.SumInsured * 0.021m,
+        CoverageClass.Class2Plus => r.SumInsured * 0.012m,
+        CoverageClass.Class3Plus => r.SumInsured * 0.009m,
+        CoverageClass.Class3 => r.SumInsured * 0.004m, // third-party only: a rate, never a flat amount
+        _ => throw new ArgumentOutOfRangeException(nameof(r)),
     };
 
     public static Money Total(RatingInput r)
     {
         var net = Net(r);
-        var duty = net * 0.004m;        // stamp duty 0.4% of net (illustrative)
-        var vat = (net + duty) * 0.07m; // VAT 7% on net + duty (illustrative)
-        return new Money(decimal.Round(net + duty + vat, 2, MidpointRounding.AwayFromZero));
+        var duty = Round(net * 0.004m);        // stamp duty 0.4% of the net premium
+        var vat = Round((net + duty) * 0.07m); // VAT 7% on net + stamp duty
+        return new Money(net + duty + vat);
     }
+
+    // the satang: two decimal places, halves away from zero
+    static decimal Round(decimal amount) => decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
 
     public static int AgeOn(DateOnly dateOfBirth, DateOnly asOf)
     {

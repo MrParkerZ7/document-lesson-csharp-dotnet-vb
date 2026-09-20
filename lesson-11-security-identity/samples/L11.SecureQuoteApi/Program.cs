@@ -3,6 +3,7 @@ using System.Threading.RateLimiting;
 using L11.SecureQuoteApi.Quotes;
 using L11.SecureQuoteApi.Security;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using static L11.SecureQuoteApi.Security.QuoteClaims;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,6 +46,17 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
     .WithMethods("GET", "POST")
     .WithHeaders("Authorization", "Content-Type")));
 
+// behind a load balancer the socket peer is the balancer, not the caller:
+// trust X-Forwarded-For only from the balancer's own network
+builder.Services.Configure<ForwardedHeadersOptions>(o =>
+{
+    o.ForwardedHeaders = ForwardedHeaders.XForwardedFor;
+    if (config["Proxy:Network"] is { } cidr)
+    {
+        o.KnownIPNetworks.Add(System.Net.IPNetwork.Parse(cidr));
+    }
+});
+
 builder.Services.AddRateLimiter(o =>
 {
     o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -67,6 +79,7 @@ var app = builder.Build();
 #region pipeline
 // No UseHttpsRedirection or UseHsts: an API listens on HTTPS only. A redirect
 // arrives after the client has already sent its bearer token over plain HTTP.
+app.UseForwardedHeaders();      // first: the client IP the limiter keys on
 app.UseCors();                  // before auth: a CORS preflight carries no token
 app.UseAuthentication();        // who are you?  -> HttpContext.User
 app.UseRateLimiter();           // needs the subject, so after authentication

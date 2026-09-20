@@ -44,6 +44,7 @@ document-lesson-csharp-dotnet-vb/
 ├── 0-script/
 │   ├── build_lessons.py      ← renders the PDFs + READMEs
 │   ├── verify_samples.py     ← builds, tests and runs every sample
+│   ├── check_tariff.py       ← the MotorQuote running example uses one tariff across lessons
 │   ├── lessons/              ← one content module per lesson + roster.py (the curriculum)
 │   └── _lib/                 ← lesson_kit.py + the vendored PDF renderer (brief_pdf, chart_svg)
 └── 1-analysis/spec_lesson-pdfs/  ← the written contract every lesson PDF is built to

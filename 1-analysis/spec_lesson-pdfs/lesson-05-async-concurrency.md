@@ -19,8 +19,8 @@ with `FanOutTests` or with the notification event count.
 
 ## 3 · Structure
 
-20 pages at the 2026-09-20 build; no page is more than about a quarter empty except the last (measured with PyMuPDF:
-the emptiest are pp. 7, 10, 16 at 17-18% and p. 19 at 26%).
+20 pages at the 2026-09-20 build (cross-review fix pass); no page is more than 28% empty (measured with PyMuPDF:
+the emptiest are pp. 7, 10, 16 at 18-20% and p. 19 at 28%; the last page, 20, is full).
 
 | § | Heading | Blocks |
 |---|---|---|
@@ -31,7 +31,7 @@ the emptiest are pp. 7, 10, 16 at 17-18% and p. 19 at 26%).
 | 4 | Fan-out — 30 partners, one deadline | story (3 ¶; names the collection expression as what runs the lazy `Select`) · compare 4.1 (Kotlin `coroutineScope`/`async`/`awaitAll` ↔ C# `fan-out`) · chartrow 4.2 donut (outcomes) + 4.3 bar (one-by-one vs C# vs VB wall clock) · code 4.4 (`when-each`) · code 4.5 (`first-good-enough`) · code 4.6 (`throttle`: `Parallel.ForEachAsync`) · 4.7 twocol (what `Task.WhenAll` does / does not do) |
 | 5 | Streams and pipelines — IAsyncEnumerable and Channels | story (3 ¶: async streams + .NET 10 in-box async LINQ · explicit cancellation · bounded channels and back-pressure) · compare 5.1 (Kotlin `Flow` ↔ C# `async-stream`) · mermaid 5.2 flowchart LR (dispatcher: intake → router → three lanes, capacities read from `Program.cs`; the router's three edges reach the lane nodes) · code 5.3 (`bounded-channel`) · code 5.4 (`pipeline`) · chart 5.5 stacked bar (delivered per channel, first attempt vs retry) |
 | 6 | Shared state and testable time | story (3 ¶: no lock across await · smallest atomic tool · TimeProvider) · mermaid 6.1 flowchart TB (one row per question, each row a `direction LR` subgraph holding the question and its "yes" answer) · code 6.2 (`stats`: Interlocked + Lock) · code 6.3 (`single-flight`) · table 6.4 (primitives vs JVM counterparts, safe across await?, panel number of the sample) · code 6.5 (`token-gate`: `SemaphoreSlim.WaitAsync` / `Release` in `finally`) · code 6.6 (`fake-time` test) |
-| 7 | Traps — and what Visual Basic cannot say | story (4 ¶: sync-over-async, ConfigureAwait and how the pool starves (2–3× cores, then 1–2 threads a second) · async void · fire-and-forget + Task.Run in ASP.NET Core · VB's async limits) · code 7.1 (`deadlock`) · mermaid 7.2 flowchart LR (the deadlock cycle; init directive widens the ranks so labels print at body scale; the caption names the three colours) · code 7.3 (`async-void`) · code 7.4 (`fire-and-forget`) · code 7.5 (captured `L05.AsyncTraps` output) · compare 7.6 (C# `stream` ↔ VB `stream`) · table 7.7 (8 VB compiler errors with captured messages and the C# form) · chart 7.8 heatmap (async features: C# 14 / VB / Kotlin / TypeScript / Python, cell 38, rubric) |
+| 7 | Traps — and what Visual Basic cannot say | story (4 ¶: sync-over-async, ConfigureAwait and how the pool starves (2–3× cores, then 1–2 threads a second) · async void · fire-and-forget + Task.Run in ASP.NET Core · VB's async limits) · code 7.1 (`deadlock`) · mermaid 7.2 flowchart LR (the deadlock cycle; init directive widens the ranks so labels print at body scale; the caption names the three colours) · code 7.3 (`async-void`) · code 7.4 (`fire-and-forget`) · code 7.5 (captured `L05.AsyncTraps` output) · compare 7.6 (C# `stream` ↔ VB `stream`) · table 7.7 (10 VB compiler errors with captured messages and the C# form, including `Await Using` BC30201 and a plain `Using` on an `IAsyncDisposable`-only type BC36010) · chart 7.8 heatmap (async features: C# 14 / VB / Kotlin / TypeScript / Python, cell 38, rubric) |
 | 8 | Hands-on — run the rating desk in both languages | story (2 ¶) · compare 8.1 (C# `program` ↔ VB `program`) · code 8.2 commands · compare 8.3 (captured desk output C# ↔ VB) · code 8.4 (captured `L05.Notifications` output) · chart 8.5 hbar (lines of code per project) · warn "Traps" (5) · ok checkpoint (5) · summary "Check yourself" (7) · footer (Next: lesson 06) |
 
 Standard minimums as built: 8 numbered stories · 1 mapping · 2 card bands (3 cards each) · 5 mermaid (sequence,
@@ -51,20 +51,26 @@ release notes, dotnet/runtimelab, kotlinlang.org, docs.python.org).
   asserts. The "six slow partners plus the two that never answer" wording follows `PartnerCatalog.Create`.
 - **KPI "Deterministic tests"** = `[Fact]` + `[InlineData(` count over `L05.PartnerRates.Tests` (11: 8 in
   `FanOutTests`, 3 in `SharedStateTests`, the same figure 6.6's note prints); "0 real sleeps" = occurrences of
-  `Thread.Sleep(` / `Task.Delay(` in that project (MEASURED). §8 adds the 9 VB compiler-rule tests (20 in all).
+  `Thread.Sleep(` / `Task.Delay(` in that project (MEASURED). §8 adds the 11 VB compiler-rule tests (22 in all).
 - **KPI "Task.WhenEach"** = ".NET 9 · yields tasks as they complete · verified" (API reference). The reference says the
   exact order in which tasks become available is not defined, so the lesson claims "as they complete", never a total
   order; 4.4's note says the fake-clock test can assert an order only because it completes one partner at a time.
-- **KPI "VB async gaps"** and table 7.7 = the `Rejected/` `[InlineData]` rows of `VbAsyncRulesTests.cs` (8). The module
+- **KPI "VB async gaps"** and table 7.7 = the `Rejected/` `[InlineData]` rows of `VbAsyncRulesTests.cs` (10; two added in the cross-review pass for the `await using` a reader of lesson 02 meets first: `AwaitUsing.vb` → BC30201 "Expression expected.", `UsingAsyncDisposable.vb` → BC36010 "'Using' operand of type 'PartnerConnection' must implement 'System.IDisposable'."). The module
   raises if the table cites an error id the tests do not assert. Message text was captured by compiling each snippet
   with Microsoft.CodeAnalysis.VisualBasic 5.9.0 (the package the test project references) on 2026-09-16.
+- **Tariff line (canonical tariff, `_curriculum.md`).** The lesson prices no quote itself. The one MotorQuote premium in it
+  is the stand-in result of the slow rating call in `L05.AsyncTraps/Traps.cs` (three places) and the `2.3` note: `8_933.71m`,
+  the **Total** of the curriculum's worked example (Class 1, 550,000 THB insured, driver aged 23, four claim-free years
+  = 8,933.71 THB), stated as "an illustrative tariff, not a real one". The captured output in 2.3's note and 7.5 (`premium
+  8,933.71 THB`) was re-captured from a real run of `L05.AsyncTraps` on 2026-09-20. The partner quotes in the desk and
+  notification output are partner rates from `SimulatedPartner`, not MotorQuote tariff values, and stay as they were.
 - **Chart 5.5**, panel 8.4 = parsed from the captured `L05.Notifications` output (9 / 9 / 18 sent, 4 retries, 10
   producer waits); event count and capacities in 5.2, 5.5 and 8.4 are read from `L05.Notifications/Program.cs`, and the
   module raises if the captured sent counts do not add up to the event count. The wait count is a timing result: it was
   10 or 11 in every one of 15 runs on the build machine (nine by the accuracy reviewer, six in the fix pass: 10
   eight times, 11 seven times), and the 5.5 and 8.4 notes say "10 or 11" rather than a stable value.
-- **Chart 8.5** = `loc()` over every `.cs`/`.vb` file per project (233 / 231 / 40 / 53 / 106 / 131 / 131 at this
-  build); its note computes tests + snippets + trap demos (493 of 925) against the library (233). Region line counts in
+- **Chart 8.5** = `loc()` over every `.cs`/`.vb` file per project (233 / 231 / 40 / 53 / 106 / 131 / 165 at this
+  build); its note computes tests + snippets + trap demos (527 of 959) against the library (233). Region line counts in
   the 7.6 and 8.1 notes (7 vs 11, 12 vs 14) and the `OneThreadContext` size in 7.1 (39) are computed at build time.
 - **Chart 7.8** heatmap is a rubric (yes / some / —) with one rule for every column: *yes* = the language or its
   runtime does it for you; *some* = you pass a token, inject a clock or add a library. Its VB column's gaps are backed
@@ -138,7 +144,7 @@ primitives table (6.4) before the `SemaphoreSlim` panel (6.5); §8 puts the desk
   `async-stream`, `bounded-channel`, `pipeline`, `main`
 - `L05.AsyncTraps` (C# console: lowered await, `.Result` deadlock on a one-thread context, async void, fire-and-forget;
   exits by itself) — regions `lowered`, `deadlock`, `async-void`, `fire-and-forget` (all four shown as panels)
-- `L05.VbRules.Tests` (xUnit compiling VB snippets with Roslyn: 8 rejected, 1 accepted) — regions in each snippet, `compile`
+- `L05.VbRules.Tests` (xUnit compiling VB snippets with Roslyn: 10 rejected, 1 accepted) — regions in each snippet, `compile`
 
 Sources: Microsoft Learn — Asynchronous programming with async and await, Async return types, `ValueTask<TResult>`,
 Cancellation in managed threads, `Task.WaitAsync`, `Task.WhenAll`, `Task.WhenEach`, `Parallel.ForEachAsync`, Channels,
@@ -167,6 +173,9 @@ coroutine basics, kotlinx `flow` builder; docs.python.org — asyncio tasks.
   producer-wait count (10 or 11) vary per run and per machine. Re-capture after changing a sample's output.
 - ⚠ The fan-out speed-up is a single-run wall-clock measurement on one machine, not a benchmark.
 - ⚠ The runtime-async paragraph describes a preview (.NET 11 Preview 4); update it when .NET 11 reaches GA.
+- ⚠ Table 7.7's `Await Using` and `Using` rows are the only place the track shows that lesson 02's `await using` has
+  no VB spelling; the VB workaround (`Await c.DisposeAsync()` after the block, never in `Finally`) is in the §7 story and
+  the 7.6 panel, not in the table.
 - ⚠ Heatmap 7.8 is a rubric; only its VB column is backed by compilation. The other cells are the author's judgement
   and are labelled ESTIMATE, with links only for structured concurrency.
 - ⚠ The VB accepted-patterns snippet (`AwaitPatterns`) is exercised by `L05.VbRules.Tests` but not shown as a panel.

@@ -63,8 +63,9 @@ Public Module Tour
         Console.WriteLine(m)
 
         ' Option Strict On: Double -> Decimal needs CDec
-        Dim vat = basePremium * CDec(0.07)
-        Console.WriteLine($"{basePremium} {vat}")
+        ' (VAT is charged on net + stamp duty in the tariff, not here)
+        Dim vatOnBase = basePremium * CDec(0.07)
+        Console.WriteLine($"{basePremium} {vatOnBase}")
 #End Region
     End Sub
 
@@ -97,12 +98,8 @@ Public Module Tour
         Select Case age
             Case Is < 18
                 Throw New NotSupportedException("under 18")
-            Case Is < 25
+            Case 18 To 24
                 Return 0.2D
-            Case 25 To 29
-                Return 0.1D
-            Case Is >= 70
-                Return 0.15D
             Case Else
                 Return 0D
         End Select
@@ -125,7 +122,7 @@ Public Module Tour
     End Sub
 
 #Region "methods"
-    Function Discount(amount As Decimal, Optional rate As Decimal = 0.3D,
+    Function Discount(amount As Decimal, Optional rate As Decimal = 0.4D,
                       Optional roundUp As Boolean = False) As Decimal
         Return If(roundUp, Math.Ceiling(amount * rate), amount * rate)
     End Function
@@ -154,7 +151,7 @@ Public Module Tour
         Console.WriteLine("[methods]")
 #Region "calls"
         Dim d1 = Discount(13_860D, roundUp:=True)
-        Dim total = Sum(9_702D, 38.81D, 681.86D)
+        Dim total = Sum(8_316D, 33.26D, 584.45D)
         Dim result = Bonus(Examples.YoungDriver().Driver)   ' no deconstruction
         Dim premium = 11_550D
         AddLoading(premium, 0.2D)                           ' ByRef is not repeated

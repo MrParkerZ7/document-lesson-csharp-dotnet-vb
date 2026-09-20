@@ -6,8 +6,9 @@ namespace L07.Pricing.Tests;
 public class PremiumCalculatorTests
 {
     private static QuoteRequest Request(
-        int age = 40, int claimFree = 0, int claims = 0, VehicleUse use = VehicleUse.Private) =>
-        new(CoverageClass.Class1, new Money(850_000m), age, claimFree, claims, use);
+        int age = 40, int claimFree = 0, int claims = 0, VehicleUse use = VehicleUse.Private,
+        int engineCc = 1_600) =>
+        new(CoverageClass.Class1, new Money(550_000m), age, claimFree, claims, use, engineCc);
 
     #region internals-test
     [Fact]
@@ -16,33 +17,45 @@ public class PremiumCalculatorTests
         // BaseRates is internal to the L07.Pricing
         // assembly. Directory.Build.targets gave it
         // [InternalsVisibleTo("L07.Pricing.Tests")].
-        Assert.Equal(0.018m, BaseRates.For(CoverageClass.Class1));
+        Assert.Equal(0.021m, BaseRates.For(CoverageClass.Class1));
         Assert.Equal(0.004m, BaseRates.For(CoverageClass.Class3));
     }
     #endregion
 
     [Fact]
-    public void Young_driver_with_three_claim_free_years_matches_the_cli()
+    public void The_worked_example_of_the_tariff_matches_the_cli()
     {
         IRatingRule[] rules = [new YoungDriverLoading(), new ClaimsLoading(), new NoClaimBonusVb()];
 
-        var premium = new PremiumCalculator(rules).Calculate(Request(age: 23, claimFree: 3));
+        var premium = new PremiumCalculator(rules).Calculate(Request(age: 23, claimFree: 4));
 
-        Assert.Equal(15_300.00m, premium.Base.Amount);
-        Assert.Equal(14_535.00m, premium.Net.Amount);
-        Assert.Equal(58.14m, premium.StampDuty.Amount);
-        Assert.Equal(1_021.52m, premium.Vat.Amount);
-        Assert.Equal(15_614.66m, premium.Total.Amount);
+        Assert.Equal(11_550.00m, premium.Base.Amount);
+        Assert.Equal(8_316.00m, premium.Net.Amount);
+        Assert.Equal(33.26m, premium.StampDuty.Amount);
+        Assert.Equal(584.45m, premium.Vat.Amount);
+        Assert.Equal(8_933.71m, premium.Total.Amount);
     }
 
     [Theory]
-    [InlineData(VehicleUse.Private, 0)]
-    [InlineData(VehicleUse.Commercial, 229_500)]
-    public void Commercial_use_adds_fifteen_percent(VehicleUse use, int expectedSatang)
+    [InlineData(VehicleUse.Private, 1_600, 0)]
+    [InlineData(VehicleUse.Commercial, 1_600, 288_750)]
+    [InlineData(VehicleUse.Commercial, 3_200, 404_250)]
+    public void Commercial_use_loads_the_base_premium(VehicleUse use, int engineCc, int expectedSatang)
     {
-        var premium = new PremiumCalculator([new CommercialUseLoading()]).Calculate(Request(use: use));
+        var premium = new PremiumCalculator([new CommercialUseLoading()])
+            .Calculate(Request(use: use, engineCc: engineCc));
 
         Assert.Equal(expectedSatang / 100m, premium.Net.Amount - premium.Base.Amount);
+    }
+
+    [Fact]
+    public void Three_claims_in_five_years_declines_the_quote()
+    {
+        var calculator = new PremiumCalculator([new ClaimsLoading()]);
+
+        var declined = Assert.Throws<QuoteDeclinedException>(() => calculator.Calculate(Request(claims: 3)));
+
+        Assert.Equal(QuoteDeclinedException.ThreeOrMoreClaims, declined.Message);
     }
 
     #region parity-test

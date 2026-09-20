@@ -16,6 +16,8 @@ public sealed record Vehicle(
 public sealed record Driver(DateOnly DateOfBirth, int LicenceYears, int ClaimsLast5Years);
 
 #region quote-record
+// An analytics row, not the lesson-03 Quote entity: this dataset deliberately flattens QuoteId and
+// PolicyNumber to strings and makes Quote a record, because every query here is a read.
 public sealed record Quote(
     string QuoteId,
     Vehicle Vehicle,

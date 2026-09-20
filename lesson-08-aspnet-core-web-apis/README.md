@@ -12,7 +12,7 @@
 - Build minimal API endpoints with route groups, typed results, endpoint filters, .NET 10 validation and ProblemDetails — and know when a controller is still the better fit
 - Publish a truthful OpenAPI 3.1 document and decide the defaults of rate limiting, output caching, health checks and CORS deliberately
 - Call external rating partners through IHttpClientFactory and the standard resilience handler, and run background work in a hosted service without taking the host down
-- Test the whole pipeline in memory with WebApplicationFactory, and plug a Visual Basic library into a C# web host
+- Host the whole pipeline in memory with WebApplicationFactory to prove your own endpoints, and plug a Visual Basic library into a C# web host
 
 ## Maps from your stack
 

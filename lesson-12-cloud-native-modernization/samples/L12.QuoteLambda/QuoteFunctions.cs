@@ -1,3 +1,4 @@
+using System.Net;
 using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.Lambda.Core;
@@ -25,9 +26,20 @@ public sealed class QuoteFunctions(IQuoteStore store)
                 out CoverageClass coverage))
             return HttpResults.BadRequest("unknown coverage");
 
-        var p = Rating.Quote(coverage, request.SumInsured,
-            request.DriverAge, request.ClaimsLast5Years,
-            request.Commercial);
+        PremiumBreakdown p;
+        try
+        {
+            p = Rating.Quote(coverage, request.SumInsured,
+                request.DriverAge, request.LicenceYears,
+                request.ClaimsLast5Years, request.Commercial,
+                request.EngineCc);
+        }
+        catch (QuoteDeclinedException declined)
+        {
+            return HttpResults.NewResult(
+                HttpStatusCode.UnprocessableEntity,
+                declined.Message);
+        }
         var quote = store.Save(p);
 
         context.Logger.LogInformation("Quoted {QuoteId}: {Total}",

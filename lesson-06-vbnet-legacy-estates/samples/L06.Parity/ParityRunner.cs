@@ -37,6 +37,6 @@ public static class ParityRunner
 
     public static string Describe(QuoteRequest r) =>
         $"{r.CoverCode} {r.SumInsured:0} born {r.DateOfBirth:yyyy-MM-dd} " +
-        $"start {r.StartDate:yyyy-MM-dd} {r.LicenceMonths}m {r.ClaimFreeYears}ncb {r.Claims}cl" +
-        (r.Commercial ? " com" : "");
+        $"start {r.StartDate:yyyy-MM-dd} {r.LicenceMonths}m {r.Claims}cl" +
+        (r.Commercial ? $" com {r.EngineCc}cc" : "");
 }

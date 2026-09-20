@@ -27,7 +27,7 @@ public class QuoteApiTests(WebApplicationFactory<Program> factory)
         var fetched = await client.GetFromJsonAsync<Quote>(created.Headers.Location, Json, ct);
 
         Assert.Equal(HttpStatusCode.Created, created.StatusCode);
-        Assert.Equal(6_445.68m, quote!.Premium.Total.Amount);
+        Assert.Equal(6_767.96m, quote!.Premium.Total.Amount);
         Assert.Equal(quote.Id, fetched!.Id);
     }
     #endregion

@@ -280,7 +280,8 @@ def blocks():
              "<p><b>Everything is taught through a rating engine, because that is where syntax bugs cost "
              "money.</b> The samples calculate a motor premium — base rate by coverage class, loadings for young "
              "drivers, claims and commercial use, a no-claim bonus, stamp duty and VAT. The rates are "
-             "<b>illustrative, not a real tariff</b>. A culture that swaps a decimal separator, a rounding mode "
+             "<b>illustrative, not a real tariff</b> — and they are the one tariff the whole track prices with, so "
+             "the totals in §9 recur in every later lesson. A culture that swaps a decimal separator, a rounding mode "
              "that moves a satang, a year printed in the Buddhist era: each one is demonstrated by a sample that "
              "ran, not described.</p>")},
 
@@ -424,7 +425,7 @@ def blocks():
               "here <code>PublishAot=false</code> turns off the Native AOT publish that file-based apps default "
               "to. <code>args is [var first, ..]</code> is a "
               "list pattern — 5.5. The app passes the invariant culture to each call, the per-call form, so "
-              "<code>dotnet premium-check.cs</code> printed <code>total 10,422.67 THB (net 9,702.00)</code> and "
+              "<code>dotnet premium-check.cs</code> printed <code>total 8,933.71 THB (net 8,316.00)</code> and "
               "<code>dotnet premium-check.cs -- 3</code> printed <code>declined: 3+ claims in 5 years</code> "
               "whatever the machine's culture."),
 
@@ -494,8 +495,8 @@ def blocks():
              "expressions are checked. <code>decimal</code> throws on overflow in both contexts (" + CHECKED
              + "). Visual Basic makes the opposite default choice — 8.3.</p>"
              "<p><b>Strings are where a rating service quietly breaks.</b> Interpolated strings format numbers "
-             "and dates with the <i>current culture</i>: the same premium prints as <code>10,422.67</code> or "
-             "<code>10.422,67</code>, and a JSON payload built by interpolation changes shape. "
+             "and dates with the <i>current culture</i>: the same premium prints as <code>8,933.71</code> or "
+             "<code>8.933,71</code>, and a JSON payload built by interpolation changes shape. "
              "<code>IndexOf(string)</code>, <code>StartsWith(string)</code> and <code>Compare</code> are "
              "linguistic by default, while <code>==</code>, <code>Equals</code> and <code>Contains</code> are "
              "ordinal (" + STRINGS + "); since .NET 5 the linguistic rules come from ICU on current Windows as "
@@ -566,8 +567,8 @@ def blocks():
         panel(from_sample(f"{SYN}/StringsTour.cs", "strings"),
               "3.5 · Interpolation, verbatim and raw string literals",
               "<b>The culture is part of the output.</b> The same interpolation printed "
-              "<code>Toyota total 10,422.67 THB</code> with the invariant culture and "
-              "<code>Toyota total 10.422,67 THB</code> through <code>string.Create(de, …)</code>. The raw literal "
+              "<code>Toyota total 8,933.71 THB</code> with the invariant culture and "
+              "<code>Toyota total 8.933,71 THB</code> through <code>string.Create(de, …)</code>. The raw literal "
               "needs no escaped quotes; <code>$$</code> makes <code>{{ }}</code> the hole marker so single braces "
               "stay literal JSON. Build real JSON with <code>System.Text.Json</code>, not interpolation."),
 
@@ -701,20 +702,19 @@ def blocks():
         pair(from_text("""
             fun ageLoading(age: Int): BigDecimal = when {
                 age < 18 -> error("under 18")    // throws
-                age < 25 -> BigDecimal("0.20")
-                age < 30 -> BigDecimal("0.10")
-                age >= 70 -> BigDecimal("0.15")
+                age < 25 -> BigDecimal("0.20")   // young driver
                 else -> BigDecimal.ZERO
             }
 
-            // with a subject, ranges read like a tariff:
-            // when (age) { in 18..24 -> ... ; in 25..29 -> ... }
+            // with a subject, a range reads like a tariff row:
+            // when (age) { in 18..24 -> BigDecimal("0.20") ... }
             """, "kotlin", file="the idea you already know"),
              from_sample(RULES, "age-loading"),
              "5.1 · A rating rule — Kotlin when vs a C# switch expression",
              "<b>The same shape</b> (" + SAME + "). Relational patterns (C# 9) replace the repeated "
-             "<code>age &lt;</code>, and <code>throw</code> is allowed as an arm because it is an expression. Arms are checked top to "
-             "bottom; the compiler reports an arm that can never match."),
+             "<code>age &lt;</code>, and <code>throw</code> is allowed as an arm because it is an expression. Arms "
+             "are checked top to bottom, so <code>&lt; 25</code> only ever sees an age of 18 or more; the compiler "
+             "reports an arm that can never match."),
 
         pair(from_sample(RULES, "base-rate"), from_sample(f"{SYN}/PatternsTour.cs", "enum-trap"),
              "5.2 · The enum trap — a complete switch that still needs its discard arm",
@@ -819,7 +819,7 @@ def blocks():
               "none — return a <code>Pair</code> or tuple"],
              ["<code>in</code>", "A read-only alias (avoids copying a large struct)", "optional <code>in</code>",
               "none"],
-             ["<code>params</code>", "Any collection type (C# 13)", "<code>Sum(9_702m, 38.81m)</code>",
+             ["<code>params</code>", "Any collection type (C# 13)", "<code>Sum(8_316m, 33.26m)</code>",
               "<code>vararg</code> · <code>...rest</code>"],
              ["optional", "The default, compiled into the caller", "omit it, or name the next one",
               "Kotlin and TS defaults, resolved in the callee"]]},
@@ -858,10 +858,13 @@ def blocks():
         panel(from_sample(f"{SYN}/MethodsTour.cs", "calls"),
               "6.3 · Calling them — named arguments, deconstruction, out var and a C# 14 lambda",
               "<b>Printed:</b> <code>claims 2</code>, then "
-              "<code>4,158.00 2,772.00 10,422.67 0.30 claim-free 13,860.00</code>, then <code>parsed 2.1</code>. "
+              "<code>5,544.00 2,772.00 8,933.71 0.40 claim-free 13,860.00</code>, then <code>parsed 2.1</code>. "
               "Named arguments may skip optional parameters and change order. <code>ref</code> is repeated at the "
-              "call site so a reviewer sees the write. C# 14 lets a lambda declare <code>out result</code> without "
-              "spelling its type; lambdas and delegates belong to " + ref(4) + "."),
+              "call site so a reviewer sees the write. The figures are the worked example's discount, its "
+              "young-driver loading and its total (9.5); <code>roundUp</code> is there to show an optional "
+              "<code>bool</code>, not because the tariff rounds up — it rounds half away from zero (3.2). C# 14 "
+              "lets a lambda declare <code>out result</code> without spelling its type; lambdas and delegates "
+              "belong to " + ref(4) + "."),
 
         # ═══════════════════════════ 7 · EXCEPTIONS AND RESOURCES ═══════════════════════════
         {"type": "story", "heading": "7 · Exceptions and resources",
@@ -948,7 +951,7 @@ def blocks():
              "<code>Nothing</code> is null, <code>If(a, b)</code> is <code>??</code> and <code>If(c, a, b)</code> "
              "is the conditional operator — both short-circuit, unlike the legacy <code>IIf</code> function that "
              "evaluates all its arguments (" + VBIF + "). <code>Select Case</code> handles ranges "
-             "(<code>Case 25 To 29</code>, <code>Case Is &lt; 25</code>); <code>Using … End Using</code> and "
+             "(<code>Case 18 To 24</code>, <code>Case Is &lt; 18</code>); <code>Using … End Using</code> and "
              "<code>Catch … When</code> are the same resource scope and exception filter (" + VBTRY + ").</p>"
              "<p><b>What VB lacks is the post-2015 syntax.</b> No nullable reference annotations "
              "(<code>String</code> is simply nullable), no switch expression or property and list patterns, no "
@@ -963,10 +966,11 @@ def blocks():
 
         pair(from_sample(RULES, "age-loading"), from_sample(VBT, "select-case"),
              "8.1 · The age loading — C# switch expression vs VB Select Case",
-             "<b>Same bands, same result.</b> <code>Select Case</code> is a statement, not an expression, so each "
-             "arm is a <code>Case</code> line plus a <code>Return</code>; <code>Case Is &lt; 25</code> and "
-             "<code>Case 25 To 29</code> are its relational and range patterns. The VB run printed "
-             "<code>age 23 loading 0.2</code>."),
+             "<b>Same band, same result.</b> <code>Select Case</code> is a statement, not an expression, so each "
+             "arm is a <code>Case</code> line plus a <code>Return</code> or a <code>Throw</code>; "
+             "<code>Case Is &lt; 18</code> is its relational pattern and <code>Case 18 To 24</code> its range form "
+             "— the same rule the C# switch writes as <code>&lt; 25</code> below a <code>&lt; 18</code> arm. The VB "
+             "run printed <code>age 23 loading 0.2</code>."),
 
         pair(from_sample(f"{SYN}/ErrorsTour.cs", "resources"), from_sample(VBT, "errors"),
              "8.2 · Resources and a filtered catch — C# using var vs VB Using … End Using",
@@ -1022,8 +1026,17 @@ def blocks():
              "for <code>DateOnly</code>. xUnit itself is the subject of " + ref(10) + ".</p>"
              "<p><b>The worked example is the number to check your reading against.</b> A 2024 private car "
              "insured for 550,000 THB, Class 1, a 23-year-old driver with four claim-free licence years, starting "
-             "1 October 2026: 11,550.00 base, +20% young-driver loading, −30% no-claim bonus, 0.4% stamp duty and "
-             "7% VAT — <b>10,422.67 THB, illustrative, not a real tariff</b>.</p>")},
+             "1 October 2026: " + f"{p['Base']:,.2f}" + " base, +20% young-driver loading, −40% no-claim bonus, "
+             "0.4% stamp duty and 7% VAT — <b>" + f"{p['Total']:,.2f}" + " THB, illustrative, not a real "
+             "tariff</b>.</p>"
+             "<p><b>It is also the number to carry forward.</b> Every lesson of this track prices with this one "
+             "tariff — the base rate per coverage class, the young-driver, claims and commercial-use loadings, the "
+             "no-claim ladder of 0/20/25/30/40/50% by claim-free licence year, and the two rounded taxes — so a "
+             "quote you re-rate in a later lesson comes out at the same satang. A lesson that varies it on purpose "
+             "says so and names it: the legacy rounding and typing quirks of " + ref(6) + " are the deliberate "
+             "case. The decline at three claims in five years is part of the tariff too; here it is a "
+             "<code>QuoteDeclinedException</code> (§7), and a lesson that teaches data instead of exceptions "
+             "records it as a declined status.</p>")},
 
         panel(from_text("""
             # from the repository root, .NET 10 SDK first on PATH
@@ -1053,10 +1066,10 @@ def blocks():
             11550.000 808.50000
 
             [strings]
-            Toyota total 10,422.67 THB
-            Toyota total 10.422,67 THB
+            Toyota total 8,933.71 THB
+            Toyota total 8.933,71 THB
             C:\quotes\2026\Q-0001.json
-            { "make": "Toyota", "total": 10422.67 }
+            { "make": "Toyota", "total": 8933.71 }
             FİLE
             True
             0
@@ -1086,7 +1099,7 @@ def blocks():
             Toyota 1200 cc
 
             [methods]
-            4,158.00 10,422.67 0.30 claim-free 13,860.00
+            5,544.00 8,933.71 0.40 claim-free 13,860.00
 
             [errors]
             declined: 3+ claims in 5 years
@@ -1097,8 +1110,9 @@ def blocks():
              "<b>Compare the line after <code>System.Int32 1200 2024 2</code> in each.</b> C# wrapped to "
              "<code>-2147483648</code>; VB threw. The double error, the decimal scale and the dispose order match "
              "across the two languages because both compile to the same runtime types — "
-             "<code>System.Double</code>, <code>System.Decimal</code>, <code>IDisposable</code>; only the declined "
-             "quote comes from the shared C# <code>L02.Rating</code> library. VB prints <code>0.2</code> where C# "
+             "<code>System.Double</code>, <code>System.Decimal</code>, <code>IDisposable</code>; only the no-claim "
+             "bonus and the declined quote come from the shared C# <code>L02.Rating</code> library. VB prints "
+             "<code>0.2</code> where C# "
              "prints <code>0.20</code> because its literal <code>0.2D</code> has one decimal place. The rest of the "
              "C# tour is quoted as <i>Printed</i> under each panel in §4–§7, and it ends with "
              "<code>async dispose partner connection</code> because the <code>await using</code> declaration lives "
@@ -1107,13 +1121,13 @@ def blocks():
         panel(from_text("""
             > dotnet test lesson-02-csharp-language-essentials/samples/L02.Rating.Tests
             # restore, build and xUnit progress lines left out
-              L02.Rating.Tests test net10.0 succeeded (1.0s)
-            Test summary: total: 31, failed: 0, succeeded: 31, skipped: 0, duration: 0.9s
-            Build succeeded in 2.1s
+              L02.Rating.Tests test net10.0 succeeded (2.1s)
+            Test summary: total: 31, failed: 0, succeeded: 31, skipped: 0, duration: 2.1s
+            Build succeeded in 3.1s
 
             > cd lesson-02-csharp-language-essentials/samples/file-based
             > dotnet premium-check.cs
-            total 10,422.67 THB (net 9,702.00)
+            total 8,933.71 THB (net 8,316.00)
             > dotnet premium-check.cs -- 3
             declined: 3+ claims in 5 years
             """, "text", label="Terminal — the test run and the file-based app", file="captured on the build machine"),
@@ -1122,7 +1136,8 @@ def blocks():
               "project.</b> In an interactive terminal the .NET 10 SDK prints this compact <i>terminal logger</i> "
               "summary; redirected output falls back to the classic <code>Passed! - Failed: 0, Passed: 31</code> "
               "line. The file-based app calls the same <code>L02.Rating</code> library through "
-              "<code>#:project</code>, so its 10,422.67 THB matches the worked example to the satang."),
+              "<code>#:project</code>, so its " + f"{p['Total']:,.2f}" + " THB matches the worked example to the "
+              "satang."),
 
         panel(from_sample(f"{L}/L02.Rating/PremiumCalculator.cs", "calculate"),
               "9.4 · The premium calculation — the code behind the worked example",
@@ -1132,7 +1147,7 @@ def blocks():
               "plus loadings, and VAT to net plus stamp duty. <code>var (vehicle, driver, coverage, start) = "
               "request</code> deconstructs the record — records themselves are " + ref(3) + "."),
 
-        {"type": "chart", "heading": "9.5 · The worked example — how 10,422.67 THB is built",
+        {"type": "chart", "heading": f"9.5 · The worked example — how {p['Total']:,.2f} THB is built",
          "kind": "waterfall",
          "args": {"steps": [("Base", p["Base"]), ("Loadings", p["Loadings"]), ("NCB", -p["Discount"]),
                             ("Net", None), ("Stamp duty", p["StampDuty"]), ("VAT", p["Vat"]), ("Total", None)],
@@ -1183,7 +1198,7 @@ def blocks():
          "items": [
              f"<code>python 0-script/verify_samples.py --only 2</code> reports {n_proj}/{n_proj} sample projects "
              f"passed on your machine, with {n_tests} test cases green, and "
-             "<code>dotnet premium-check.cs</code> prints the 10,422.67 THB total.",
+             f"<code>dotnet premium-check.cs</code> prints the {p['Total']:,.2f} THB total.",
              "You can explain every line of output in 9.2 — especially <code>0.9999999999999999</code>, "
              "<code>11550.000</code>, <code>FİLE</code> and <code>2569</code>.",
              "You can rewrite a Kotlin <code>when</code> as a C# switch expression with relational, property "
@@ -1204,7 +1219,7 @@ def blocks():
              "compiler still want a <code>_</code> arm?",
              "In <code>catch (Exception e) when (Log(e))</code>, does <code>Log</code> run before or after the "
              "<code>finally</code> blocks of the method that threw?",
-             "A library changes an optional default from <code>0.30m</code> to <code>0.25m</code>. What does a "
+             "A library changes an optional default from <code>0.40m</code> to <code>0.30m</code>. What does a "
              "caller that omits it pass until rebuilt, and why?",
              "Which settings does a file-based app inside this repository inherit, and from which file?"]},
 

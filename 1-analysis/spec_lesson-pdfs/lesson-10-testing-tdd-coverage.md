@@ -19,52 +19,56 @@ JaCoCo → coverlet, PIT → Stryker.NET, Cucumber → Reqnroll, Postman → `.h
 Owner **claude**, regenerable. Rebuild when the samples, `lesson_kit.py` or the renderer change. Re-verify
 every November (new .NET major) and whenever one of these moves: the current versions in the §2 story
 (xUnit v3 4.0.1 · MSTest 4.4.1 · NUnit 4.6.1), the MTP-mode `global.json` key, coverlet's MTP incompatibility,
-and the Fluent Assertions licence. The nine measured figures (§4) are re-captured by re-running the four
-commands in 9.1; they are **not** recomputed at build time except the six `loc()` bars in 9.4 and the
-method / scenario counts behind the KPI tile and 9.3 (`test_methods()`, `feature_scenarios()`).
+and the Fluent Assertions licence. **Also rebuild whenever the curriculum's canonical tariff moves** — every
+premium in the lesson is a run of `L10.Pricing`, and the coverage, mutation and test-count figures all shift
+with it (they did on 2026-09-20). The captured figures in §4 are re-captured by re-running the four commands
+in 9.1; they are **not** recomputed at build time except the six `loc()` bars in 9.4 and the method / scenario
+counts behind the KPI tile and 9.3 (`test_methods()`, `feature_scenarios()`).
 
 ## 3 · Structure
 
-21 pages at the 2026-09-20 build. 57 blocks.
+22 pages at the 2026-09-20 build (after the cross-lesson tariff alignment). 58 blocks.
 
 | § | Heading | Blocks |
 |---|---|---|
 | — | Contents | `toc` depth 2 (code panels are listed through the local `listed()` / `figure_heading()` helpers) |
 | 1 | Why this lesson — you already test; .NET changes the plumbing | story (4 ¶) · `kpi` 1.1 (5 tiles) · `legend` (C#, tooling, architecture — only the tags the lesson uses) · info callout "Before you start" (4 items: prerequisite lessons · the 9 offline projects · `dotnet tool restore` for Stryker · the chip vocabulary) |
 | 2 | The frameworks — and the platform underneath them | story (4 ¶) · mapping 2.1 (16 rows) · mermaid 2.2 flowchart LR (platform → package → `global.json` → command → coverage driver) · table 2.3 (attribute map, JUnit 5 / xUnit v3 / NUnit 4 / MSTest 4, 8 rows) · compare 2.4 (JUnit 5 `@ParameterizedTest` ↔ xUnit `TheoryData`) · code 2.5 (`L10.Pricing.Tests.csproj`) · compare 2.6 (C# `TheoryData` ↔ VB `TheoryData(Of …)`, plus the `.vbproj` decisions in its note — plan item 8) |
-| 3 | TDD on the no-claim-bonus rule — red, green, refactor | story (4 ¶) · code 3.1 (first test) · code 3.2 (captured red run) · code 3.3 (the switch expression) · table 3.4 (the hand-worked rating sheet, 4 rows) + `tnote` |
+| 3 | TDD on the no-claim-bonus rule — red, green, refactor | story (4 ¶) · code 3.1 (first test) · code 3.2 (captured red run) · code 3.3 (the switch expression) · table 3.4 (the hand-worked rating sheet, **8 rows** — the canonical tariff's seven priced scenarios plus the declined one) + `tnote` · code 3.5 (`claims-guard` — the rule that refuses) + note |
 | 4 | Fixtures and isolation — the constructor is your @BeforeEach | story (5 ¶ — the fifth is xUnit's parallel-by-class default and `[Collection]`; assembly fixtures are `[assembly: AssemblyFixture(typeof(T))]`) · code 4.1 (the fixture) · mermaid 4.2 sequence (per-test-case lifecycle) · table 4.3 (instance-per-test by framework, 4 rows) |
 | 5 | Assertions and test doubles — one licence decision, two habits | story (4 ¶) · code 5.1 (NSubstitute) · compare 5.2 (C# ↔ VB `FakeTimeProvider` expiry, `keep=False`) · cards 5.3 (6 cards in 3 + 3 "(continued)" bands) |
 | 6 | Coverage as a gate — 100% line and branch, failing the build | story (4 ¶) · code 6.1 (`CoverageGate.props`) · code 6.2 (captured failing run) · chart 6.3 bar (coverage with and without one test; no target line — it struck through the value labels, so the caption states the threshold instead) · table 6.4 (coverage tooling by platform, 6 rows) |
 | 7 | Beyond coverage — what the mutation score tells you | story (4 ¶) · code 7.1 (the weak suite) · chartrow 7.2 grouped_bar (line / branch / mutation per suite; weak suite in amber) + 7.3 stacked_bar (mutants by outcome, recoloured green / red / slate to match 7.4) — both passed as ready `svg` because `chart_svg` takes no colours · mermaid 7.4 stateDiagram-v2 (life of a mutant) · table 7.5 (mutant states + the strong suite's counts, 6 rows) + `tnote` · code 7.6 (`stryker-config.json`) |
 | 8 | Integration, API and BDD tests — in memory, with a clock you own | story (5 ¶ — the fifth is the test pyramid across an estate of services: the partner boundary, a stubbed `HttpMessageHandler` or WireMock.Net, contract tests with Pact.Net) · mermaid 8.1 flowchart TB with `direction LR` subgraphs (in-process request path) · code 8.2 (POST then GET) · code 8.3 (`ConfigureTestServices` clock swap) · compare 8.4 (Gherkin ↔ Reqnroll bindings) · table 8.5 (test layers, 8 rows incl. "Partner boundary") |
-| 9 | Hands-on — run the suites, then judge them | story (3 ¶) · code 9.1 (4 commands) · code 9.2 (captured output of all four) · chartrow 9.3 donut (46 cases by kind) + 9.4 bar (`loc()` by role) · 9.5 threecol (carries over / learn fresh / unlearn) · warn "Traps" (5 — isolation incl. parallel classes, platform + coverage driver, Fluent Assertions licence, 100% ≠ tested, cancellation token) · ok checkpoint (5) · summary "Check yourself" (7) · footer |
+| 9 | Hands-on — run the suites, then judge them | story (3 ¶) · code 9.1 (4 commands) · code 9.2 (captured output of all four) · chartrow 9.3 donut (51 cases by kind) + 9.4 bar (`loc()` by role) · 9.5 threecol (carries over / learn fresh / unlearn) · warn "Traps" (5 — isolation incl. parallel classes, platform + coverage driver, Fluent Assertions licence, 100% ≠ tested, cancellation token) · ok checkpoint (5) · summary "Check yourself" (7) · footer |
 
 Standard minimums as built: **9** numbered stories (need 6) · **1** mapping · **2** card bands of 3 (max 3) ·
-**4** mermaid in **3** families — flowchart ×2, sequence, state (need 3 / 2) · **5** charts (need 3) · **22**
-code panels from 14 `code()` + 4 `compare()` (need 6) · C# ↔ VB compares 2.6 and 5.2 · Java ↔ C# compare 2.4 ·
+**4** mermaid in **3** families — flowchart ×2, sequence, state (need 3 / 2) · **5** charts (need 3) · **23**
+code panels from 15 `code()` + 4 `compare()` (need 6) · C# ↔ VB compares 2.6 and 5.2 · Java ↔ C# compare 2.4 ·
 1 threecol · **6** tables besides the mapping (need 1) · **33** distinct official links (need 4).
 
 ## 4 · Derivation
 
 Every number in the PDF is one of three kinds.
 
-**MEASURED — captured from real runs on the build machine (2026-09-19), re-captured by 9.1's four commands:**
+**MEASURED — captured from real runs on the build machine, re-captured by 9.1's four commands. Every row below
+was re-run on 2026-09-20 after the canonical-tariff change; the dates in the rows say which run each figure
+comes from:**
 
 | Figure | Where | How |
 |---|---|---|
-| 28 / 2 / 8 / 5 / 3 test cases (46 total), from 24 hand-written test methods + 2 Gherkin scenarios | KPI, 9.2, 9.3 | `dotnet test` (and `dotnet run` for the MTP twin) on the five test projects; methods by `test_methods()` (`[Fact]`/`[Theory]`), scenarios by `feature_scenarios()` (`Scenario:` / `Scenario Outline:` — Reqnroll generates one method each, the outline's 4 example rows plus the plain scenario make its 5 cases) |
+| 33 / 8 / 5 / 3 / 2 test cases (51 total), from 25 hand-written test methods + 2 Gherkin scenarios | KPI, 9.2, 9.3 | `dotnet test` (and `dotnet run` for the MTP twin) on the five test projects; methods by `test_methods()` (`[Fact]`/`[Theory]`), scenarios by `feature_scenarios()` (`Scenario:` / `Scenario Outline:` — Reqnroll generates one method each, the outline's 4 example rows plus the plain scenario make its 5 cases). The C# count rose from 28 to 33 with the canonical tariff: the rating sheet grew to seven priced rows and the claims guard added its own decline theory |
 | 100% line / 100% branch / 100% method | KPI, 6.2, 6.3, 7.2, §1, §7 | coverlet totals for the `L10.Pricing` module, for **both** the strong and the weak suite |
-| 98.73% line / 96.55% branch, `dotnet test` fails (re-captured 2026-09-20; it read 98.59% before the library changed) | 6.2, 6.3 | a scratch copy of the samples with the `(CoverageClass)99` test deleted; the coverlet MSBuild task reports "The total line coverage is below the specified 100". The 6.3 note's 1.27-point drop is 100 − 98.73 |
-| 29 branch points against 79 lines in that failing run — one uncovered branch costs 3.45 points, one uncovered line 1.27 | 6.2 note | `coverage.cobertura.xml` of the scratch run: `branches-valid=29`, `lines-valid=79` |
+| 98.86% line / 97.14% branch, `dotnet test` fails (re-captured 2026-09-20 after the canonical-tariff change; it read 98.73% before, and 98.59% before that) | 6.2, 6.3 | a scratch copy of the samples with the `(CoverageClass)99` test deleted; the coverlet MSBuild task reports "The total line coverage is below the specified 100". The 6.3 note's drop is computed in the module as `100 − CUT_LINE` (1.14 points), never hard-typed |
+| 35 branch points against 88 lines in that failing run — one uncovered branch costs 2.86 points, one uncovered line 1.14 | 6.2 note | `coverage.cobertura.xml` of the scratch run: `branches-valid=35`, `lines-valid=88` (both grew when the claims guard joined the library) |
 | 8 branches for the 7 arms of `NoClaimBonus.DiscountFor` | 3.3 note | the committed suite's `coverage.cobertura.xml`: one branch line, `condition-coverage="100% (8/8)"` |
-| Mutation 90.91% (40 killed / 4 survived) and 11.36% (5 / 39) | KPI, §1, §7, 7.2, 7.3, 9.2, footer | `dotnet stryker` in `L10.Pricing.Tests.Mtp` and `L10.Pricing.WeakTests.Mtp`, `test-runner: mtp` |
-| 52 mutants: 44 tested, 4 compile error, 4 ignored | 7.3, 7.5 | Stryker.NET JSON report; the score denominator is `valid` = 44, per its own formula |
-| All 4 strong-suite survivors are exception-message string mutations | §7, 7.5 | the same JSON report — `NoClaimBonus.cs` L11 ("cannot be negative"), `PremiumCalculator.cs` L14 ("unknown class"), `QuoteService.cs` L31 and L33 (the two interpolated messages); the §7 story names all four |
-| A Stryker.NET run takes about ten seconds (10.7 s strong, 9.3 s weak) | 7.6, 8.5, 9.1 notes | one run each on 2026-09-20 at `concurrency: 1` with the projects already built |
+| Mutation 91.49% (43 killed / 4 survived) and 8.51% (4 / 43) | KPI, §1, §7, 7.2, 7.3, 9.2, footer | `dotnet stryker` in `L10.Pricing.Tests.Mtp` and `L10.Pricing.WeakTests.Mtp`, `test-runner: mtp`; re-run twice after the canonical-tariff change (13:53 and 15:04 on 2026-09-20) with identical results |
+| 55 mutants: 47 tested, 4 compile error, 4 ignored | 7.3, 7.5 | Stryker.NET JSON report; the score denominator is `valid` = 47, per its own formula. Three more mutants than before the tariff change — the claims guard's arms |
+| All 4 strong-suite survivors are exception-message string mutations | §7, 7.5 | the same JSON report — `NoClaimBonus.cs` L11 ("cannot be negative"), `PremiumCalculator.cs` L15 ("unknown class"), `QuoteService.cs` L31 and L33 (the two interpolated messages); the §7 story names all four. The claims guard's own message survives nothing: 3.5's theory asserts on `ex.Message`, which is why §7 can say the survivors are *everywhere except* there |
+| A Stryker.NET run takes 14 s (strong) and 12 s (weak) | 7.6, 8.5, 9.1 notes | one run each on 2026-09-20 15:04 at `concurrency: 1` with the projects already built, timed from the run's own log timestamps |
 | The red run: 8 failures, "Exception type was not an exact match" | 3.2 | the library stubbed with `throw new NotImplementedException()` in a scratch copy |
 | `dotnet test` on the MTP twin fails with "Testing with VSTest target is no longer supported …" | 2.5 note | run against `L10.Pricing.Tests.Mtp` on SDK 10.0.401 |
-| 111 / 192 / 57 / 75 / 32 / 43 code lines; 373 test lines to 111 library lines ≈ 3.4:1 | 9.4 | `loc_dir()` at build time (`lesson_kit.loc` over the sample `.cs`/`.vb` files, excluding Reqnroll's generated `*.feature.cs`) |
+| 120 / 211 / 57 / 75 / 32 / 47 code lines; 396 test lines to 120 library lines ≈ 3.3:1 | 9.4 | `loc_dir()` at build time (`lesson_kit.loc` over the sample `.cs`/`.vb` files, excluding Reqnroll's generated `*.feature.cs`) — these six bars and the ratio move on their own with every edit to the samples, so they needed no re-capture for the tariff change |
 
 **VERIFIED — dated facts with a `link()` to an official source, checked 2026-09-19:**
 
@@ -120,11 +124,26 @@ Every number in the PDF is one of three kinds.
   xUnit1051 wants `TestContext.Current.CancellationToken` — [xUnit1051](https://xunit.net/xunit.analyzers/rules/xUnit1051).
   Playwright for .NET framework integrations — [Playwright for .NET](https://playwright.dev/dotnet/docs/intro).
 
+**TARIFF — the curriculum's canonical tariff, used exactly (no variant):**
+
+`L10.Pricing` implements `_curriculum.md` § *Canonical tariff* verbatim: base rates Class 1 2.1% · Class 2+ 1.2% ·
+Class 3+ 0.9% · Class 3 0.4% (a rate, never a flat amount); loadings young driver +20%, commercial +25% or +35%
+over 3,000 cc, claims 0 → +0% · 1 → +10% · 2 → +25% · **3 or more → declined**; no-claim ladder 0/20/25/30/40/50%
+on `claimFreeYears = ClaimsLast5Years == 0 ? LicenceYears : 0`; net, stamp duty (0.4%) and VAT (7%) each
+`Math.Round(…, 2, MidpointRounding.AwayFromZero)` — **to the satang, not `Math.Ceiling`**. The decline is raised as
+`QuoteDeclinedException` (lesson 02's vocabulary, named in 3.5's note) because this lesson teaches exceptions as
+mutation targets, not persistence. Row 7 of the 3.4 sheet *is* the curriculum's worked example — Class 1,
+550,000 THB, aged 23, 4 claim-free years → net 8,316.00 · duty 33.26 · VAT 584.45 · **total 8,933.71 THB** — so
+the theory table fails the moment this lesson's arithmetic drifts from the other eleven. Only two panels in
+the PDF print money — the 3.4 sheet and the Gherkin outline in 8.4 (`12600.00 / 10080.00 / 8820.00 / 6300.00`
+net, and `13860.00` for the one-claim scenario) — and both are assertions a real run proves; `L10.QuoteApi`'s
+round-trip test in 8.2 asserts status codes, not amounts. The 3.4 `tnote` tells the reader the rates are
+illustrative and names the curriculum.
+
 **ESTIMATE — labelled in place:** the mutation-run cadence in 7.6 ("nightly or per pull request on changed
 projects") and the section 8 estate-pyramid paragraph (a design judgement). The mutation cost claim is no
-longer an estimate: it is the measured ten seconds plus the documented `perTest` analysis. Tables 2.1, 2.3,
-4.3, 6.4 and 8.5 are mappings and judgements, not measurements; 3.4's premiums are stated in the PDF as
-illustrative, not a tariff.
+longer an estimate: it is the measured 14 / 12 seconds plus the documented `perTest` analysis. Tables 2.1, 2.3,
+4.3, 6.4 and 8.5 are mappings and judgements, not measurements.
 
 ## 5 · Presentation
 
@@ -149,10 +168,12 @@ Pagination: the first render left pages 4, 5, 6, 9, 13 and 14 between a quarter 
 removing a framework-capability heatmap that repeated tables 2.3 and 4.3, dropping two rows from 2.3,
 shortening the chartrow to `height 165`, and giving compare 5.2 `keep=False`. After the review fixes added
 2.6 and two paragraphs, page 9 fell to 38% empty until the 5.1 / 5.2 notes and two story sentences were
-tightened so 5.2 fits behind 5.1. Measured with pymupdf on the final render (trailing blank as a share of the
-content area): no page except the last is more than about a third empty; the largest gaps are pages 13
-(28.5%), 16 (27.8%), 11 (24.5%) and 6 (19.7%), each where an unbreakable panel or chartrow jumps. The last page
-(21) holds the tail of the summary callout and the footer.
+tightened so 5.2 fits behind 5.1. The canonical-tariff pass added four rows to 3.4 and the whole of 3.5, which
+pushed the lesson from 21 to 22 pages and reshuffled the gaps. Measured with pymupdf on the final render
+(trailing blank as a share of the content area): no page except the last is more than about a third empty; the
+largest gaps are pages 10 (28.3%), 17 (25.4%), 12 (21.8%), 14 (16.9%) and 6 (16.8%), each where an unbreakable
+panel or chartrow jumps. The last page (22) holds the "Check yourself" summary, the one-line recap and the
+footer, and is 58% empty — the permitted exception.
 
 ## 6 · Inputs
 
@@ -162,8 +183,10 @@ Microsoft.Testing.Platform executables, for Stryker), `L10.Pricing.VbTests` (VB 
 `L10.Pricing.WeakTests` (100%-covered, asserts almost nothing), `L10.Pricing.Specs` (Reqnroll),
 `L10.QuoteApi` + `L10.QuoteApi.Tests` (minimal API and its in-memory tests); shared files
 `CoverageGate.props`, `Shared/Requests.cs`, `dotnet-tools.json`, `stryker-config.json`. Regions used:
-`ncb-rule`, `first-test`, `theory`, `vb-theory`, `fixture`, `nsubstitute`, `fake-time`, `vb-fake-time`,
-`weak`, `round-trip`, `swap-clock`, `steps`. Sources: the 33 links listed in §4 and the module header.
+`ncb-rule`, `claims-guard`, `first-test`, `theory`, `vb-theory`, `fixture`, `nsubstitute`, `fake-time`,
+`vb-fake-time`, `weak`, `round-trip`, `swap-clock`, `steps`. `Shared/Requests.cs` carries an `engineCc`
+parameter so the commercial +35% band above 3,000 cc can be quoted. Sources: the 33 links listed in §4 and
+the module header; the premium rules come from `_curriculum.md` § *Canonical tariff*.
 
 ## 7 · Invariants
 
@@ -178,23 +201,33 @@ Microsoft.Testing.Platform executables, for Stryker), `L10.Pricing.VbTests` (VB 
   file and `PremiumSteps.cs` were rewritten for that limit and must not grow back.
 - Privacy: experience is referenced generically (a 100%-coverage TDD standard, Postman collections per
   environment, k6, SonarQube). No employer, client or insurer names.
+- **`L10.Pricing` is the curriculum's canonical tariff and nothing else.** No rate, loading, ladder step or
+  rounding may drift from `_curriculum.md` § *Canonical tariff*; row 7 of the 3.4 theory sheet is that
+  section's own worked example (8,933.71 THB) and is the tripwire. A future change to the tariff changes the
+  curriculum first, then this library, then the re-captured figures — never the other way round.
 - Boundaries: ASP.NET Core belongs to lesson 08, EF Core to 09, `TimeProvider` to 05, MSBuild to 07, security
-  testing to 11, deployment to 12 — each gets one sentence and a `ref(n)`.
+  testing to 11, deployment to 12 — each gets one sentence and a `ref(n)`. **Every `ref(n)` to an earlier
+  lesson is in the past tense and names something that lesson really contains** — the cross-lesson review
+  (2026-09-20) found three that were not: a forward promise that lesson 09 would replace this lesson's
+  in-memory store, and a Browser/E2E row pointing at lesson 12 for content it has none of.
 
 ## 8 · Known gaps
+- ⚠ **Two xUnit generations in one track (cross-lesson review 2026-09-20).** Lessons 07 and 10 use xUnit v3 (`xunit.v3.mtp-off`, `Exe` test projects); the test projects of lessons 02-06, 08, 09, 11 and 12 still reference xUnit v2 (`xunit` 2.9.3). Section 2 says so in one sentence; migrating those fourteen projects was judged not worth the risk because their `[Fact]`/`[Theory]`/`Assert` code is unchanged by v3. If they are ever migrated, delete that sentence.
 
-- ⚠ Nine of the measured figures are **captured text**, not recomputed at build time. If a test is added or
+- ⚠ Most of the measured figures are **captured text**, not recomputed at build time. If a test is added or
   the rating rules change, 9.2, the KPI tiles, 6.2/6.3 and 7.2/7.3/7.5 go stale together; re-run 9.1's four
   commands and update the constants at the top of `lesson_10.py` (`CASES`, `STRONG_MUT`, `WEAK_MUT`,
-  `MUT_*`, `CUT_LINE`, `CUT_BRANCH`). **Re-capture the 6.2 scratch run whenever `L10.Pricing` changes** — its
-  98.73% line figure moved from 98.59% when the library grew (the 09-19 review caught it), and the "29
-  branches against 79 lines" and "1.27 / 3.45 points" in the 6.2 note move with it; so does "8 branches for 7
-  arms" in the 3.3 note. Only the six `loc()` bars in 9.4 and the method / scenario counts are live.
+  `MUT_*`, `STRONG_KILLED` / `STRONG_SURVIVED`, `WEAK_KILLED` / `WEAK_SURVIVED`, `CUT_LINE`, `CUT_BRANCH`).
+  **Re-capture the 6.2 scratch run whenever `L10.Pricing` changes** — its line figure has moved twice already
+  (98.59 → 98.73 → 98.86), and the "35 branches against 88 lines" and "2.86 / 1.14 points" in the 6.2 note move
+  with it; so does "8 branches for 7 arms" in the 3.3 note. The 6.3 caption's point-drop is now *derived*
+  (`100 − CUT_LINE`) rather than typed, which is how the 1.27 from the previous run survived one cycle. Only
+  the six `loc()` bars in 9.4 and the method / scenario counts are live.
 - ⚠ 3.2 and 6.2 are captured from **scratch copies** of the samples (a stubbed library, and the suite with one
   test deleted). Those copies are not in the repository, so `verify_samples.py` cannot re-prove them.
-- ⚠ Stryker.NET runs at `concurrency: 1` for determinism; the "about ten seconds" in the 7.6, 8.5 and 9.1 notes
-  is one measured run each on a warm build — a cold restore and build take longer, and CI at higher
-  concurrency will differ.
+- ⚠ Stryker.NET runs at `concurrency: 1` for determinism; the 14 s / 12 s in the 7.6, 8.5 and 9.1 notes is one
+  measured run each on a warm build — a cold restore and build take longer, and CI at higher concurrency will
+  differ. The figure grew from ten seconds when the claims guard added three mutants.
 - ⚠ The partner-boundary paragraph and row in section 8 describe a stubbed `HttpMessageHandler`, WireMock.Net
   and Pact.Net; none is demonstrated by a sample (lesson 08 owns `HttpClientFactory`).
 - ⚠ The repository's `global.json` does **not** opt into MTP mode (it is shared with eleven other lessons), so

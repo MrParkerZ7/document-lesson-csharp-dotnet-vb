@@ -10,41 +10,48 @@ defaults differ from what they already ship: hosting, the middleware pipeline, c
 DI lifetimes and the captive dependency, minimal APIs and controllers, typed results, filters and .NET 10
 validation, OpenAPI 3.1 and ProblemDetails, rate limiting / output caching / health checks / CORS, calling ~30
 rating partners through `IHttpClientFactory` and the standard resilience handler, hosted background work, and
-in-memory API tests with `WebApplicationFactory`. The MotorQuote API prices quotes with Visual Basic rating rules
-(illustrative rates). Request DTOs are wire contracts and deliberately differ from lesson 03's domain records
-(`SumInsured` is a plain amount; `IPartnerRateClient` plays lesson 05's `IPartnerRateProvider`).
+hosting the whole pipeline in memory with `WebApplicationFactory` to prove its own endpoints (test design, coverage
+and doubles stay with lesson 10 — §9 keeps one factory panel and a `ref(10)`). The MotorQuote API prices quotes with
+Visual Basic rating rules that implement the track's canonical tariff (`_curriculum.md` § "Canonical tariff") —
+illustrative rates, not a real one; three or more claims in five years is a declined quote carried as data
+(`QuoteStatus.Declined` + a reason, no premium), not an exception. The API's quote store stays in memory for the
+whole lesson: persistence is lesson 09's subject, and lesson 09 models the same quotes in projects of its own rather
+than editing this API — neither the story nor the footer promises a swap. Request DTOs are wire contracts and
+deliberately differ from lesson 03's domain records (`SumInsured` is a plain amount; `IPartnerRateClient` plays
+lesson 05's `IPartnerRateProvider`).
 
 ## 2 · Ownership & cadence
 
 Owner **claude**, regenerable. Re-verify every November (new ASP.NET Core major): the OpenAPI version and
 Microsoft.OpenApi version (§5), the `AddValidation` generator scope and its behaviour on VB endpoints (§4, pinned by
 `ValidationScopeTests`), the exception-handler logging change (§5), the standard resilience handler defaults
-(table 7.1), the `BackgroundService` behaviour and the host-stops-on-exception default (§8), the IIS in-process
-hosting default (2.4) and the generated `public partial class Program` (§9). Re-capture the four pasted outputs (see
-§4) whenever a lab or the tour changes what it prints, and the `dotnet new list --tag Web` list when the SDK band
-changes.
+(table 7.1), the `BackgroundService` behaviour and the host-stops-on-exception default (§8) and the IIS in-process
+hosting default (2.4). Re-capture the four pasted outputs (see §4) whenever a lab or the tour changes what it
+prints, and the `dotnet new list --tag Web` list when the SDK band changes. Re-check the premium figures against
+`_curriculum.md` § "Canonical tariff" whenever that table moves.
 
 ## 3 · Structure
 
-Rendered: **20 A4 pages**; every page is at least 74 % filled (the last page is 96 % full).
+Rendered: **20 A4 pages**; no page is more than a quarter empty. The emptiest are 15 and the last (25 % of the
+height below the last block); twelve of the twenty run to within 7 % of the foot.
 
 | Page(s) | § | Heading | Blocks |
 |---|---|---|---|
 | 1 | — | Contents | `toc` depth 2 |
-| 1–2 | 1 | Why this lesson — the service you have built many times, rebuilt in .NET | story · `kpi` 1.1 (5 tiles) · `legend` (architecture tag only, the one tag the lesson uses) · info callout "Before you start" |
-| 2–5 | 2 | Hosting, configuration and options | story (hosting, middleware order, configuration + options, `ILogger`) · mermaid 2.1 flowchart (request pipeline, numbered in run order) · code 2.2 (Program.cs services) · compare 2.3 (Express ↔ C# `pipeline`) · mapping 2.4 (18 rows) · compare 2.5 (C# `config-precedence` ↔ captured lab output parts 1–2) · compare 2.6 (C# `AddQuoteModule` ↔ VB `AddMotorRating`) |
+| 2 | 1 | Why this lesson — the service you have built many times, rebuilt in .NET | story · `kpi` 1.1 (5 tiles) · `legend` (architecture tag only, the one tag the lesson uses) · info callout "Before you start" (3 items) |
+| 2–5 | 2 | Hosting, configuration and options | story (hosting, middleware order, configuration + options, `ILogger`) · mermaid 2.1 flowchart (request pipeline, numbered in run order) · code 2.2 (Program.cs services) · compare 2.3 (Express ↔ C# `pipeline`) · mapping 2.4 (18 rows) · compare 2.5 (C# `config-precedence` ↔ captured lab output parts 1–2) · compare 2.6 (C# `AddQuoteFeature` in `QuoteRegistration.cs` ↔ VB `AddMotorRating`) |
 | 6–7 | 3 | Dependency injection — lifetimes are a design decision | story · compare 3.1 (C# `lifetimes` ↔ captured lab output parts 3–5) · table 3.2 (lifetimes, 3 rows) · code 3.3 (`captive`, kept whole) · chart 3.4 hbar (registrations by lifetime) |
 | 7–10 | 4 | Endpoints — minimal APIs, typed results, filters and validation | story · compare 4.1 (Kotlin Spring controller ↔ C# `map-quotes`) · code 4.2 (typed-result handlers) · code 4.3 (DataAnnotations contracts) · code 4.4 (endpoint filter) · code 4.5 (`[ApiController]` `PartnersController`) · twocol 4.6 (minimal API vs controller) · code 4.7 (VB minimal API endpoint) · mermaid 4.8 sequence (POST /quotes) |
 | 11–12 | 5 | OpenAPI and ProblemDetails — a contract that tells the truth | story · chart 5.1 heatmap (operations × status codes: documented / received / gap) · table 5.2 (who writes each error, 6 rows) · code 5.3 (`IExceptionHandler`) |
 | 12–13 | 6 | Cross-cutting middleware — decide the defaults | story (CORS in prose) · cards 6.1 (one band, 3 cards: rate limiting, output caching, health checks) · code 6.2 (rate-limit policy) |
 | 13–16 | 7 | Calling ~30 rating partners — HttpClientFactory and resilience | story · table 7.1 (standard resilience handler, 5 strategies + source row) · code 7.2 (typed client registration) · code 7.3 (typed client) · mermaid 7.4 stateDiagram (circuit breaker) · compare 7.5 (C# `unsafe-methods` ↔ `early-breaker`) · chart 7.6 hbar (attempts per lab scenario) · code 7.7 (captured PartnerLab output) |
 | 16–18 | 8 | Background work — hosted services | story · mermaid 8.1 sequence (accept → queue → dispatcher → keyed channel) · code 8.2 (`NotificationDispatcher`) · code 8.3 (keyed channels + `AddHostedService`) |
-| 18–20 | 9 | Hands-on — run the API in memory and test it the same way | story (incl. the VB note) · code 9.1 commands (ApiTour, HostingLab, PartnerLab, tests, `verify_samples`, template list) · code 9.2 (captured ApiTour output) · compare 9.3 (Kotlin MockMvc ↔ C# `post-test`) · code 9.4 (`QuoteApiFactory`) · chartrow 9.5 hbar (tests by area) + 9.6 bar (web templates by language) · warn "Traps" (5) · ok checkpoint (5) · summary "Check yourself" (7) · footer (Next: lesson 09) |
+| 18–20 | 9 | Hands-on — run the API in memory and test it the same way | story (incl. the VB note, and the one paragraph that hands test design to lesson 10 with a `ref(10)`) · code 9.1 commands (ApiTour, HostingLab, PartnerLab, tests, `verify_samples`, template list) · code 9.2 (captured ApiTour output) · code 9.3 (`QuoteApiFactory` — the single factory panel the boundary allows) · chartrow 9.4 hbar (tests by area) + 9.5 bar (web templates by language) · warn "Traps" (5) · ok checkpoint (5) · summary "Check yourself" (7) · footer (Next: lesson 09) |
 
 Counts: 9 numbered stories · 1 mapping (18 rows) · 1 cards band (3 cards) · 4 mermaid (flowchart, 2 ×
-sequenceDiagram, stateDiagram-v2) · 5 charts (3.4, 5.1, 7.6, 9.5, 9.6) · 24 code panels (17 single, 7 compares) ·
-C# ↔ VB compare 2.6 · TypeScript ↔ C# compare 2.3 · Kotlin ↔ C# compares 4.1 and 9.3 · twocol 4.6 · 3 extra tables
-(3.2, 5.2, 7.1) · 24 distinct links.
+sequenceDiagram, stateDiagram-v2) · 5 charts (3.4, 5.1, 7.6, 9.4, 9.5) · 23 code panels (17 single, 6 compares) ·
+C# ↔ VB compare 2.6 · TypeScript ↔ C# compare 2.3 · Kotlin ↔ C# compare 4.1 · twocol 4.6 · 3 extra tables
+(3.2, 5.2, 7.1) · 23 distinct links.
 
 ## 4 · Derivation
 
@@ -55,11 +62,21 @@ C# ↔ VB compare 2.6 · TypeScript ↔ C# compare 2.3 · Kotlin ↔ C# compares
   analogue" column is the author's judgement, labelled "(estimate)" in its header; the "L08.QuoteApi" column is read
   from `appsettings.json` and `QuoteApiFactory`.
 - **KPI "Rate-limit rejection 503"** — VERIFIED (`RateLimiterOptions.RejectionStatusCode` API reference).
-- **KPI "Lesson 08 tests" (28)**, chart 9.5 and the counts in the callouts — MEASURED at build by `tests_by_area()`:
-  `[Fact]` + `[InlineData(` per test file (Hosting & DI 10, Endpoints 10, Cross-cutting 6, Resilience 2), equal to
+- **KPI "Lesson 08 tests" (32)**, chart 9.4 and the counts in the callouts — MEASURED at build by `tests_by_area()`:
+  `[Fact]` + `[InlineData(` per test file (Hosting & DI 13, Endpoints 11, Cross-cutting 6, Resilience 2), equal to
   the `dotnet test` total on the build machine.
-- **KPI "Sample code" (1472 lines)** and the VB line count in the §9 story (157) — `loc()` over every `.cs` / `.vb`
+- **KPI "Sample code" (1542 lines)** and the VB line count in the §9 story (183) — `loc()` over every `.cs` / `.vb`
   file under `samples/`, and over the `.vb` files, MEASURED at build.
+- **Every premium, rate, loading, discount, duty and VAT figure** — the track's canonical tariff
+  (`_curriculum.md` § "Canonical tariff"), implemented once in `RatingOptions.vb` (defaults) and
+  `PremiumCalculator.vb` (composition and rounding), never retyped in the module. The two priced quotes in the 9.2
+  note are read back from the tour: Class 1 on 800,000 THB → base 2.1 % = 16,800; the claim-free 36-year-old with
+  ten licence years takes the 50 % no-claim rung → net 8,400.00, duty 33.60, VAT 590.35, total 9,023.95; the
+  22-year-old with one claim takes +20 % young driver and +10 % claims with no discount → net 21,840.00, total
+  23,462.28. `VbRatingTests` pins those two, a commercial case (11,279.94), a >3,000 cc commercial case
+  (12,182.34), the 3-claims decline **and the curriculum's own worked example** (550,000 THB, driver 23, four
+  claim-free years → base 11,550.00, net 8,316.00, duty 33.26, VAT 584.45, total 8,933.71), so a drift from the
+  canonical tariff fails `dotnet test` before it can reach the PDF.
 - **Chart 3.4** — MEASURED: `registrations_by_lifetime()` counts `.Add[Keyed]Singleton/Scoped/Transient` calls,
   typed `.AddHttpClient<` (transient) and `.AddHostedService<` in `L08.QuoteApi` and `RatingModule.vb`.
 - **Chart 5.1** and its note — MEASURED: `status_codes()` parses `TOUR_OUT`; "documented" = the `documents …` lines
@@ -92,9 +109,7 @@ C# ↔ VB compare 2.6 · TypeScript ↔ C# compare 2.3 · Kotlin ↔ C# compares
   middleware); health status codes (Health checks); handler lifetime 2 min, typed clients transient, avoid in
   singletons (IHttpClientFactory); circuit breaker states and `BrokenCircuitException` (Polly docs); since .NET 6 an
   exception escaping `BackgroundService.ExecuteAsync` stops the host; .NET 10 runs all of `ExecuteAsync` in the
-  background (page re-read 2026-09-20); WebApplicationFactory default environment Development (Integration tests);
-  the `public partial class Program` emitted by a source generator in the ASP.NET Core shared framework
-  (dotnet/aspnetcore PR 58199).
+  background (page re-read 2026-09-20); WebApplicationFactory default environment Development (Integration tests).
 
 ## 5 · Presentation
 
@@ -123,7 +138,7 @@ knife-edge fit decided a page. Compare sides ≤ 62 characters, code panels ≤ 
 rate limiting, output cache, health checks, CORS, typed partner client with the standard resilience handler,
 keyed notification channels, hosted dispatcher, in-memory store), `L08.Rating.Vb` (VB library: rating rules, options,
 `AddMotorRating`, `MapTariff` endpoint, `ValidationScope.vb`; `FrameworkReference Microsoft.AspNetCore.App`),
-`L08.QuoteApi.Tests` (xUnit + `Microsoft.AspNetCore.Mvc.Testing` + `FakeTimeProvider`, 28 tests), `L08.HostingLab`
+`L08.QuoteApi.Tests` (xUnit + `Microsoft.AspNetCore.Mvc.Testing` + `FakeTimeProvider`, 32 tests), `L08.HostingLab`
 (console: configuration, options validation, lifetimes, captive dependency, keyed services), `L08.PartnerLab`
 (console: resilience scenarios against an in-process fake partner), `L08.ApiTour` (console: drives the API in memory
 and prints responses and OpenAPI operations); repo `global.json`, `Directory.Build.props`.
@@ -134,24 +149,40 @@ WebApplication and WebApplicationBuilder · Configuration in ASP.NET Core · Log
 ASP.NET Core APIs · Error handling (IExceptionHandler) · Rate limiting middleware ·
 RateLimiterOptions.RejectionStatusCode · Output caching middleware · Health checks · Use the IHttpClientFactory ·
 Build resilient HTTP apps · .NET 6 hosting exception handling · .NET 10 BackgroundService change · In-process hosting
-with IIS · Integration tests in ASP.NET Core; GitHub — dotnet/aspnetcore issue 54599, PR 58199; Polly — circuit
-breaker strategy.
+with IIS · Integration tests in ASP.NET Core; GitHub — dotnet/aspnetcore issue 54599; Polly — circuit breaker
+strategy. 23 distinct URLs, every one reachable from the PDF.
 
 ## 7 · Invariants
 
-- Premiums are labelled illustrative wherever they appear (§1 story, 9.2 note); the rates live in `RatingOptions.vb`.
+- **One tariff, no lesson-local variant.** Every rate, loading, discount, duty and VAT figure is the canonical
+  tariff of `_curriculum.md` (Class 1 2.1 % · Class 2+ 1.2 % · Class 3+ 0.9 % · Class 3 0.4 %; claims +0/+10/+25 %
+  then declined at 3; commercial +25 %, +35 % over 3,000 cc; young driver +20 %; no-claim 0/20/25/30/40/50 %;
+  stamp duty 0.4 % of net, VAT 7 % of net + duty, every amount `Math.Round(_, 2, MidpointRounding.AwayFromZero)`).
+  It lives once in `RatingOptions.vb` and `PremiumCalculator.vb`; `appsettings.json` repeats only `Class1Rate` and
+  `YoungDriverLoading` to show configuration binding, at the same values. Premiums are labelled illustrative
+  wherever they appear (§1 story, 9.2 note). Three or more claims in five years is a declined quote, not a loaded
+  one, and this lesson teaches data rather than exceptions, so the outcome is `QuoteStatus.Declined` on a 201 — the
+  one sentence in the 9.2 note says so.
 - The tour must keep exercising every status code chart 5.1 and table 5.2 rely on (201, 400, 429, 200, 404, 409,
-  503) and keep printing the `documents …` lines; its rate limit is set to 3 so the 4th write is the 429.
+  503) and keep printing the `documents …` lines; its rate limit is set to 4 so the 5th write is the 429.
 - `PartnersController` deliberately declares only 200, so the 503 gap in chart 5.1 stays visible; the POST route
   declares 400 and 429 with `Produces…` calls.
 - The dispatcher's `try` wraps scope creation, key resolution and the send, and its `catch` filters on
   `stoppingToken`, never on the exception type; `DispatcherTests` fails if either regresses.
 - `L08.HostingLab` lines stay ≤ 62 characters (shown in compares) and tour / partner-lab lines ≤ 100 (single panels),
   so the captured panels print verbatim.
-- Test files keep one topic each (endpoints, hosting & DI, cross-cutting, resilience): chart 9.5 groups by file.
+- Test files keep one topic each (endpoints, hosting & DI, cross-cutting, resilience): chart 9.4 groups by file.
 - Boundaries: records/interfaces → 03, async/channels/`TimeProvider` → 05, VB language → 06, project references and
-  `FrameworkReference` → 07, EF Core → 09, test design/coverage → 10, authentication/authorization → 11,
-  observability, IIS hosting, Native AOT, SQS and deployment → 12. Each gets one sentence and `ref(n)` here.
+  `FrameworkReference` → 07, EF Core → 09, test design/coverage/integration and API testing → 10,
+  authentication/authorization → 11, observability, IIS hosting, Native AOT, SQS and deployment → 12. Each gets one
+  sentence and `ref(n)` here.
+- **§9 owns only the seam, not integration testing.** `WebApplicationFactory` appears as one panel (9.3) plus the
+  paragraph that hands the craft to lesson 10; the mapping row in 2.4 is its one-line cross-reference. No
+  MockMvc-versus-xUnit comparison, and no account of the generated `public partial class Program` — lesson 10 owns
+  that fact and its citation.
+- **Lesson 09 is described, never promised.** The §1 story and the footer `Next:` line say lesson 09 models the
+  same quotes in a database *in projects of its own*; neither promises that lesson 09 swaps this API's store. The
+  store stays `InMemoryQuoteStore` for the whole lesson and the §1 story says so.
 - No employer, client or personal names; experience is referenced generically ("~30 external rating partners").
 
 ## 8 · Known gaps
@@ -163,8 +194,8 @@ breaker strategy.
 - ⚠ The 4.7 panel shows the tariff endpoint; the validation behaviour its note describes is in `ValidationScope.vb`
   and `ValidationScopeTests`, cited by name rather than printed (page budget).
 - ⚠ Pagination is tuned to the current text: a few blocks fit a page by a small margin (4.5 on page 9, the footer on
-  page 20), so a wording change can move a block. Re-run `--qa` and check the page-fill list after any edit; page 15
-  is the emptiest (74 %).
-- ⚠ Inline TypeScript and Kotlin panels are not compiled (`express-rate-limit` v7 option names; Resilience4j and
-  MockMvc Kotlin DSL shown for recognition).
+  page 20), so a wording change can move a block. Re-run `--qa` and check the page fill after any edit; pages 15 and
+  20 leave a quarter of the height empty, the other eighteen 20 % or less.
+- ⚠ Inline TypeScript and Kotlin panels are not compiled (`express-rate-limit` v7 option names; the Resilience4j
+  configuration shown for recognition).
 - ⚠ The web-template list reflects SDK 10.0.401 on the build machine; installed template packs change it.

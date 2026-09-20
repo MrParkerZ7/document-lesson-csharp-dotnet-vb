@@ -11,7 +11,7 @@
 - Name the VB semantics that silently change results — Option Strict Off, banker's-rounding CInt, / on integers, DateDiff, Dim a(n), Option Compare Text — and reproduce each one deliberately in C#
 - Call VB from C# and C# from VB, and design library APIs that survive the boundary (case-only names, ByRef, optional parameters)
 - Choose a route per project — rewrite, re-platform, retarget or port — from what .NET 10 still supports for Visual Basic
-- Prove a C# port matches its VB original with VB characterization tests and a 94,080-case parity grid before switching traffic
+- Prove a C# port matches its VB original with VB characterization tests and a 50,176-case parity grid before switching traffic
 
 ## Maps from your stack
 

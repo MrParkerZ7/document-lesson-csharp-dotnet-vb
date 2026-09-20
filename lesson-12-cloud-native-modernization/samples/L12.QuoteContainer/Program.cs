@@ -58,13 +58,22 @@ app.Lifetime.ApplicationStopping.Register(() =>
 #endregion
 
 #region endpoint
-app.MapPost("/quotes", (QuoteRequest req, ILogger<QuoteRequest> log) =>
+app.MapPost("/quotes", IResult (QuoteRequest req, ILogger<QuoteRequest> log) =>
 {
     using var span = QuoteTelemetry.Source.StartActivity("rate-quote");
     span?.SetTag("motorquote.coverage", req.Coverage.ToString());
 
-    var p = Rating.Quote(req.Coverage, req.SumInsured, req.DriverAge,
-                         req.ClaimsLast5Years, req.Commercial);
+    PremiumBreakdown p;
+    try
+    {
+        p = Rating.Quote(req.Coverage, req.SumInsured, req.DriverAge,
+                         req.LicenceYears, req.ClaimsLast5Years,
+                         req.Commercial, req.EngineCc);
+    }
+    catch (QuoteDeclinedException declined)
+    {
+        return TypedResults.UnprocessableEntity(declined.Message);
+    }
 
     QuoteTelemetry.QuotesIssued.Add(1,
         new KeyValuePair<string, object?>("coverage", req.Coverage.ToString()));

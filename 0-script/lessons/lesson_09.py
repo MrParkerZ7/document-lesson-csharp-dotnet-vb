@@ -46,6 +46,9 @@ EF10 = link("What's new in EF Core 10", "https://learn.microsoft.com/en-us/ef/co
 COMPLEX = link("Complex types", "https://learn.microsoft.com/en-us/ef/core/modeling/complex-types")
 MODELING = link("Creating and configuring a model", "https://learn.microsoft.com/en-us/ef/core/modeling/")
 LIFETIME = link("DbContext lifetime", "https://learn.microsoft.com/en-us/ef/core/dbcontext-configuration/")
+POOLING = link("DbContext pooling",
+               "https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics"
+               "#dbcontext-pooling")
 SPLIT = link("Single vs. split queries", "https://learn.microsoft.com/en-us/ef/core/querying/single-split-queries")
 LAZY = link("Lazy loading", "https://learn.microsoft.com/en-us/ef/core/querying/related-data/lazy")
 SQLQ = link("SQL queries", "https://learn.microsoft.com/en-us/ef/core/querying/sql-queries")
@@ -91,11 +94,11 @@ EF Core 10.0.12 on SQLite in-memory; illustrative rates
   INNER JOIN "Vehicles" AS "v" ON "q"."VehicleId" = "v"."Id"
   WHERE "q"."Coverage" = @coverage
   ORDER BY "q"."Reference"
-  Q-0001  Toyota  12,289.76  4 lines
-  Q-0005  Isuzu   22,044.23  5 lines
-  Q-0009  Mazda   22,559.88  3 lines
-  Q-0013  Toyota  21,034.40  4 lines
-  Q-0017  Honda   12,461.65  3 lines
+  Q-0001  Toyota  12,904.25  4 lines
+  Q-0005  Isuzu   25,718.26  5 lines
+  Q-0009  Mazda   11,843.94  4 lines
+  Q-0013  Toyota  22,086.13  4 lines
+  Q-0017  Honda    9,159.31  4 lines
 
 == 2. Commands to load N quotes with their premium lines
   quotes   N+1   Include   AsSplitQuery
@@ -123,8 +126,8 @@ EF Core 10.0.12 on SQLite in-memory; illustrative rates
   SELECT * FROM Vehicles WHERE Make = @p0
 
 == 5. Expire stale quotes: tracked SaveChanges vs ExecuteUpdate
-  tracked + SaveChanges  rows 10  commands 11
-  ExecuteUpdate          rows 10  commands  1
+  tracked + SaveChanges  rows  9  commands 10
+  ExecuteUpdate          rows  9  commands  1
   UPDATE "Quotes" AS "q"
   SET "Status" = @p,
       "Version" = @p2
@@ -132,36 +135,36 @@ EF Core 10.0.12 on SQLite in-memory; illustrative rates
 
 == 6. Quoted quotes by coverage: EF Core LINQ and Dapper SQL
   LINQ    Class1       5
-  LINQ    Class2Plus   3
+  LINQ    Class2Plus   2
   LINQ    Class3       4
-  LINQ    Class3Plus   5
-  Dapper  Class1       5  lines 19
-  Dapper  Class2Plus   3  lines 11
-  Dapper  Class3       4  lines 16
-  Dapper  Class3Plus   5  lines 19
+  LINQ    Class3Plus   4
+  Dapper  Class1       5  lines 21
+  Dapper  Class2Plus   2  lines 9
+  Dapper  Class3       4  lines 17
+  Dapper  Class3Plus   4  lines 16
 
 == 7. decimal is stored as TEXT on SQLite
-  EF Core  top 3 by total  Q-0009, Q-0005, Q-0013
+  EF Core  top 3 by total  Q-0005, Q-0013, Q-0010
   .param set @p 3
 
   SELECT "q"."Reference"
   FROM "Quotes" AS "q"
   ORDER BY "q"."Total_Amount" COLLATE EF_DECIMAL DESC
   LIMIT @p
-  EF Core  totals over 20,000: 3
+  EF Core  totals over 20,000: 2
   SELECT "q"."Reference"
   FROM "Quotes" AS "q"
   WHERE ef_compare("q"."Total_Amount", '20000.0') > 0
-  raw SQL  top 3 by total  Q-0015 9919.91, Q-0003 8604.98, Q-0002 7476.99
-  raw SQL  3 smallest (CAST AS REAL)  Q-0016 2457.95, Q-0012 2492.33, Q-0008 3824.44
+  raw SQL  top 3 by total  Q-0017 9159.31, Q-0006 6703.51, Q-0018 5736.66
+  raw SQL  3 smallest (CAST AS REAL)  Q-0007 0.0, Q-0014 0.0, Q-0012 1744.64
 """
 
 VB_OUT = """
 L09.VbReport: a C# DbContext queried from Visual Basic
   Class1       5
-  Class2Plus   3
+  Class2Plus   2
   Class3       4
-  Class3Plus   5
+  Class3Plus   4
 SELECT "q"."Coverage", COUNT(*) AS "Quotes"
 FROM "Quotes" AS "q"
 WHERE "q"."Status" = 'Quoted'
@@ -173,7 +176,7 @@ WHERE "v"."Make" = 'Toyota'
   models: Yaris Ativ, Hilux Revo
 """
 
-BUNDLE_BYTES = 34_632_598  # efbundle.exe from `dotnet ef migrations bundle` on the build machine (win-x64)
+BUNDLE_BYTES = 34_636_694  # efbundle.exe from `dotnet ef migrations bundle` on the build machine (win-x64)
 
 # Pygments' vbnet lexer has no token for VB 14 interpolated strings, so every `$"` prints inside a red error box.
 # The code is valid (the samples compile); drop the box, keep the text. (same fix as lessons 01, 03 and 06)
@@ -400,10 +403,14 @@ def blocks():
              f"<b>Packages:</b> EF Core {ef_version} (SQLite provider), Dapper {dapper_version}, and the "
              f"<code>dotnet-ef</code> {tool_version} local tool pinned in <code>samples/dotnet-tools.json</code> — "
              "run <code>dotnet tool restore</code> once in the samples folder. No database server, Docker or cloud "
-             "account is needed. EF Core 10 is supported until 10 November 2028, in step with .NET 10's "
-             "long-term support (" + EF_RELEASES + ").",
-             "Premiums in the seed data use <b>illustrative rates, not a real tariff</b>. Facts that change with "
-             "releases are " + VERIFIED + " and linked; numbers from runs of the samples are " + MEASURED + "; "
+             "account is needed. EF Core 10 requires .NET 10 and is supported until 10 November 2028 "
+             "(" + EF_RELEASES + "); the .NET support policy ends .NET 10 itself four days later, on 14 November 2028 "
+             "(" + ref(1) + ") — two published tables, not two support windows.",
+             "The seed data is priced with the <b>one illustrative tariff every lesson in this track uses</b> — not a "
+             "real tariff. Three or more claims in five years is a decline stored as data: "
+             "<code>QuoteStatus.Declined</code>, a zero total and one line, never an exception; a test prices the "
+             "track's worked example at 8,933.71 THB so this lesson cannot drift from the others. Facts that change "
+             "with releases are " + VERIFIED + " and linked; numbers from runs of the samples are " + MEASURED + "; "
              "judgements are " + ESTIMATE + ". Kotlin, Java and TypeScript panels are for comparison and are not "
              "compiled."]},
 
@@ -413,10 +420,14 @@ def blocks():
              "<p><b>A <code>DbContext</code> is a Hibernate <code>Session</code> you are expected to throw away after "
              "one unit of work.</b> It holds the identity map and change tracker, exposes <code>DbSet&lt;T&gt;</code> "
              "roots for queries, and writes everything in <code>SaveChanges</code>. It is not thread-safe, so a web "
-             "app gets one per request from <code>AddDbContext</code>; a second operation started before the first "
-             "completes throws (" + LIFETIME + "). Await every call at once (lesson 05). For "
-             "parallel work or a <code>BackgroundService</code>, inject <code>IDbContextFactory&lt;T&gt;</code> and "
-             "create one context per task; <code>AddDbContextPool</code> reuses instances under load (lesson 08).</p>"
+             "app gets one per request from <code>AddDbContext</code> — the DI scope rules are " + ref(8) + " — and a "
+             "second operation started before the first completes throws (" + LIFETIME + "). Await every async call "
+             "immediately (" + ref(5) + "). For parallel work or a <code>BackgroundService</code>, inject "
+             "<code>IDbContextFactory&lt;T&gt;</code> and create one context per task. <code>AddDbContextPool</code> "
+             "replaces <code>AddDbContext</code> where allocation matters: it resets a disposed context and hands the "
+             "same instance out again instead of building a new one. That instance outlives the request, so "
+             "<code>OnConfiguring</code> runs once and per-request state — a tenant id — needs a scoped factory "
+             "over the pool (" + POOLING + ").</p>"
              "<p><b>The mapping lives beside the entities, not on them.</b> JPA taught you to annotate the entity. EF "
              "Core can read attributes too, but the idiomatic shape is a plain class plus an "
              "<code>IEntityTypeConfiguration&lt;T&gt;</code> written with the Fluent API, which wins when both are "
@@ -1014,8 +1025,11 @@ def blocks():
              "database engine first.</b> The EF Core team recommends real-database tests (containers make that "
              "cheap), then stubbing a repository layer, then SQLite in-memory — and calls the EF Core InMemory "
              "provider <i>highly discouraged</i> as a test double (" + TESTING + "). "
-             "Testcontainers for .NET (" + TESTCONTAINERS + ") is the Testcontainers you know; " + ref(10) + " covers "
-             "it with the rest of the test tooling.</p>"
+             "Testcontainers for .NET (" + TESTCONTAINERS + ") is the Testcontainers you know — a package that starts "
+             "a throwaway database container from the test process and hands you its connection string, which the 7.1 "
+             "fixture would then open instead of <code>:memory:</code>. <b>No lesson in this track runs one:</b> every "
+             "sample must build and pass offline with no Docker, so " + ref(10) + " lists it in its tooling table and "
+             "declines it for the same reason. The tier is described here, never executed.</p>"
              "<p><b>The InMemory provider is a dictionary, not a database.</b> It ignores transactions, cannot run raw "
              "SQL, and does not support <code>ExecuteUpdate</code>. The 7.3 test proves the "
              "last point: code that is correct on every relational provider throws there.</p>"
@@ -1051,6 +1065,7 @@ def blocks():
                   f"DESC</code> and returned the three largest premiums ({raw7['ef']}). The raw SQL on the same TEXT "
                   f"column returned {raw7['top']} — <code>'9'</code> sorts after <code>'2'</code> as text — and "
                   f"<code>CAST(Total_Amount AS REAL)</code> restored numeric order, smallest first: {raw7['cast']} "
+                  "(the two zeros are the declined quotes — 3 or more claims are never priced) "
                   + MEASURED + ". The <code>CAST</code> is a workaround for this fixture only: on SQL Server and "
                   "PostgreSQL <code>decimal</code> is a native numeric type and the trap does not exist. "
                   + SQLITE_LIMITS + f" still says such comparisons run on the client; the SQL captured from EF Core "

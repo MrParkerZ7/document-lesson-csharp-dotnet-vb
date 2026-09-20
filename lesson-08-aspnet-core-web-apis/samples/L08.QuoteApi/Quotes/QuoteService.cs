@@ -24,7 +24,8 @@ public sealed class QuoteService(
             AgeAt(request.Driver.DateOfBirth, request.StartDate),
             request.Driver.LicenceYears,
             request.Driver.ClaimsLast5Years,
-            request.Vehicle.Use);
+            request.Vehicle.Use,
+            request.Vehicle.EngineCc);
 
         var premium = calculator.Calculate(input);
         var now = clock.GetUtcNow();
@@ -57,6 +58,9 @@ public sealed class QuoteService(
     private QuoteResponse ToResponse(Quote quote)
     {
         var p = quote.Premium;
+        if (p.IsDeclined)   // declined by the tariff: a status and a reason, no premium
+            return new QuoteResponse(quote.Id, quote.Status, null, quote.ValidUntil, p.DeclineReason);
+
         var currency = options.Value.Currency;
         return new QuoteResponse(quote.Id, quote.Status,
             new PremiumDto(new(p.BasePremium, currency), p.LoadingRate, p.DiscountRate,

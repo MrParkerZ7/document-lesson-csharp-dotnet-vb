@@ -13,6 +13,16 @@ DynamoDB filter expression — runs MotorQuote dashboard queries over a determin
 labelled wherever a premium appears), and reads the same dashboard in Visual Basic query syntax, with the C# ports of
 the VB-only clauses beside it.
 
+**Tariff.** `L04.QuoteData/Rating.cs` implements the track's canonical tariff verbatim (`_curriculum.md` § "Canonical
+tariff"): base rate by class 2.1 / 1.2 / 0.9 / 0.4 % of the sum insured (Class 3 is a rate, never a flat amount),
+loadings added then applied (young driver +20 %, claims 0 / +10 / +25 %, commercial +25 % or +35 % over 3,000 cc),
+no-claim ladder 0 / 20 / 25 / 30 / 40 / 50 % on claim-free licence years, stamp duty 0.4 %, VAT 7 % on net + duty,
+`decimal.Round(…, 2, MidpointRounding.AwayFromZero)`. Three or more claims in five years is a **decision, not a
+price**: this lesson teaches data, so `QuoteBook.Generate` marks the quote `QuoteStatus.Declined` with `Total` 0 and
+no band (the curriculum's data-side convention; lesson 02 throws `QuoteDeclinedException` instead). No deliberate
+variant. The rules keep this lesson's teaching shape — a list of named `Loading` delegates folded with `Aggregate` —
+and panel 5.1's note says they are lesson 02's `switch` expressions re-expressed as values.
+
 ## 2 · Ownership & cadence
 
 Owner **claude**, regenerable. Re-verify every November when a new .NET major ships: the operator arrivals in the §4
@@ -28,14 +38,14 @@ or a rating rule changes the dashboard figures.
 
 ## 3 · Structure
 
-19 pages at the 2026-09-20 build. The Contents fills page 1 and §1 starts page 2 (a zero-height `break-before:page`
+20 pages at the 2026-09-20 build. The Contents fills page 1 and §1 starts page 2 (a zero-height `break-before:page`
 element before the §1 story keeps a stub of §1 from printing at the foot of page 1). A lesson-local `<style>` block
 keeps every story and callout heading with its first line and every callout whole.
 
 | § | Heading | Blocks |
 |---|---|---|
 | — | Contents | `toc` depth 2 (code panels, the twocol and two tables are listed through local `listed()` / `figure_heading()`) · lesson-local CSS block · page-break element |
-| 1 | Why collections and LINQ decide how .NET code reads | story (3 ¶) · `kpi` 1.1 (5 tiles) · `legend` (C#, Java/Kotlin, architecture) · info callout "Before you start" (4 items) |
+| 1 | Why collections and LINQ decide how .NET code reads | story (3 ¶) · `kpi` 1.1 (5 tiles) · `legend` (C#, Java/Kotlin, architecture) · info callout "Before you start" (5 items — item 2 names the canonical tariff, item 3 the lesson-03 type-kind rule this dataset deliberately flattens) |
 | 2 | The collection family — what to accept, store and return | story (4 ¶) · mermaid 2.1 classDiagram RL (two interface families, concrete types carry one member line each) · code 2.2 (collection expressions) · compare 2.3 (C# read-only views ↔ captured output part 2) · cards 2.4 in two bands of 3 (List · Dictionary/HashSet · arrays and spans / immutable · frozen · read-only wrappers; band 2 `toc: False`) · figure heading + table 2.5 (API-boundary type choice, 8 rows) |
 | 3 | Deferred execution — a query is a recipe, not a result | story (4 ¶) · mermaid 3.1 sequenceDiagram (one query, four calls) · compare 3.2 (Java Stream reuse ↔ C# deferred region) · chart 3.3 bar (predicate calls) · compare 3.4 (C# captured variable ↔ C# list changed in foreach) · compare 3.5 (Kotlin `sequence {}` ↔ C# `yield return`) |
 | 4 | The operator map — Streams, Kotlin and TypeScript in LINQ | story (3 ¶) · mapping 4.1 (19 rows; `CountBy`, `AggregateBy` and `MaxBy` are Trap, `Zip` is Renamed) · mermaid 4.2 timeline (2005 → 2025 arrivals, period labels are years) · code 4.3 (`AggregateBy`) · compare 4.4 (C# lookup vs dictionary ↔ captured output part 9) |
@@ -67,15 +77,25 @@ mapping (2.5, 7.6, 8.6) · 25 distinct links.
   100 values"). The generator enforces the same cap (`MaxInValues`); `An_IN_list_of_exactly_100_values_is_accepted` and
   `An_IN_list_outside_1_to_100_values_is_refused` (0 and 101) make it MEASURED.
 - **KPI "Lesson 04 samples"** and chart 9.3 — MEASURED at build: `loc()` over every `.cs` / `.vb` file per project
-  (excluding `obj/` and `bin/`); 873 lines at this build (QuoteData 208, QueryGen.Tests 156, QuoteData.Tests 155,
-  QueryGen 144, Collections 116, VbLinq 51, QuoteAnalytics 43). Test cases = `[Fact]` + `[InlineData(` per test file:
-  24 + 17 = 41, equal to the captured `dotnet test` totals in `OUT_TESTS` (panel 9.2).
-- **Charts 6.4 / 6.5**, notes 6.2 / 6.3 — MEASURED: parsed at build from `OUT_DASHBOARD` (a captured run of
-  `L04.QuoteAnalytics`): conversion 41.7 / 56.7 / 61.7 / 75.0 %, bands 60 / 18 / 92 / 52 / 18, 141 accepted,
-  23 pending. The dataset (`QuoteBook.Generate`) is deterministic; the acceptance gradient by class is built into
-  `QuoteBook.StatusOf` on purpose, and the chart note says so. Premiums are illustrative. `Quote.Total` (the quoted
-  premium, `Money`) matches the name lesson 11 uses; the no-claim rule uses licence years as a stand-in for claim-free
-  years and says so in a sample comment.
+  (excluding `obj/` and `bin/`); 919 lines at this build (QuoteData 229, QuoteData.Tests 176, QueryGen.Tests 156,
+  QueryGen 144, Collections 117, VbLinq 52, QuoteAnalytics 45). Test cases = `[Fact]` + `[InlineData(` per test file:
+  24 + 19 = 43, equal to the captured `dotnet test` totals in `OUT_TESTS` (panel 9.2).
+- **Charts 6.4 / 6.5**, notes 6.2 / 6.3 / 4.3 — MEASURED: parsed at build from `OUT_DASHBOARD` (a captured run of
+  `L04.QuoteAnalytics` on the canonical tariff): conversion 40.7 / 59.3 / 59.3 / 75.9 %, bands 40 / 109 / 50 / 16 / 1,
+  127 accepted of the 216 priced quotes, 21 pending, 24 declined (never priced), accepted premium by class
+  136,262 / 169,483 / 174,299 / 130,512 THB. The dataset (`QuoteBook.Generate`) is deterministic; the acceptance
+  gradient by class is built into `QuoteBook.StatusOf` on purpose, and the chart note says so. Premiums are
+  illustrative. `Quote.Total` (the quoted premium, `Money`) matches the name lesson 11 uses; the no-claim rule uses
+  licence years as a stand-in for claim-free years (the curriculum's own definition) and says so in a sample comment.
+  Chart 6.5 bands the 216 priced quotes only, and its caption says where the 24 declined quotes went.
+- **The tariff itself** — MEASURED against the curriculum's worked example:
+  `DashboardTests.The_canonical_worked_example_prices_to_8_933_71` asserts base 11,550.00, net 8,316.00 and total
+  8,933.71 THB for Class 1 / 550,000 / private / age 23 / 4 claim-free licence years;
+  `The_tariff_declines_three_or_more_claims_instead_of_pricing_them` asserts that every declined quote has 3+ claims
+  and `Total` 0 and that no priced quote has 3+ claims. Every other prose figure in the module that quotes a run
+  (thresholds 123 / 67, `Count`/`FindAll` 127, the mermaid 3.1 result list, the premium-by-class pair in note 4.3, the
+  top-makes ranking, the VB `Aggregate` triple and the tied window pair) is parsed out of the `OUT_*` captures in
+  `blocks()`, so a re-tariff cannot leave prose behind.
 - **Panels 2.2, 2.3, 3.4, 3.5, 4.4, 5.2, 5.3** notes quote `OUT_COLLECTIONS`; 2.3 and 4.4 print its parts 2 and 9 via
   `part()`. The synthesised type name `<>z__ReadOnlyArray`1` (2.2) is printed by the sample and labelled a compiler
   detail, not a contract. The `AsReadOnly()` cast claim (2.3, card 6, Traps) is asserted by
@@ -88,9 +108,11 @@ mapping (2.5, 7.6, 8.6) · 25 distinct links.
   (`A_band_without_quotes_still_gets_a_row_with_zero`); the captured band counts are unchanged because every band has
   quotes in the dataset. **Compare 6.2** — the query-syntax and `LeftJoin` forms return the same sequence
   (`The_C_sharp_query_syntax_left_join_matches_LeftJoin`).
-- **Compares 8.3 / 8.4** — the C# ports (`Summarise`, `Makes`, `Window`) reproduce the captured VB output: 141 accepted,
-  largest 16,759, the four window quotes Q-0014, Q-0080, Q-0143, Q-0106
-  (`The_C_sharp_ports_reproduce_the_captured_Visual_Basic_output`).
+- **Compares 8.3 / 8.4** — the C# ports (`Summarise`, `Makes`, `Window`) reproduce the captured VB output: 127 accepted,
+  610,555 THB, largest 12,182, the eight distinct makes, and the five window quotes Q-0139, Q-0219, Q-0005, Q-0015,
+  Q-0175 between 8,600 and 8,900 THB (`The_C_sharp_ports_reproduce_the_captured_Visual_Basic_output`). The window
+  bounds moved with the tariff so the slice still shows a stable-sort tie (Q-0139 and Q-0219 both 8,685.55), which is
+  what note 8.4 is about.
 - **Panel 7.4** is `OUT_EXPRESSIONS`, captured from `L04.QuoteAnalytics` (`binds to MemoryExtensions.Contains` on the
   .NET 10.0.401 SDK / C# 14; the `#n1` name is `Total`).
 - **Timeline 4.2** — VERIFIED: The history of C# (C# 2 Nov 2005 iterators; C# 3 Nov 2007 query expressions, lambdas,
@@ -147,6 +169,15 @@ java.util.stream.Stream (Java 21); Kotlin — sequences.
 
 - Every figure in the dashboard charts and panels must match `DashboardTests.Dashboard_numbers_match_the_captured_lesson_output`;
   change the dataset or rules only together with that test and the captured constants.
+- `Rating.cs` stays byte-for-byte the canonical tariff (`_curriculum.md` § "Canonical tariff"), and a decline stays a
+  `QuoteStatus.Declined` rather than an exception. Any deliberate variant would need one sentence in the lesson naming
+  the canonical tariff; there is none today. `The_canonical_worked_example_prices_to_8_933_71` is the guard.
+- No premium, rate, loading, discount, stamp-duty or VAT figure is typed into `lesson_04.py`: every one is parsed from
+  an `OUT_*` capture or from a sample region shown through `from_sample()`.
+- Cross-lesson pointers must resolve. §1 item 4 and mapping 4.1 name only what the referenced lesson contains:
+  lesson 05 owns `IAsyncEnumerable` and Task-based parallelism but **not** PLINQ, so the `parallelStream()` row
+  explains `AsParallel()` itself and says the track does not cover it. §7 attributes `NotSupportedException` to this
+  lesson's `DynamoFilter` and `InvalidOperationException` to EF Core, which lesson 09 pins in a test.
 - `L04.QuoteAnalytics` must keep printing the `binds to` line; if a future compiler binds `shortlist.Contains` back to
   `Enumerable.Contains`, rewrite the §7 span paragraph rather than the capture.
 - `DynamoFilter` stays free of the AWS SDK; tests compare expression text and placeholder maps only.
@@ -173,5 +204,11 @@ java.util.stream.Stream (Java 21); Kotlin — sequences.
   compiler-generated getter) also refuses a property with a hand-written getter over a backing field.
 - ⚠ The frozen-collection and `CountBy`/`AggregateBy` performance claims are qualitative (quoted from Microsoft Learn);
   the lesson ships no benchmark. The frozen-dictionary region is referenced by card 2.4 but not shown as a panel.
-- ⚠ Some pages end 15–30 % empty where an unbreakable block (a card band, a kept panel, a table) starts the next
-  page: pages 1, 8, 13, 16 and 18. Pagination was tuned by eye; a change to a story's length can move a panel.
+- ⚠ Some pages end 15–30 % empty where an unbreakable block (a card band, a kept panel, a chart row, a table) starts
+  the next page: pages 5 (the widest gap, ≈ ⅓, before mermaid 3.1), 6, 10, 12, 13 and 14. Pagination was tuned by
+  eye; a change to a story's length can move a panel.
+- ⚠ The lesson asserts that the tariff it prices with is the one every other lesson prices with. That is enforced by
+  `_curriculum.md`, not by anything this lesson can run: a sibling lesson drifting away from the canonical table would
+  not fail a lesson-04 test.
+- ⚠ The reader is told (§1 item 4) that this track does not cover PLINQ. If a later lesson adds it, mapping 4.1's
+  `parallelStream()` row and that item should become a pointer again.

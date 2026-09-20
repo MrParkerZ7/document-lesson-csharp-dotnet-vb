@@ -87,6 +87,8 @@ BINLOG = link("the MSBuild binary log",
 RSPDOC = link("MSBuild response files",
               "https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-response-files")
 SETUPDOTNET = link("actions/setup-dotnet", "https://github.com/actions/setup-dotnet/blob/main/README.md")
+GLOBALJSON = link("global.json and rollForward",
+                  "https://learn.microsoft.com/en-us/dotnet/core/tools/global-json")
 GHPKG = link("the GitHub Packages NuGet registry",
              "https://docs.github.com/en/packages/working-with-a-github-packages-registry/"
              "working-with-the-nuget-registry")
@@ -99,6 +101,8 @@ KTINTERNAL = link("Kotlin visibility modifiers", "https://kotlinlang.org/docs/vi
 
 # ── MEASURED: lesson-07-.../samples/tools/measure_build.py writes this from real builds ────────
 M = json.loads((REPO / f"{L}/tools/measurements.json").read_text(encoding="utf-8"))
+# MEASURED: the repository's own global.json, read rather than quoted (§8 describes what it guarantees)
+GJ = json.loads((REPO / "global.json").read_text(encoding="utf-8"))["sdk"]
 PP = M["preprocess"]
 INC = {r["scenario"]: r["compiled"] for r in M["incremental"]}
 BREAKS = {r["break"]: r for r in M["breaks"]}
@@ -675,7 +679,11 @@ def blocks():
               "project that names a version is rejected (5.3). The walk-up rule of §4 applies here too, so a "
               "nested <code>Directory.Packages.props</code> needs the same hand-written import. Lock files "
               "(<code>packages.lock.json</code>, one per project, committed) are what turn this list into a "
-              "reproducible restore (" + LOCKFILE + ")."),
+              "reproducible restore (" + LOCKFILE + "). The three packages happen to be the test stack, which "
+              "is the other half of <i>one list per repository</i>: these are the xUnit v3 packages "
+              + ref(10) + " teaches — <code>xunit.v3.mtp-off</code> keeps them on VSTest — and that lesson owns "
+              "the choice, including why mixing test platforms in one solution is not supported. Pick the "
+              "framework before you copy a version list; it decides what the project in 5.2 looks like."),
 
         pcode(from_sample(TESTS_PROJ),
               "5.2 · The consumer side — references without versions",
@@ -685,7 +693,9 @@ def blocks():
               "compilation, not a source edit. And nothing here marks this as a test project that must not "
               "ship: <code>Directory.Build.props</code> already did that for every name ending "
               f"<code>.Tests</code>, which is why <code>dotnet pack</code> produced {len(pkgs)} packages from "
-              f"{n_proj} projects (8.4)."),
+              f"{n_proj} projects (8.4). The one property is not a build decision but a framework fact: an "
+              "xUnit v3 test project runs itself, so it is an <code>Exe</code> rather than a library "
+              "(" + ref(10) + ")."),
 
         {"type": "table", "heading": "5.3 · Four ways a shared version list fails, and what restore says",
          "cols": ["What someone did", "Code", "Abridged message from the real run", "The fix"],
@@ -764,7 +774,7 @@ def blocks():
                   '  CORE["L07.Core<br/>Money · QuoteRequest<br/>IRatingRule"]:::lib\n'
                   '  PR["L07.Pricing<br/>calculator · rules<br/>internals visible to tests"]:::lib\n'
                   '  VB["L07.Pricing.Vb<br/>the same interface,<br/>in Visual Basic"]:::vb\n'
-                  '  TS["L07.Pricing.Tests<br/>xUnit"]:::test\n'
+                  '  TS["L07.Pricing.Tests<br/>xUnit v3"]:::test\n'
                   '  CLI["L07.QuoteCli<br/>console · not packable"]:::app\n'
                   '  CORE --> PR\n'
                   '  CORE --> VB\n'
@@ -801,7 +811,7 @@ def blocks():
                      // share of the sum insured, illustrative
                      fun forClass(c: CoverageClass): BigDecimal =
                          when (c) {
-                             CLASS_1 -> "0.018".toBigDecimal()
+                             CLASS_1 -> "0.021".toBigDecimal()
                              CLASS_3 -> "0.004".toBigDecimal()
                              else -> throw IllegalArgumentException()
                          }
@@ -811,7 +821,7 @@ def blocks():
                  // set already sees main's internal members
                  class BaseRatesTest {
                      @Test fun class1() = assertEquals(
-                         "0.018".toBigDecimal(),
+                         "0.021".toBigDecimal(),
                          BaseRates.forClass(CLASS_1))
                  }
                  """, "kotlin", file="Kotlin — internal is per module, tests included"),
@@ -838,7 +848,13 @@ def blocks():
                  "extension so C# gets <code>Nullable</code> and VB gets <code>Option Strict On</code> (4.4). For a "
                  "migration this is the whole strategy in one screen — port a rule to C#, keep both in the "
                  "graph, and let the parity test in <code>L07.Pricing.Tests</code> prove they agree before the "
-                 "VB one is deleted (" + ref(6) + ")."),
+                 "VB one is deleted (" + ref(6) + "). Both panels price with the same illustrative tariff as "
+                 "every other lesson that quotes this example — the same base rates, the same loadings and the "
+                 "same no-claim ladder, 20, 25, 30, 40 then 50% off for claim-free years — which is what makes "
+                 "a parity test between two languages worth writing. Three or more claims in five years is the "
+                 "one input that is not a loading: the tariff declines the quote, and a build lesson needs the "
+                 "smallest form of that outcome, so <code>L07.Core</code> defines a "
+                 "<code>QuoteDeclinedException</code> and " + ref(2) + " owns exceptions properly."),
 
         # ═══════════════════════════ 7 · QUALITY GATES ═══════════════════════════
         {"type": "story", "heading": "7 · Quality gates that live inside the build",
@@ -939,9 +955,16 @@ def blocks():
              "version-suffix, the value specified for the version-suffix is ignored”</i> (" + PACK + ").</p>"
              "<p><b>The workflow is ordinary GitHub Actions with three .NET-specific details.</b> "
              "<code>setup-dotnet</code> installs the SDK from the repository's own "
-             "<code>global.json</code>, so the runner and every developer use one SDK, and its cache keys on "
-             "the hash of the <code>packages.lock.json</code> files — the action fails outright if no lock file "
-             "exists (" + SETUPDOTNET + "). GitHub sets <code>CI=true</code>, which is what flips this "
+             f"<code>global.json</code>, so the runner uses the SDK this repository asks for — and that is a "
+             f"<i>range</i>, not one SDK: <code>{GJ['version']}</code> or any later 10.0 feature band, because "
+             f"the file sets <code>rollForward</code> to <code>{GJ['rollForward']}</code>, <i>“the highest "
+             "installed feature band and patch level that matches the requested major and minor”</i> "
+             "(" + GLOBALJSON + "). The same page names the stricter setting and when to want it: <i>“When you "
+             "use package lock files, set <code>rollForward</code> to <code>disable</code> so the SDK version "
+             "and dependency graph stay in lockstep”</i> — which is exactly the combination §5 teaches, so a "
+             "repository that commits lock files has one more decision than it looks like. The action's cache "
+             "keys on the hash of those <code>packages.lock.json</code> files and fails outright if none exists "
+             "(" + SETUPDOTNET + "). GitHub sets <code>CI=true</code>, which is what flips this "
              "repository into locked restore mode. And <code>-bl</code> writes a binary log that is uploaded "
              "even when the build fails, so a red pipeline is debuggable without reproducing it.</p>")},
 
@@ -957,8 +980,8 @@ def blocks():
 
         {"type": "mermaid", "inline": True,
          "heading": "8.2 · One push through the pipeline",
-         "caption": "the runner reads global.json for the SDK, the lock files for the cache key, and the CI "
-                    "environment variable for locked restore; only a tag reaches the feed",
+         "caption": "the runner reads global.json for the SDK range it may use, the lock files for the cache "
+                    "key, and the CI environment variable for locked restore; only a tag reaches the feed",
          "code": ('%%{init: {"theme":"base","themeVariables": {"actorBkg":"#c7d2fe",'
                   '"actorBorder":"#6366f1","actorTextColor":"#1f2937","signalTextColor":"#1f2937",'
                   '"noteBkgColor":"#fde68a","noteTextColor":"#1f2937","noteBorderColor":"#d97706",'
@@ -1063,18 +1086,18 @@ def blocks():
               "you are capturing output."),
 
         pcode(from_text("""
-              MotorMono CLI 1.4.0  commit 4f35a48
+              MotorMono CLI 1.4.0  commit 13e8067
                 projects   5
                 built via  command-line
 
-              Class1 · sum insured 850,000.00 THB · driver age 23
-                base premium                        15,300.00 THB
-                young driver     L07.Pricing         3,825.00 THB
-                no-claim bonus   L07.Pricing.Vb     -4,590.00 THB
-                net premium                         14,535.00 THB
-                stamp duty 0.4%                         58.14 THB
-                VAT 7%                               1,021.52 THB
-                total                               15,614.66 THB
+              Class1 · sum insured 550,000.00 THB · driver age 23
+                base premium                        11,550.00 THB
+                young driver     L07.Pricing         2,310.00 THB
+                no-claim bonus   L07.Pricing.Vb     -5,544.00 THB
+                net premium                          8,316.00 THB
+                stamp duty 0.4%                         33.26 THB
+                VAT 7%                                 584.45 THB
+                total                                8,933.71 THB
               rates are illustrative, not a real tariff
               """, "text", label="Output — dotnet run --project src/L07.QuoteCli",
                         file="captured on the build machine"),

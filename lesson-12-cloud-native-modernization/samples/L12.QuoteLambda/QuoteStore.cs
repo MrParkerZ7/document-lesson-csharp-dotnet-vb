@@ -5,7 +5,8 @@ namespace L12.QuoteLambda;
 
 public sealed record QuoteRequest(
     string Coverage, decimal SumInsured, int DriverAge,
-    int ClaimsLast5Years, bool Commercial);
+    int LicenceYears, int ClaimsLast5Years, bool Commercial,
+    int EngineCc);
 
 public sealed record StoredQuote(
     string QuoteId, decimal NetPremium, decimal StampDuty,

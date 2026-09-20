@@ -5,8 +5,10 @@ delegate bool TryParse<T>(string text, out T result);
 static class MethodsTour
 {
     #region declarations
-    // optional parameters, expression-bodied member
-    static decimal Discount(decimal amount, decimal rate = 0.30m,
+    // optional parameters, expression-bodied member.
+    // roundUp is a parameter demo: the tariff rounds half away
+    // from zero through RatingRules.Round (3.2), never up.
+    static decimal Discount(decimal amount, decimal rate = 0.40m,
                             bool roundUp = false) =>
         roundUp ? Math.Ceiling(amount * rate) : amount * rate;
 
@@ -40,7 +42,7 @@ static class MethodsTour
         decimal d1 = Discount(13_860m, roundUp: true);
         decimal d2 = Discount(rate: 0.20m, amount: 13_860m);
 
-        decimal total = Sum(9_702m, 38.81m, 681.86m);       // params span: no array allocated
+        decimal total = Sum(8_316m, 33.26m, 584.45m);       // params span: no array allocated
 
         var driver = Examples.YoungDriver().Driver;
         var (bonus, reason) = Bonus(driver);                // deconstruct the tuple

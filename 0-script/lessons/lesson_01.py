@@ -517,11 +517,11 @@ def blocks():
                            "Runtime (reified) generics", "User-defined value types", "Properties",
                            "Extension members", "XML literals"],
                   "cols": ["C# 14", "VB", "Java 21", "Kotlin 2"],
-                  "matrix": [[2, 1, 2, 2], [2, 0, 0, 2], [2, 0, 0, 2], [2, 1, 2, 1], [2, 2, 1, 2],
+                  "matrix": [[2, 1, 2, 2], [2, 0, 0, 2], [1, 0, 0, 2], [2, 1, 2, 1], [2, 2, 1, 2],
                              [2, 2, 1, 1], [2, 2, 0, 1], [2, 2, 0, 1], [2, 2, 0, 2], [2, 1, 0, 2],
                              [0, 2, 0, 0]],
                   "cell": 34, "tone": "violet", "fmt": lambda v: {2: "yes", 1: "some", 0: "—"}[int(v)]},
-         "caption": "yes = first-class syntax · some = library, subset or consume-only · — = none · a rubric, not a benchmark",
+         "caption": "yes = first-class syntax · some = library, subset, compile-time-only or consume-only · — = none · a rubric, not a benchmark",
          "note": "<b>VB stopped gaining new syntax around 2017; its gaps are the features C# has added since.</b> "
                  "VB 15 took tuples alongside C# 7 but not C# 7's pattern matching, and later VB releases mostly "
                  "learned to consume new C# constructs, such as init-only properties in VB 16.9 (" + VBNEW + "). "
@@ -529,7 +529,8 @@ def blocks():
                  "<code>with</code> (C# 9, 2020) (" + CSHIST + "); VB never had C#'s unsafe code either. Its one "
                  "unique row — XML literals — is also why some legacy VB code is hard to port mechanically. Java's "
                  "“some” async is virtual threads and <code>CompletableFuture</code>; Kotlin's “some” generics are "
-                 "<code>inline reified</code> functions."},
+                 "<code>inline reified</code> functions. C#'s “some” in the null-safety row is deliberate: nullable "
+                 "reference types are compiler annotations, not runtime types (" + ref(2) + ")."},
 
         # ═══════════════════════════ 5 · TOOLCHAIN ═══════════════════════════
         {"type": "story", "heading": "5 · The toolchain — one CLI, five publish options",
@@ -618,8 +619,8 @@ def blocks():
              "<p><b>Most of this track is translation, and the chart below says where it is not.</b> The estimate "
              "for each lesson is the share of its content that a Java/Kotlin, TypeScript and Python engineer "
              "already knows under another name. Two lessons fall well below the rest: asynchronous code, where "
-             "C#'s <code>Task</code> model differs from both coroutines and reactive streams, and VB.NET, where the "
-             "syntax itself is new.</p>"
+             "C#'s <code>Task</code> model differs from both coroutines and reactive streams, and VB.NET, where "
+             "the syntax maps word for word but the semantics quietly change numbers (" + ref(6) + ").</p>"
              "<p><b>The path has four phases.</b> <i>Foundations</i> makes you fluent in the language. "
              "<i>Runtime &amp; codebase</i> covers concurrency, legacy VB and how large solutions are built — the "
              "three things that decide whether you can read an existing estate. <i>Services</i> builds, persists "

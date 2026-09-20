@@ -11,8 +11,9 @@ CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 // One build graph, two languages: the calculator is C#, one of its rules is Visual Basic.
 IRatingRule[] rules = [new YoungDriverLoading(), new ClaimsLoading(), new NoClaimBonusVb()];
 
-var request = new QuoteRequest(CoverageClass.Class1, new Money(850_000m),
-    DriverAge: 23, ClaimFreeYears: 3, ClaimsLast5Years: 0);
+// the worked example every lesson of the track prices: 8,933.71 THB in total
+var request = new QuoteRequest(CoverageClass.Class1, new Money(550_000m),
+    DriverAge: 23, ClaimFreeYears: 4, ClaimsLast5Years: 0);
 
 var premium = new PremiumCalculator(rules).Calculate(request);
 #endregion

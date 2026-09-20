@@ -113,17 +113,17 @@ ACTIONS = {  # latest release tag of each action, read from GitHub on 2026-09-16
     "hashicorp/setup-terraform": ("v4", "https://github.com/hashicorp/setup-terraform/releases"),
 }
 
-# ── captured from real runs on the build machine (SDK 10.0.401, runtime 10.0.12, 2026-09-16) ──────────────
+# ── captured from real runs on the build machine (SDK 10.0.401, runtime 10.0.12, re-run 2026-09-20 after the tariff change) ──
 # `dotnet publish -c Release -o <dir>` per project, the folder zipped with deflate: (label, bytes, files)
-PACKAGES = [("C# Annotations + DI", 807_838, 40), ("C# linux-arm64 publish", 722_956, 38),
-            ("VB raw handler", 77_209, 9)]
+PACKAGES = [("C# Annotations + DI", 809_341, 40), ("C# linux-arm64 publish", 724_469, 38),
+            ("VB raw handler", 77_854, 9)]
 # `dotnet publish -t:PublishContainer -p ContainerArchiveOutputPath=…`, compressed layer sizes read from the
 # OCI manifests in the archive, in the order of the image history (see §4 table)
 LAYERS = {"linux-x64": {"rootfs": 5_804_040, "home": 121, "runtime": 36_600_647, "symlink": 152,
-                        "aspnet": 12_738_514, "app": 548_564},
+                        "aspnet": 12_738_514, "app": 549_075},
           "linux-arm64": {"rootfs": 4_718_454, "home": 120, "runtime": 34_453_760, "symlink": 150,
-                          "aspnet": 12_232_531, "app": 547_784}}
-CAPTURED_TESTS = 16          # the two "Passed!" lines of panel 8.2
+                          "aspnet": 12_232_531, "app": 548_264}}
+CAPTURED_TESTS = 22          # the two "Passed!" lines of panel 8.2: 16 + 6
 TF_PROVIDER = "6.64.0"       # hashicorp/aws resolved by `terraform init` for `~> 6.0`, then `terraform validate`
 
 TRIAGE_OUTPUT = """
@@ -327,13 +327,17 @@ def blocks():
              "<code>L12.RatingVb</code> is called by a C# Lambda function written with Lambda Annotations, by a "
              "hand-written VB Lambda handler, and by an ASP.NET Core API that publishes itself as a container image "
              "without a Dockerfile. <code>infra/main.tf</code> and <code>ci/deploy.yml</code> describe how both "
-             "would ship; tests prove the handlers agree. All premiums are illustrative, not a real tariff.</p>"
+             "would ship; tests prove the handlers agree. Every premium comes from the one MotorQuote tariff the whole "
+             "track prices with — <b>illustrative, not a real tariff</b> — and three or more claims in five years "
+             "decline the quote: HTTP 422 on every host, not a crash. The request and stored quote are flat wire "
+             "types (plain <code>decimal</code>, string id), not the <code>Money</code> and <code>QuoteId</code> "
+             "structs of " + ref(3) + ", because they cross JSON and storage.</p>"
              "<p><b>Then it turns to the estate you would actually be asked to move.</b> A triage console sorts an "
              "illustrative 16-application .NET Framework inventory into the AWS 7 Rs and a target platform, and "
              "§7 maps every Framework API family to what replaces it on .NET 10.</p>"
              "<p><b>This is the last lesson, so it leans on the others.</b> Hosting, DI and health checks come from "
              + ref(8) + ", tests from " + ref(10) + ", identity and secrets from " + ref(11) + " and publish modes "
-             "from " + ref(1) + ". The words here go to the hosting decision, the traps and the migration plan.</p>")},
+             "from " + ref(1) + ".</p>")},
 
         {"type": "kpi", "heading": "1.1 · The numbers to leave this lesson with",
          "items": [
@@ -353,8 +357,9 @@ def blocks():
         {"type": "callout", "variant": "info", "heading": "ℹ Before you start",
          "items": [
              "<b>Earlier lessons this one builds on:</b> " + ref(1) + " (publish modes, Native AOT), " + ref(6)
-             + " (VB migration strategy), " + ref(8) + " (hosting, health checks) and " + ref(10)
-             + " (xUnit, <code>WebApplicationFactory</code>).",
+             + " (VB migration strategy), " + ref(8) + " (hosting, health checks), " + ref(10)
+             + " (xUnit, <code>WebApplicationFactory</code>) and " + ref(11)
+             + " (identity, secrets).",
              f"<b>You will build {n_proj} projects:</b> <code>L12.RatingVb</code> (VB library), "
              "<code>L12.QuoteLambda</code> + <code>.Tests</code> (C# Lambda), <code>L12.QuoteLambdaVb</code> (VB "
              "Lambda), <code>L12.QuoteContainer</code> + <code>.Tests</code> (container API) and "
@@ -364,7 +369,7 @@ def blocks():
              "with <code>Amazon.Lambda.TestUtilities</code>; the API through <code>WebApplicationFactory</code>. "
              "Publishing an image archive needs internet access to mcr.microsoft.com but no Docker daemon.",
              "Figures are marked " + VERIFIED + " (dated, linked), " + MEASURED + " (computed from the samples or "
-             "captured from a real run on the build machine on 2026-09-16) or " + ESTIMATE + ". No cold-start "
+             "captured from a real run on the build machine on 2026-09-20) or " + ESTIMATE + ". No cold-start "
              "latency is quoted: none was measured."]},
 
         # ═══════════════════════════ 2 · CHOOSING A TARGET ═══════════════════════════
@@ -456,8 +461,6 @@ def blocks():
             ("OpenTelemetry Java agent · Micrometer", "<code>ActivitySource</code> · <code>Meter</code> · "
              "<code>ILogger</code> + OpenTelemetry SDK", "renamed",
              "The API is in the base library; an <code>Activity</code> is the span"),
-            ("SLF4J <code>log.info(\"{}\", x)</code>", "Message templates <code>\"{Total}\"</code>", "trap",
-             "An interpolated <code>$\"…\"</code> string flattens the fields into one message"),
             ("X-Ray SDK + daemon", "OpenTelemetry + ADOT collector or CloudWatch agent", "different",
              "X-Ray SDKs and daemon in maintenance mode since 25 Feb 2026"),
             ("Terraform · GitHub Actions OIDC", "The same tools", "same",
@@ -521,7 +524,9 @@ def blocks():
              "<code>json_body</code>, <code>IHttpResult</code> replaces <code>Response</code>, and "
              "<code>context.Logger</code> takes a message template whose <code>{QuoteId}</code> becomes a JSON field "
              "when the function's log format is JSON (" + LOGS + "). Neither handler touches rates: both call a "
-             "rating module — in .NET, the VB library. <b>Annotations does not replace Powertools; the two are "
+             "rating module — in .NET, the VB library — and the C# one turns its "
+             "<code>QuoteDeclinedException</code> (three or more claims) into a 422, which the Python sketch "
+             "leaves to its assumed helpers. <b>Annotations does not replace Powertools; the two are "
              "complementary.</b> Annotations takes over the routing, binding and DI half of Python's event handler; "
              "Powertools for AWS Lambda (.NET) has no API Gateway router of its own — its Event Handler covers "
              "AppSync Events and Bedrock Agent functions — and stays what you add for logging, metrics, tracing, "
@@ -541,16 +546,18 @@ def blocks():
                     "steps 1–3 happen when the version is published and a restore replaces them",
          "code": ('%%{init: {"theme":"base","themeVariables": {"actorBkg":"#ccfbf1","actorBorder":"#0f766e",'
                   '"actorTextColor":"#1f2937","noteBkgColor":"#fef3c7","noteBorderColor":"#d97706",'
-                  '"noteTextColor":"#1f2937","signalColor":"#334155","signalTextColor":"#1f2937"}}}%%\n'
+                  '"noteTextColor":"#1f2937","signalColor":"#334155","signalTextColor":"#1f2937"},'
+                  '"sequence": {"mirrorActors": false}}}%%\n'
                   "sequenceDiagram\n"
                   "  autonumber\n"
                   "  participant G as API Gateway HTTP API\n"
                   "  participant R as Lambda dotnet10 runtime\n"
                   "  participant W as Generated wrapper\n"
+                  "  participant S as Startup\n"
                   "  participant F as QuoteFunctions\n"
                   "  participant V as Rating (VB)\n"
                   "  R->>W: load L12.QuoteLambda.dll, run constructor\n"
-                  "  W->>W: Startup.ConfigureHostBuilder, build DI\n"
+                  "  W->>S: ConfigureHostBuilder, build DI\n"
                   "  W->>F: resolve singleton (INIT ends)\n"
                   "  G->>R: POST /quotes, payload format 2.0\n"
                   "  R->>W: CreateQuote(request, context)\n"
@@ -565,8 +572,9 @@ def blocks():
              "<b>Line for line the same program, and a test proves it.</b> Both take the raw "
              "<code>APIGatewayHttpApiV2ProxyRequest</code>, deserialise with <code>JsonSerializerOptions.Web</code> "
              "(camelCase, case-insensitive), parse the coverage case-insensitively and serialise the VB "
-             "<code>PremiumBreakdown</code>. <code>HandlerParityTests</code> sends three bodies — including an unknown "
-             "coverage — to both and asserts equal status codes and byte-identical bodies. VB spells "
+             "<code>PremiumBreakdown</code>. <code>HandlerParityTests</code> sends four bodies — including an unknown "
+             "coverage and a declined quote, the 422 — to both and asserts equal status codes and byte-identical "
+             "bodies. VB spells "
              "<code>If(a, b)</code> for <code>??</code>, <code>[Enum]</code> for the keyword clash and "
              "<code>From { }</code> for the dictionary initialiser; its handler string is "
              "<code>L12.QuoteLambdaVb::L12.QuoteLambdaVb.QuoteHandler::FunctionHandler</code>."),
@@ -614,7 +622,7 @@ def blocks():
             {"heading": "3.8 · Deployment package size", "kind": "bar",
              "args": {"data": [(label.replace(" publish", ""), kb[label]) for label, _s, _f in PACKAGES],
                       "ylabel": "KB zipped", "tone": "amber", "width": 390, "height": 220},
-             "caption": "dotnet publish -c Release, folder zipped with deflate · captured on the build machine 2026-09-16",
+             "caption": "dotnet publish -c Release, folder zipped with deflate · captured on the build machine 2026-09-20",
              "note": f"<b>The DI host, not .NET, makes the package "
                      f"{kb['C# Annotations + DI'] / kb['VB raw handler']:.0f} times larger.</b> The Annotations function "
                      f"pulls in <code>Microsoft.Extensions.Hosting</code>: {files['C# Annotations + DI']} files and "
@@ -715,11 +723,11 @@ def blocks():
               Building image 'motorquote/quote-api' for runtime identifier 'linux-arm64'
                 on top of base image 'mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled'.
               Building image index 'motorquote/quote-api:1.0.0, latest' on top of manifests
-                sha256:9363f67bcb83…, sha256:4d61971fda01….
+                sha256:477d0822727a…, sha256:e2539bf83493….
               Pushed image 'motorquote/quote-api:1.0.0, latest' to local archive at
                 './images/motorquote/quote-api.tar.gz'.
             """, "text", label="Terminal — image, no Dockerfile, no daemon",
-                        file="captured 2026-09-16 · edited: paths, wrapping, one publish line, MSBuild prefixes"),
+                        file="captured 2026-09-20 · edited: paths, wrapping, one publish line, MSBuild prefixes"),
               "4.5 · What you should see — two images and an index",
               "<b>No Docker, no Dockerfile.</b> The SDK publishes the app once per RID, downloads the chiseled base "
               "image from mcr.microsoft.com, adds one layer with your files and writes both images plus an OCI "
@@ -737,7 +745,7 @@ def blocks():
                              ("ASP.NET Core", [round(mb(x64["aspnet"]), 1), round(mb(arm["aspnet"]), 1)]),
                              ("MotorQuote app", [round(mb(x64["app"]), 2), round(mb(arm["app"]), 2)])],
                   "width": 470, "height": 265},
-         "caption": "compressed layer sizes in MB, read from the image manifests in the archive · captured 2026-09-16 · "
+         "caption": "compressed layer sizes in MB, read from the image manifests in the archive · captured 2026-09-20 · "
                     "the MotorQuote app layer is 0.55 MB — 1% of the image, a sliver at this scale",
          "note": f"<b>Your code is {app_share:.1f}% of the image — a {mb(x64['app']):.2f} MB layer on "
                  f"{mb(x64_total - x64['app']):.1f} MB of base.</b> The base layers are shared by every .NET 10 API "
@@ -873,11 +881,12 @@ def blocks():
              "an OpenTelemetry collector (such as ADOT's) or the CloudWatch agent in place of the daemon, and converts server spans to "
              "segments and attributes to metadata (" + XRAY + "). The sample exports only when "
              "<code>OTEL_EXPORTER_OTLP_ENDPOINT</code> is set, so tests and laptops need no collector.</p>"
-             "<p><b>Structured logs depend on message templates on both targets.</b> With the function's log format "
-             "set to JSON, Lambda turns <code>{QuoteId}</code> placeholders passed to <code>context.Logger</code> "
-             "into top-level JSON fields (" + LOGS + "); <code>ILogger</code> does the same for any structured "
-             "provider. An interpolated string gives both a single opaque message. On Lambda, Powertools for AWS "
-             "Lambda (.NET) adds cold-start fields, EMF metrics and idempotency (" + POWERTOOLS + ").</p>")},
+             "<p><b>On Lambda, structured logs are a setting on the function, not a package.</b> With the log format "
+             "set to JSON, Lambda turns the <code>{QuoteId}</code> placeholders passed to "
+             "<code>context.Logger</code> into top-level JSON fields in CloudWatch Logs (" + LOGS + "); why the "
+             "message must be a template and not an interpolated string is the <code>ILogger</code> rule of "
+             + ref(8) + ". Powertools for AWS Lambda (.NET) adds cold-start fields, EMF metrics and idempotency "
+             "on top (" + POWERTOOLS + ").</p>")},
 
         panel(from_sample(API, "telemetry"), "6.1 · Wiring traces, metrics and logs",
               "<b>Subscribe by name, export by configuration.</b> <code>AddSource</code> and <code>AddMeter</code> "
@@ -891,9 +900,10 @@ def blocks():
               "<b>Three signals, three APIs, no vendor type.</b> <code>StartActivity</code> returns "
               "<code>null</code> when nothing listens — hence <code>span?.</code>. The counter's "
               "<code>coverage</code> tag becomes a metric dimension, so keep its values few. The log call passes "
-              "<code>Coverage</code> and <code>Total</code> as template arguments; written as "
-              "<code>$\"Quoted {req.Coverage}\"</code> it would search as one string. The premium comes from "
-              "the VB rules, as in every other host in this lesson."),
+              "<code>Coverage</code> and <code>Total</code> as template arguments, so a backend can filter on them — "
+              "the template rule is in " + ref(8) + ". The premium comes from the VB rules, as in every other host "
+              "in this lesson; a declined quote (three or more claims) returns 422 before the counter and the log "
+              "line run."),
 
         {"type": "mermaid", "inline": True,
          "heading": "6.3 · Where each signal goes",
@@ -973,7 +983,7 @@ def blocks():
               "argue with, not an assessment method."),
 
         panel(from_text(TRIAGE_OUTPUT, "text", label="Output — L12.EstateTriage",
-                        file="captured on the build machine 2026-09-16"),
+                        file="captured on the build machine 2026-09-20"),
               "7.3 · What you should see — sixteen applications, seven Rs",
               f"<b>{by_strategy['Replatform']} of {n_apps} applications replatform, and only "
               f"{by_strategy['Rehost']} need Windows servers at all.</b> The two rehosts are held back by COM and the "
@@ -1073,26 +1083,27 @@ def blocks():
 
         panel(from_text("""
             dotnet SDK 10.0.401
-            PASS  console     2.3s  $SAMPLES/L12.EstateTriage/L12.EstateTriage.csproj
-            PASS  web         1.9s  $SAMPLES/L12.QuoteContainer/L12.QuoteContainer.csproj
-            PASS  test        6.1s  $SAMPLES/L12.QuoteContainer.Tests/L12.QuoteContainer.Tests.csproj
-            PASS  library     1.7s  $SAMPLES/L12.QuoteLambda/L12.QuoteLambda.csproj
-            PASS  test        7.0s  $SAMPLES/L12.QuoteLambda.Tests/L12.QuoteLambda.Tests.csproj
-            PASS  library     1.0s  $SAMPLES/L12.QuoteLambdaVb/L12.QuoteLambdaVb.vbproj
+            PASS  console     1.7s  $SAMPLES/L12.EstateTriage/L12.EstateTriage.csproj
+            PASS  web         1.4s  $SAMPLES/L12.QuoteContainer/L12.QuoteContainer.csproj
+            PASS  test        3.4s  $SAMPLES/L12.QuoteContainer.Tests/L12.QuoteContainer.Tests.csproj
+            PASS  library     1.2s  $SAMPLES/L12.QuoteLambda/L12.QuoteLambda.csproj
+            PASS  test        2.9s  $SAMPLES/L12.QuoteLambda.Tests/L12.QuoteLambda.Tests.csproj
+            PASS  library     1.1s  $SAMPLES/L12.QuoteLambdaVb/L12.QuoteLambdaVb.vbproj
             PASS  library     1.0s  $SAMPLES/L12.RatingVb/L12.RatingVb.vbproj
 
             7/7 sample projects passed
 
-            Passed!  - Failed: 0, Passed: 11, Skipped: 0, Total: 11 - L12.QuoteLambda.Tests.dll
-            Passed!  - Failed: 0, Passed:  5, Skipped: 0, Total:  5 - L12.QuoteContainer.Tests.dll
+            Passed!  - Failed: 0, Passed: 16, Skipped: 0, Total: 16 - L12.QuoteLambda.Tests.dll
+            Passed!  - Failed: 0, Passed:  6, Skipped: 0, Total:  6 - L12.QuoteContainer.Tests.dll
             """, "text", label="Output — verify_samples, dotnet test",
-                        file="captured 2026-09-16 · $SAMPLES = lesson-12-…/samples · SDK path, times, TFM, padding cut"),
+                        file="captured 2026-09-20 · $SAMPLES = lesson-12-…/samples · SDK path, TFM, test durations, padding cut"),
               "8.2 · What you should see",
-              "<b>Timings will differ; the counts should not.</b> Eleven Lambda test cases cover the illustrative "
-              "rating totals, the Annotations function, the generated wrapper and C# ↔ VB handler parity; five "
-              "container tests cover both health endpoints, the shutdown budget, the VB-computed total and the "
-              "exported spans. If a count differs, a sample changed — the PDF build checks the source against "
-              "these numbers."),
+              "<b>Timings will differ; the counts should not.</b> Sixteen Lambda test cases cover five tariff totals "
+              "(the first is the track's worked example, 8,933.71 THB) and the three-claims decline, the Annotations "
+              "function's 201, 400, 422 and 404 answers, the generated wrapper and C# ↔ VB handler parity on four "
+              "bodies; six container tests cover both health endpoints, the shutdown budget, the same "
+              "VB-computed 8,933.71 THB total, the 422 decline and the exported spans. If a count differs, a sample "
+              "changed — the PDF build checks the source against these numbers."),
 
         {"type": "chart", "heading": "8.3 · Code lines per lesson-12 project", "kind": "hbar",
          "args": {"data": locs, "tone": "navy", "width": 760, "labelw": 170},
@@ -1112,9 +1123,9 @@ def blocks():
              "<b>“SnapStart is free and transparent.”</b> For .NET it bills caching and every restore; a GUID, "
              "random seed or cached credential created during INIT is identical in every restored copy; and it does "
              "not combine with provisioned concurrency or OS-only runtimes.",
-             "<b>“Interpolated strings are just nicer logging.”</b> <code>LogInformation($\"Quoted {id}\")</code> "
-             "writes one opaque message. Pass a template and arguments so CloudWatch Logs gets <code>QuoteId</code> "
-             "as a field.",
+             "<b>“I can build the Native AOT package on my laptop.”</b> The native binary must be compiled on Amazon "
+             "Linux 2023 for the function's architecture — the Lambda CLI uses a build container for it — and "
+             "trimmed code needs a test on Lambda, not only a passing unit test (" + AOT + ").",
              "<b>“The Dockerfile habits still apply.”</b> .NET 8+ images listen on 8080 as UID 1654, chiseled images "
              "have no shell for <code>CMD-SHELL</code> health checks or ICU for culture data, and "
              "<code>HostOptions.ShutdownTimeout</code> equal to the ECS <code>stopTimeout</code> leaves no margin.",
