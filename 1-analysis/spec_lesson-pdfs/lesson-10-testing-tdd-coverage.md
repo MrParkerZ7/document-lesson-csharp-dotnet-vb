@@ -208,7 +208,7 @@ the module header; the premium rules come from `_curriculum.md` § *Canonical ta
 - Boundaries: ASP.NET Core belongs to lesson 08, EF Core to 09, `TimeProvider` to 05, MSBuild to 07, security
   testing to 11, deployment to 12 — each gets one sentence and a `ref(n)`. **Every `ref(n)` to an earlier
   lesson is in the past tense and names something that lesson really contains** — the cross-lesson review
-  (2026-09-20) found three that were not: a forward promise that lesson 09 would replace this lesson's
+  (2026-09-20) found two that were not: a forward promise that lesson 09 would replace this lesson's
   in-memory store, and a Browser/E2E row pointing at lesson 12 for content it has none of.
 
 ## 8 · Known gaps

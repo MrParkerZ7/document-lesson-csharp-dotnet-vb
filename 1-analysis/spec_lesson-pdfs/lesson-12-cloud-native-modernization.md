@@ -236,9 +236,8 @@ OpenTelemetry, CoreWCF, System.Web adapters, YARP, Aspire.Hosting.AWS) and the G
 - ⚠ Inline Python in 3.1 is not executed; `COVERAGE`, `quote` and `InMemoryQuoteStore` are assumed helpers.
 - ⚠ The test projects use xUnit v2 packages (as most lessons do at this build); the xUnit v3 story belongs to lesson 10.
 - ⚠ `_manifest.json` in this folder lists only lesson 01; adding lesson 12 is the curriculum owner's change.
-- ⚠ `_curriculum.md` (plan for lesson 12, item 6) still says "the 6 Rs" and "an 80+ application estate"; the lesson teaches the
-  AWS 7 Rs (AWS Prescriptive Guidance) and ships a 16-application inventory, citing 80+ only as the reader's prior experience.
-  The curriculum is not this lesson's file: fix it there.
+- ✔ `_curriculum.md` (plan for lesson 12, item 6) now says "the AWS 7 Rs" and names the illustrative 16-application
+  inventory (fixed 2026-09-20, after the cross-lesson review).
 - ⚠ The decline is an exception in the VB library and a 422 in every host; the Python sketch in 3.1 leaves it to its assumed
   helpers (the 3.1 note says so). `QuoteRequest` and `StoredQuote` are flat wire types (decimal, string id) on purpose — the
   story names lesson 03's `Money` / `QuoteId` structs they are not.

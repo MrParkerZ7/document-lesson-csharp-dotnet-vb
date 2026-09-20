@@ -3,7 +3,7 @@
   "stage": "lesson-NN-<slug>",
   "revision": 1,
   "built_from": {
-    "commit": "13e8067",
+    "commit": "7e1cc78",
     "generated": "2026-09-20"
   },
   "spec": "1-analysis/spec_lesson-pdfs/",

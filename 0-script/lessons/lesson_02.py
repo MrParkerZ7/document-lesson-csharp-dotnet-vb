@@ -860,8 +860,10 @@ def blocks():
               "<b>Printed:</b> <code>claims 2</code>, then "
               "<code>5,544.00 2,772.00 8,933.71 0.40 claim-free 13,860.00</code>, then <code>parsed 2.1</code>. "
               "Named arguments may skip optional parameters and change order. <code>ref</code> is repeated at the "
-              "call site so a reviewer sees the write. The figures are the worked example's discount, its "
-              "young-driver loading and its total (9.5); <code>roundUp</code> is there to show an optional "
+              "call site so a reviewer sees the write. In order the figures are the worked example's 40% no-claim "
+              "discount on 13,860.00, the same call at 20% with named arguments, the total (9.5), the "
+              "deconstructed <code>0.40 claim-free</code>, and the base after the <code>ref</code> loading; "
+              "<code>roundUp</code> is there to show an optional "
               "<code>bool</code>, not because the tariff rounds up — it rounds half away from zero (3.2). C# 14 "
               "lets a lambda declare <code>out result</code> without spelling its type; lambdas and delegates "
               "belong to " + ref(4) + "."),

@@ -31,7 +31,7 @@ Public NotInheritable Class QuoteDeclinedException
     Inherits Exception
 
     Public Sub New()
-        MyBase.New("declined: 3 or more claims in the last 5 years")
+        MyBase.New("3+ claims in 5 years")
     End Sub
 End Class
 
