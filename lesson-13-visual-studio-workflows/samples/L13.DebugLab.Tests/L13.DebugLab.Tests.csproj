@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <!-- dotnet test reads the same file Visual Studio finds beside the solution -->
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory)..\.runsettings</RunSettingsFilePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.0" />
+    <PackageReference Include="xunit.v3.mtp-off" Version="4.0.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\L13.DebugLab\L13.DebugLab.csproj" />
+    <Using Include="Xunit" />
+    <Using Include="L13.DebugLab" />
+  </ItemGroup>
+
+</Project>

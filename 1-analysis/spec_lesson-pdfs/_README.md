@@ -1,6 +1,6 @@
 # spec_lesson-pdfs — the lesson PDF set
 
-**Artifact:** twelve lesson PDFs, one per `lesson-NN-<slug>/lesson-NN-<slug>.pdf`, plus the generated
+**Artifact:** thirteen lesson PDFs, one per `lesson-NN-<slug>/lesson-NN-<slug>.pdf`, plus the generated
 per-lesson `README.md` files and the lesson table in the root `README.md`.
 
 **Renderer:** PDF format 00 (full-spectrum) via the vendored `0-script/_lib/brief_pdf.py`, extended for
@@ -21,7 +21,7 @@ Every unit is **Claude-owned and regenerable** — nothing in the PDF set is han
 
 | Unit | Owner | Content module | Samples | Output |
 |---|---|---|---|---|
-| lesson 01–12 | claude | `0-script/lessons/lesson_NN.py` | `lesson-NN-<slug>/samples/` | `lesson-NN-<slug>/lesson-NN-<slug>.pdf` + `README.md` |
+| lesson 01–13 | claude | `0-script/lessons/lesson_NN.py` | `lesson-NN-<slug>/samples/` | `lesson-NN-<slug>/lesson-NN-<slug>.pdf` + `README.md` |
 | root lesson table | claude | `0-script/lessons/roster.py` + every `META` | — | `README.md` between the `LESSONS` markers |
 
 The root `README.md` **outside** the `LESSONS` markers, `CLAUDE.md`, `global.json` and `Directory.Build.props`

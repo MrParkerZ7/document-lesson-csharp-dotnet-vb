@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- net10.0, nullable and warnings-as-errors come from the repository Directory.Build.props.
+       Nothing in this file needs Visual Studio: dotnet build and Build > Build Solution read it alike. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+</Project>

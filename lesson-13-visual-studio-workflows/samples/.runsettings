@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Named exactly ".runsettings", kept in the solution folder: Visual Studio finds it when Auto
+     Detect runsettings Files is on; the test project's RunSettingsFilePath makes `dotnet test`
+     read it either way. -->
+<RunSettings>
+  <RunConfiguration>
+    <!-- 0 = one test host per core -->
+    <MaxCpuCount>0</MaxCpuCount>
+    <!-- an empty run is a failure, not a pass -->
+    <TreatNoTestsAsError>true</TreatNoTestsAsError>
+    <!-- a hung test host is killed after 60 seconds -->
+    <TestSessionTimeout>60000</TestSessionTimeout>
+    <EnvironmentVariables>
+      <L13_RUNSETTINGS>applied</L13_RUNSETTINGS>
+      <L13_BATCH_SIZE>240</L13_BATCH_SIZE>
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>

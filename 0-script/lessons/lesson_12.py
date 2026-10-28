@@ -1165,6 +1165,7 @@ def blocks():
                   "APIs already in the base library, and a .NET Framework estate moves route by route after a "
                   "7 R triage. <br/><b>After the track:</b> build one real service end to end on your next project, "
                   "then go deeper through the AWS Lambda .NET guide, Powertools for AWS Lambda (.NET), the .NET "
-                  "container reference, the ASP.NET Framework → ASP.NET Core migration guide and Aspire — and "
-                  "re-verify the dates in this PDF every November, starting with " + ref(1) + ".")},
+                  "container reference, the ASP.NET Framework → ASP.NET Core migration guide and Aspire — and, if "
+                  "your team lives in Visual Studio, read the companion " + ref(13) + ". Re-verify the dates in "
+                  "this PDF every November, starting with " + ref(1) + ".")},
     ]

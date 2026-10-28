@@ -1,0 +1,22 @@
+# Read by Visual Studio while you type AND by the compiler: the same rule, the same severity.
+# root = true stops the search, so a stray .editorconfig higher up cannot change these rules.
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+[*.{cs,vb}]
+indent_style = space
+indent_size = 4
+
+[*.cs]
+# always a squiggle in the editor; a build error only because Directory.Build.props turns on
+# EnforceCodeStyleInBuild and the repository's TreatWarningsAsErrors turns the warning into an error
+csharp_style_namespace_declarations = file_scoped:warning
+# a suggestion shows as three dots under the code and never fails the build at all
+csharp_style_prefer_primary_constructors = true:suggestion
+
+# tests read as sentences: allow underscores in test method names
+[L13.DebugLab.Tests/**.cs]
+dotnet_diagnostic.CA1707.severity = none

@@ -1,6 +1,6 @@
 # Curriculum — C# · .NET 10 · Visual Basic for a JVM / TypeScript / Python architect
 
-Scope, running example and boundaries for all twelve lessons. Numbers, slugs, titles, hours and transfer
+Scope, running example and boundaries for all thirteen lessons (13 is a companion lesson added after the first twelve shipped). Numbers, slugs, titles, hours and transfer
 estimates live in `0-script/lessons/roster.py`; this file owns **what each lesson teaches and builds**.
 
 ## Reader
@@ -88,6 +88,7 @@ A topic belongs to exactly one lesson. Others mention it in one sentence with `r
 
 | Topic | Owner |
 |---|---|
+| Visual Studio: editions and licensing, workloads and `.vsconfig`, debugging, Test Explorer, profiling, IDE-side analyzers and Copilot, `launchSettings.json`, `.runsettings`, legacy WinForms/WPF/IIS work in the IDE, and short notes on VS Code and Rider | 13 |
 | runtime, IL, JIT/AOT, TFMs, support policy, dotnet CLI basics, publish modes | 01 |
 | syntax, built-in types, `decimal`, strings, nullability, pattern matching, methods/parameters, exceptions, `using` | 02 |
 | class/struct/record, properties, constructors, inheritance, interfaces, generics & variance, extension members, equality, operators | 03 |
@@ -319,3 +320,56 @@ Verify every version-sensitive claim online before writing it (marked **verify**
   (xUnit with the Lambda test utilities), `L12.QuoteContainer` (web API configured for SDK container publish,
   build-only), `L12.RatingVb` (VB library deployed inside the Lambda), `samples/infra/main.tf` and
   `samples/ci/deploy.yml` (read into the PDF; not executed).
+
+### 13 · Working in Visual Studio — maps from IntelliJ IDEA · Android Studio · VS Code (a companion lesson, added 2026-09-20)
+Added after the track shipped, because the first twelve lessons are CLI-first and mention Visual Studio only in passing.
+It is a **companion**, not a prerequisite: read it after lesson 07 (solutions and MSBuild) or whenever your team lives in
+the IDE. **Focus: Visual Studio Professional** (the paid team edition), compared honestly with Community and Enterprise;
+VS Code with C# Dev Kit and JetBrains Rider get one short comparison section. **Verify against Microsoft's official pages
+on the build date, and print no prices** — editions, licensing terms, feature gating, version numbers and Copilot plans
+change; a claim you cannot confirm on an official page is labelled ESTIMATE or left out. IDE behaviour cannot be run by a
+script, so its claims are **VERIFIED** (official docs, linked) rather than MEASURED; the samples prove the parts that are
+files and code (the settings VS reads, code that exercises the debugger).
+1. Why an IDE when the CLI builds everything — the rule that makes both safe: the solution and project files are the source
+   of truth, so `dotnet build` and Build-in-VS give the same result (and where they legitimately differ: workloads,
+   installed SDKs, `Directory.Build.rsp`, ref lesson 07). Where the IDE wins (designers, debugger, profiler, refactorings),
+   where the CLI wins (CI, reproducibility, scripting).
+2. The editions — Community · Professional · Enterprise: who may use which (licensing rules, verified), what each adds for a
+   team, feature gating (for example test/coverage and diagnostic tooling — check every row), subscription benefits only if
+   the official page states them, GitHub Copilot availability. A comparison table, a decision flow (mermaid), and a
+   "what Professional buys a team" card set. No prices.
+3. Install, workloads and `.vsconfig` — Visual Studio Installer, workloads relevant to this track (.NET desktop, ASP.NET,
+   and how AWS/Azure tooling is added), sharing a component list with a `.vsconfig` file (sample), how VS finds SDKs
+   next to `global.json` (revisit lesson 01's "No .NET SDKs were found" trap from the VS side), preview channels.
+4. Solutions and projects in the IDE — Solution Explorer, `.slnx` support (verify from which VS version), solution filters,
+   `Directory.Build.props` and central package management as VS shows them, the NuGet manager versus `dotnet add package`,
+   Open Folder vs solution, C# and VB projects side by side (the track's mixed-language solutions).
+5. The inner loop: debugging — `launchSettings.json` profiles (sample), breakpoints (conditional, hit count, tracepoints,
+   dependent), data tips and pinned values, `[DebuggerDisplay]` / `[DebuggerStepThrough]` / `DebuggerTypeProxy` (sample
+   code), Just My Code, Source Link and symbol servers, F12 into decompiled sources, the Tasks and Parallel Stacks
+   windows for async code (ref lesson 05), exception settings, Edit and Continue and Hot Reload — with the limits
+   Microsoft documents, VB specifics, attaching to a running process (IIS worker process, containers — described, not run).
+6. Testing in the IDE — Test Explorer with xUnit / NUnit / MSTest, `.runsettings` (sample), traits and playlists,
+   code coverage and Live Unit Testing (edition gating — verify), Microsoft.Testing.Platform in VS (verify current support),
+   how it maps to lesson 10's CLI gates.
+7. Code quality in the IDE — analyzers and `.editorconfig` severities shown in the editor (the files are lesson 07's; ref(7)),
+   Code Cleanup and `dotnet format`, quick actions and refactorings, solution-wide analysis, AI assistance (GitHub Copilot
+   chat and agent features as they are named on the official pages that day), and an honest note on reviewing generated code.
+8. Performance and diagnostics — the Diagnostic Tools window, CPU and memory profiling, allocation tracking; the CLI
+   equivalents (`dotnet-counters`, `dotnet-trace`, `dotnet-dump` — verify names). The sample prints only deterministic
+   figures (allocated bytes, call counts), never wall-clock times.
+9. Legacy estates in the IDE — opening an old .NET Framework solution, the WinForms designer for `net10.0-windows`
+   projects and the WPF designer (verify current designer support), IIS Express versus attaching to IIS, `web.config`,
+   Upgrade Assistant and the modernization tooling (ref lesson 12, do not repeat it).
+10. Other editors — VS Code with the C# Dev Kit and JetBrains Rider: what each gives a JVM-trained developer, the licensing
+    condition of the Dev Kit (verify precisely), a decision table. One section; no tutorial.
+11. Hands-on — open the samples in Visual Studio and run a guided debug session over an intentionally flawed MotorQuote
+    calculator (each flaw is found with a named IDE feature), with the CLI command that reaches the same result. Checklists,
+    the files VS reads, and the day-one traps.
+- Samples (named `L13.`, at least one Visual Basic project; every project builds on the pinned SDK; console apps end by
+  themselves): `L13.DebugLab` (C# console — a small flawed quote calculator that uses `[DebuggerDisplay]`,
+  `[DebuggerStepThrough]`, `#if DEBUG`, `Debug.Assert`, a loop worth a conditional breakpoint; uses the canonical tariff),
+  `L13.DebugLab.Tests` (xUnit v3, categories via traits, a `.runsettings`), `L13.DebugLabVb` (the VB twin of the console),
+  `L13.PerfLab` (C# console — allocation-heavy versus allocation-light versions of one routine, printing allocated bytes),
+  `.vsconfig`, `launchSettings.json`, `.editorconfig` and `L13.slnx` at the samples root. Nothing here needs Visual Studio
+  to build — that is the point of lesson 13's opening rule.

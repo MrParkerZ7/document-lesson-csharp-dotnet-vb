@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Batch": {
+      "commandName": "Project",
+      "commandLineArgs": ""
+    },
+    "Show quote 137": {
+      "commandName": "Project",
+      "commandLineArgs": "--show 137"
+    },
+    "Show quote 47 (declined)": {
+      "commandName": "Project",
+      "commandLineArgs": "--show 47",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".runsettings" />
+    <File Path=".vsconfig" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="L13.DebugLab/L13.DebugLab.csproj" />
+    <Project Path="L13.DebugLabVb/L13.DebugLabVb.vbproj" />
+    <Project Path="L13.PerfLab/L13.PerfLab.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="L13.DebugLab.Tests/L13.DebugLab.Tests.csproj" />
+  </Folder>
+</Solution>

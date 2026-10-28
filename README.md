@@ -1,8 +1,9 @@
 # C# · .NET · Visual Basic — a lesson track for a JVM / TypeScript / Python architect
 
-Twelve lessons, **one PDF per lesson**, that map what an experienced Kotlin/Java, TypeScript and Python
+Thirteen lessons, **one PDF per lesson**, that map what an experienced Kotlin/Java, TypeScript and Python
 architect already knows onto C#, .NET 10 and Visual Basic .NET — from the runtime model to ASP.NET Core,
-EF Core, testing, Entra ID security, AWS deployment and modernising Windows / IIS estates.
+EF Core, testing, Entra ID security, AWS deployment and modernising Windows / IIS estates, plus a companion
+lesson on working in Visual Studio.
 
 - 📄 **PDF format 00 · Full Spectrum** — numbered sections, contents page with real page numbers, concept maps,
   diagrams, charts, code panels, callouts and *Check yourself* questions in every lesson.
@@ -28,6 +29,7 @@ EF Core, testing, Entra ID security, AWS deployment and modernising Windows / II
 | 10 | [Testing, TDD & 100% Coverage](./lesson-10-testing-tdd-coverage/README.md) | [pdf](./lesson-10-testing-tdd-coverage/lesson-10-testing-tdd-coverage.pdf) | JUnit · Mockito · MockMvc · Postman · BDD | 9 project(s) |
 | 11 | [Security & Identity with Entra ID](./lesson-11-security-identity/README.md) | [pdf](./lesson-11-security-identity/lesson-11-security-identity.pdf) | Spring Security · OAuth2/OIDC · Entra ID / AD B2C | 6 project(s) |
 | 12 | [Cloud-Native .NET on AWS & Modernization](./lesson-12-cloud-native-modernization/README.md) | [pdf](./lesson-12-cloud-native-modernization/lesson-12-cloud-native-modernization.pdf) | AWS Lambda · ECS Fargate · Terraform · GitHub Actions · IIS estates | 7 project(s) |
+| 13 | [Working in Visual Studio](./lesson-13-visual-studio-workflows/README.md) | [pdf](./lesson-13-visual-studio-workflows/lesson-13-visual-studio-workflows.pdf) | IntelliJ IDEA · Android Studio · VS Code — the IDE over the same build | 4 project(s) |
 <!-- LESSONS:END -->
 
 ## Repository layout

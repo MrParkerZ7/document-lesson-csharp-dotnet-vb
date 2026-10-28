@@ -1,0 +1,10 @@
+<Project>
+  <!-- MSBuild imports only the NEAREST Directory.Build.props: chain to the parent by hand -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props',
+                                                   '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- IDE-style rules from .editorconfig then fail dotnet build too, not only the editor -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Option Strict On, Option Explicit On and warnings-as-errors come from the repository
+       Directory.Build.props, exactly as for the C# project. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>L13.DebugLabVb</RootNamespace>
+    <StartupObject>L13.DebugLabVb.Program</StartupObject>
+  </PropertyGroup>
+
+</Project>

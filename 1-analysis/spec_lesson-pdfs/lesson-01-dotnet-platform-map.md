@@ -7,7 +7,7 @@ other lesson). Samples `lesson-01-dotnet-platform-map/samples/`.
 
 Orient a JVM / TypeScript / Python architect in the .NET platform before any language detail: what the runtime
 is, how versions, support and runtime roll-forward work, how C#, VB and F# relate, what the CLI and the publish
-options are, and how the twelve-lesson track is laid out.
+options are, and how the thirteen-lesson track is laid out (the thirteenth, on Visual Studio, is a companion).
 
 ## 2 · Ownership & cadence
 
@@ -17,7 +17,7 @@ Owner **claude**, regenerable. Re-verify the support dates every November (new .
 
 ## 3 · Structure
 
-16 pages at the 2026-09-20 build (cross-lesson review fixes applied; the text of §6's story is kept short on purpose: two more lines push chart 6.1 to the next page and the lesson to 17 pages).
+17 pages at the 2026-09-21 build. Lesson 13 (a companion on Visual Studio, phase E · Tooling) was added to the roster after the track shipped, so §6 now has 13 rows in chart 6.1 and table 6.4, five phases in diagram 6.2 (a dotted "after 07" arrow marks the companion) and in donut 6.3, and every lesson count is computed from `ROSTER` instead of typed.
 
 | § | Heading | Blocks |
 |---|---|---|

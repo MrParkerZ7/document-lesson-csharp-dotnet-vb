@@ -1,0 +1,142 @@
+{
+  "debuglab_cs": [
+    "MotorQuote DebugLab — illustrative tariff, not a real one",
+    "worked example: net 8316.00 · stamp duty 33.26 · VAT 584.45 · total 8933.71 THB",
+    "batch of 240 quotes: 236 quoted, 4 declined",
+    "declined at index: 47, 108, 169, 230",
+    "gross premium of the quoted policies: 1458887.59 THB"
+  ],
+  "debuglab_vb": [
+    "MotorQuote DebugLab (Visual Basic twin) — illustrative tariff, not a real one",
+    "worked example: net 8316.00 · stamp duty 33.26 · VAT 584.45 · total 8933.71 THB",
+    "batch of 240 quotes: 236 quoted, 4 declined",
+    "declined at index: 47, 108, 169, 230",
+    "gross premium of the quoted policies: 1458887.59 THB"
+  ],
+  "show_137": [
+    "MotorQuote DebugLab — illustrative tariff, not a real one",
+    "worked example: net 8316.00 · stamp duty 33.26 · VAT 584.45 · total 8933.71 THB",
+    "quote #137: Class2Plus, sum insured 640000.00, loadings 10%, no-claim 0%",
+    "quote #137: net 8448.00 · total 9075.52 THB"
+  ],
+  "show_47": [
+    "MotorQuote DebugLab — illustrative tariff, not a real one",
+    "worked example: net 8316.00 · stamp duty 33.26 · VAT 584.45 · total 8933.71 THB",
+    "quote #47: declined in ClaimsLoading — 3+ claims in 5 years"
+  ],
+  "launch_profile_137": [
+    "Using launch settings from lesson-13-visual-studio-workflows\\samples\\L13.DebugLab\\Properties\\launchSettings.json...",
+    "MotorQuote DebugLab — illustrative tariff, not a real one",
+    "worked example: net 8316.00 · stamp duty 33.26 · VAT 584.45 · total 8933.71 THB",
+    "quote #137: Class2Plus, sum insured 640000.00, loadings 10%, no-claim 0%",
+    "quote #137: net 8448.00 · total 9075.52 THB"
+  ],
+  "perflab": {
+    "pricing only (floor)": {
+      "calls": 236,
+      "bytes": 39680,
+      "per_quote": 168
+    },
+    "LINQ + string.Format": {
+      "calls": 472,
+      "bytes": 142832,
+      "per_quote": 605
+    },
+    "StringBuilder": {
+      "calls": 236,
+      "bytes": 76272,
+      "per_quote": 323
+    },
+    "StringBuilder, pre-sized": {
+      "calls": 236,
+      "bytes": 70328,
+      "per_quote": 298
+    }
+  },
+  "perflab_raw": [
+    "L13.PerfLab — 236 quotes, one report routine three ways",
+    "version                     calls to Price   allocated bytes   bytes per quote",
+    "pricing only (floor)                   236            39,680               168",
+    "LINQ + string.Format                   472           142,832               605",
+    "StringBuilder                          236            76,272               323",
+    "StringBuilder, pre-sized               236            70,328               298",
+    "all three reports are identical: True (6794 characters)"
+  ],
+  "perflab_debug": {
+    "pricing only (floor)": {
+      "calls": 236,
+      "bytes": 107928,
+      "per_quote": 457
+    },
+    "LINQ + string.Format": {
+      "calls": 472,
+      "bytes": 279328,
+      "per_quote": 1183
+    },
+    "StringBuilder": {
+      "calls": 236,
+      "bytes": 144520,
+      "per_quote": 612
+    },
+    "StringBuilder, pre-sized": {
+      "calls": 236,
+      "bytes": 138576,
+      "per_quote": 587
+    }
+  },
+  "style_probe": {
+    "with_enforce": "error IDE0161",
+    "without_enforce": "Build succeeded"
+  },
+  "tests": {
+    "passed": 18,
+    "total": 18,
+    "by_trait": {
+      "Tariff": 14,
+      "Batch": 3,
+      "Environment": 1
+    }
+  },
+  "config_files": [
+    {
+      "file": "L13.slnx",
+      "lines": 15
+    },
+    {
+      "file": "Directory.Build.props",
+      "lines": 10
+    },
+    {
+      "file": ".vsconfig",
+      "lines": 14
+    },
+    {
+      "file": ".editorconfig",
+      "lines": 22
+    },
+    {
+      "file": ".runsettings",
+      "lines": 18
+    },
+    {
+      "file": "L13.DebugLab/Properties/launchSettings.json",
+      "lines": 20
+    },
+    {
+      "file": "L13.DebugLab/L13.DebugLab.csproj",
+      "lines": 9
+    },
+    {
+      "file": "L13.DebugLabVb/L13.DebugLabVb.vbproj",
+      "lines": 11
+    },
+    {
+      "file": "L13.DebugLab.Tests/L13.DebugLab.Tests.csproj",
+      "lines": 22
+    },
+    {
+      "file": "L13.PerfLab/L13.PerfLab.csproj",
+      "lines": 11
+    }
+  ]
+}

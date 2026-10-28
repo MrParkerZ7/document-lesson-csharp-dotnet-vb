@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "components": [
+    "Microsoft.VisualStudio.Workload.ManagedDesktop",
+    "Microsoft.VisualStudio.Workload.NetWeb",
+    "Microsoft.NetCore.Component.SDK",
+    "Microsoft.NetCore.Component.DevelopmentTools",
+    "Microsoft.VisualStudio.Component.Roslyn.LanguageServices",
+    "Microsoft.VisualStudio.Component.NuGet",
+    "Microsoft.VisualStudio.Component.DiagnosticTools",
+    "Microsoft.VisualStudio.Component.IISExpress",
+    "Microsoft.VisualStudio.Component.Git"
+  ]
+}

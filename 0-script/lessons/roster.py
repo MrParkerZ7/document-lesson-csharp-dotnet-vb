@@ -36,6 +36,8 @@ ROSTER = [
      "Spring Security · OAuth2/OIDC · Entra ID / AD B2C", 6, 85, "D · Production"),
     (12, "cloud-native-modernization", "Cloud-Native .NET on AWS & Modernization",
      "AWS Lambda · ECS Fargate · Terraform · GitHub Actions · IIS estates", 8, 80, "D · Production"),
+    (13, "visual-studio-workflows", "Working in Visual Studio",
+     "IntelliJ IDEA · Android Studio · VS Code — the IDE over the same build", 5, 70, "E · Tooling"),
 ]
 
 

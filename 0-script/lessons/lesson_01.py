@@ -192,7 +192,7 @@ def blocks():
              {"label": "Languages, one runtime", "value": "3", "tone": "violet",
               "sub": "C# · Visual Basic · F# · verified"},
              {"label": "This track", "value": f"{hours} h", "tone": "indigo",
-              "sub": "12 lessons · study-time estimate"},
+              "sub": f"{len(ROSTER)} lessons · study-time estimate"},
              {"label": "Lesson 01 samples", "value": f"{loc_lib + loc_cs + loc_vb} lines", "tone": "navy",
               "sub": "C# + VB · measured at build"}]},
 
@@ -210,7 +210,8 @@ def blocks():
              "<b>If <code>dotnet</code> says “No .NET SDKs were found”, a runtime-only install earlier on PATH is "
              "shadowing the SDK.</b> Put the SDK's <code>dotnet</code> folder first on PATH, or call that "
              "<code>dotnet.exe</code> by its full path. <code>DOTNET_ROOT</code> does not help: it tells an "
-             "apphost where the runtime is, not which SDKs the <code>dotnet</code> command sees.",
+             "apphost where the runtime is, not which SDKs the <code>dotnet</code> command sees. Visual Studio "
+             "installs SDKs of its own too (" + ref(13) + ", section 3).",
              "<b>Every numbered section leads with its point.</b> Evidence, code and diagrams follow, so the first "
              "paragraph of each section gives you the whole argument.",
              "Facts that change with releases are marked " + VERIFIED + " and link to the official source; "
@@ -621,11 +622,12 @@ def blocks():
              "already knows under another name. Two lessons fall well below the rest: asynchronous code, where "
              "C#'s <code>Task</code> model differs from both coroutines and reactive streams, and VB.NET, where "
              "the syntax maps word for word but the semantics quietly change numbers (" + ref(6) + ").</p>"
-             "<p><b>The path has four phases.</b> <i>Foundations</i> makes you fluent in the language. "
+             "<p><b>The path has five phases.</b> <i>Foundations</i> makes you fluent in the language. "
              "<i>Runtime &amp; codebase</i> covers concurrency, legacy VB and how large solutions are built — the "
              "three things that decide whether you can read an existing estate. <i>Services</i> builds, persists "
              "and tests an ASP.NET Core API. <i>Production</i> secures it with Entra ID and ships it to AWS, and "
-             "closes with modernising a Windows / IIS application.</p>"
+             "closes with modernising a Windows / IIS application. <i>Tooling</i> is a companion: " + ref(13) + " "
+             "covers Visual Studio, and you read it after lesson 07 or whenever your team lives in the IDE.</p>"
              "<p><b>One running example ties the samples together.</b> From lesson 02 onward the samples model a "
              "motor-insurance quoting service — vehicles, drivers, quotes, premiums and policies — so each lesson "
              "adds a layer to something you already understand rather than starting a new toy.</p>")},
@@ -640,7 +642,7 @@ def blocks():
 
         {"type": "mermaid", "inline": True,
          "heading": "6.2 · Learning path",
-         "caption": "arrows = recommended order · colours = the four phases",
+         "caption": "arrows = recommended order · dotted arrow = optional companion · colours = the five phases",
          "code": ("flowchart TB\n"
                   '  subgraph A["A · Foundations"]\n'
                   "    direction LR\n"
@@ -658,20 +660,26 @@ def blocks():
                   "    direction LR\n"
                   '    L11["11 Security and Entra ID"]:::d --> L12["12 AWS and modernization"]:::d\n'
                   "  end\n"
+                  '  subgraph E["E · Tooling (companion)"]\n'
+                  "    direction LR\n"
+                  '    L13["13 Visual Studio"]:::e\n'
+                  "  end\n"
                   "  A --> B --> C --> D\n"
+                  '  B -.->|"after 07"| E\n'
                   "  classDef a fill:#c7d2fe,color:#1f2937,stroke:#6366f1;\n"
                   "  classDef b fill:#fde68a,color:#1f2937,stroke:#d97706;\n"
                   "  classDef c fill:#ccfbf1,color:#1f2937,stroke:#0d9488;\n"
-                  "  classDef d fill:#fce7f3,color:#1f2937,stroke:#be185d;\n")},
+                  "  classDef d fill:#fce7f3,color:#1f2937,stroke:#be185d;\n"
+                  "  classDef e fill:#ede9fe,color:#1f2937,stroke:#6d28d9;\n")},
 
         {"type": "chart", "heading": "6.3 · Where this track's study time goes", "kind": "donut",
-         "args": {"data": list(phases.items()), "center": f"{hours} h", "sub": "12 lessons",
+         "args": {"data": list(phases.items()), "center": f"{hours} h", "sub": f"{len(ROSTER)} lessons",
                   "width": 560, "height": 220},
          "caption": "suggested hours per learning-path phase · estimate",
          "note": "<b>Foundations take the largest share on purpose.</b> Language and type-system habits are what "
                  "make C# read like C# rather than Java written in C# syntax."},
 
-        {"type": "table", "heading": "6.4 · The twelve lessons",
+        {"type": "table", "heading": "6.4 · The lessons",
          "cols": ["#", "Lesson", "Phase", "Hours"],
          "rows": [[f"{r[0]:02d}", f"<b>{r[2]}</b>", r[6], str(r[4])] for r in ROSTER]
                  + [["", "<b>Total</b>", ESTIMATE, f"<b>{hours}</b>"]]},
